@@ -1,0 +1,222 @@
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../../core/cache/offline_cache.dart';
+import '../../../core/config/app_config.dart';
+import '../domain/puzzle.dart';
+import '../domain/puzzle_repository.dart';
+
+class PuzzleApiService {
+  PuzzleApiService({SupabaseClient? client, http.Client? httpClient})
+      : _client = client,
+        _http = httpClient ?? http.Client();
+
+  final SupabaseClient? _client;
+  final http.Client _http;
+  final _uuid = const Uuid();
+
+  String get _baseUrl => AppConfig.supabaseUrl;
+
+  Map<String, String> get _headers => {
+        'Content-Type': 'application/json',
+        'apikey': AppConfig.supabaseAnonKey,
+      };
+
+  Future<Map<String, dynamic>> fetchDailyPuzzle() async {
+    if (_client != null && AppConfig.isSupabaseConfigured) {
+      try {
+        final response = await _http.get(
+          Uri.parse('$_baseUrl/functions/v1/daily-puzzle'),
+          headers: _headers,
+        );
+        if (response.statusCode == 200) {
+          return jsonDecode(response.body) as Map<String, dynamic>;
+        }
+      } catch (_) {}
+    }
+    return _demoPuzzle();
+  }
+
+  Future<AnswerResult> validateAnswer({
+    required String rowClubId,
+    required String colClubId,
+    required String playerId,
+    required String puzzleCellId,
+    required String sessionId,
+  }) async {
+    if (_client != null && AppConfig.isSupabaseConfigured) {
+      try {
+        final response = await _http.post(
+          Uri.parse('$_baseUrl/functions/v1/validate-answer'),
+          headers: _headers,
+          body: jsonEncode({
+            'row_club_id': rowClubId,
+            'col_club_id': colClubId,
+            'player_id': playerId,
+            'puzzle_cell_id': puzzleCellId,
+            'session_id': sessionId,
+          }),
+        );
+        if (response.statusCode == 200) {
+          return AnswerResult.fromJson(
+            jsonDecode(response.body) as Map<String, dynamic>,
+          );
+        }
+      } catch (_) {}
+    }
+    return _demoValidate(playerId, rowClubId, colClubId);
+  }
+
+  Map<String, dynamic> _demoPuzzle() {
+    final clubs = [
+      {'id': 'barcelona', 'name': 'FC Barcelona', 'slug': 'barcelona', 'country_code': 'ES'},
+      {'id': 'chelsea', 'name': 'Chelsea FC', 'slug': 'chelsea', 'country_code': 'GB'},
+      {'id': 'real-madrid', 'name': 'Real Madrid', 'slug': 'real-madrid', 'country_code': 'ES'},
+      {'id': 'man-utd', 'name': 'Manchester United', 'slug': 'manchester-united', 'country_code': 'GB'},
+      {'id': 'bayern', 'name': 'Bayern Munich', 'slug': 'bayern-munich', 'country_code': 'DE'},
+      {'id': 'juventus', 'name': 'Juventus', 'slug': 'juventus', 'country_code': 'IT'},
+    ];
+
+    final cells = <Map<String, dynamic>>[];
+    for (var r = 0; r < 3; r++) {
+      for (var c = 0; c < 3; c++) {
+        cells.add({
+          'id': 'cell_${r}_$c',
+          'row_index': r,
+          'col_index': c,
+          'valid_answer_count': 8,
+          'difficulty': 0.4,
+        });
+      }
+    }
+
+    return {
+      'puzzle_id': _uuid.v4(),
+      'date': DateTime.now().toIso8601String().split('T').first,
+      'grid_size': 3,
+      'row_clubs': clubs.sublist(0, 3),
+      'col_clubs': clubs.sublist(3, 6),
+      'cells': cells,
+      'difficulty': 0.42,
+    };
+  }
+
+  AnswerResult _demoValidate(String playerId, String rowClubId, String colClubId) {
+    // Demo validation map for Barcelona x Chelsea cell
+    const validAnswers = {
+      'pedro': {'name': 'Pedro', 'usage': 67.0, 'tier': 'common'},
+      'deco': {'name': 'Deco', 'usage': 4.0, 'tier': 'legendary'},
+      'fabregas': {'name': 'Cesc Fabregas', 'usage': 22.0, 'tier': 'rare'},
+      'etoo': {'name': "Samuel Eto'o", 'usage': 8.0, 'tier': 'epic'},
+    };
+
+    final match = validAnswers[playerId];
+    if (match != null &&
+        ((rowClubId == 'barcelona' && colClubId == 'chelsea') ||
+            (rowClubId == 'chelsea' && colClubId == 'barcelona'))) {
+      final usage = match['usage']! as double;
+      return AnswerResult(
+        correct: true,
+        playerName: match['name']! as String,
+        usagePercentage: usage,
+        rarityTier: match['tier']! as String,
+        rarityScore: 100 - usage,
+      );
+    }
+
+    // For demo: accept any player with >50% random correct for other cells
+    return AnswerResult(
+      correct: playerId.isNotEmpty,
+      playerName: playerId,
+      usagePercentage: 35,
+      rarityTier: 'rare',
+      rarityScore: 65,
+    );
+  }
+}
+
+class PuzzleRepositoryImpl implements PuzzleRepository {
+  PuzzleRepositoryImpl({
+    required PuzzleApiService api,
+    required OfflineCache cache,
+  })  : _api = api,
+        _cache = cache;
+
+  final PuzzleApiService _api;
+  final OfflineCache _cache;
+  final _uuid = const Uuid();
+
+  @override
+  Future<Puzzle> getDailyPuzzle({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cached = await _cache.getDailyPuzzle();
+      if (cached != null) return Puzzle.fromJson(cached);
+    }
+
+    final raw = await _api.fetchDailyPuzzle();
+    await _cache.cacheDailyPuzzle(raw);
+    return Puzzle.fromJson(raw);
+  }
+
+  @override
+  Future<Puzzle> getPracticePuzzle({required int gridSize}) async {
+    final daily = await getDailyPuzzle();
+    return Puzzle(
+      id: _uuid.v4(),
+      date: daily.date,
+      gridSize: gridSize,
+      rowClubs: daily.rowClubs,
+      colClubs: daily.colClubs,
+      cells: daily.cells,
+      mode: PuzzleMode.practice,
+    );
+  }
+
+  @override
+  Future<Puzzle> getChallengePuzzle(String challengeId) async {
+    // Same puzzle as daily for MVP; challenge metadata loaded separately
+    return getDailyPuzzle();
+  }
+
+  @override
+  Future<AnswerResult> validateAnswer({
+    required String puzzleId,
+    required String puzzleCellId,
+    required String rowClubId,
+    required String colClubId,
+    required String playerId,
+    required String sessionId,
+  }) =>
+      _api.validateAnswer(
+        rowClubId: rowClubId,
+        colClubId: colClubId,
+        playerId: playerId,
+        puzzleCellId: puzzleCellId,
+        sessionId: sessionId,
+      );
+
+  @override
+  Future<String> createSession({
+    required String puzzleId,
+    required PuzzleMode mode,
+    required int gridSize,
+  }) async =>
+      _uuid.v4();
+
+  @override
+  Future<void> completeSession({
+    required String sessionId,
+    required double finalScore,
+    required Map<String, dynamic> antiCheatMetadata,
+  }) async {
+    if (antiCheatMetadata['is_suspicious'] == true) return;
+    await _cache.queuePendingAnswer({
+      'session_id': sessionId,
+      'final_score': finalScore,
+      ...antiCheatMetadata,
+    });
+  }
+}

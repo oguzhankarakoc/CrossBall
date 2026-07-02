@@ -1,0 +1,16 @@
+#!/bin/sh
+# Wrapper: strips extended attributes before codesign (macOS Desktop/iCloud fix).
+REAL_CODESIGN=/usr/bin/codesign
+
+for f in "$@"; do
+  case "$f" in
+    -*) ;;
+    *)
+      if [ -e "$f" ]; then
+        xattr -cr "$f" 2>/dev/null || true
+      fi
+      ;;
+  esac
+done
+
+exec "$REAL_CODESIGN" "$@"

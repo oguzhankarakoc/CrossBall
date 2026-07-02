@@ -1,0 +1,11 @@
+id,name,team,nationality,position,start_date,end_date,is_loan,appearances
+pedro,Pedro,FC Barcelona,ES,Forward,2008-01-01,2015-06-30,false,204
+pedro,Pedro,Chelsea FC,GB,Forward,2015-07-01,2020-01-31,false,81
+deco,Deco,FC Barcelona,ES,Midfielder,2004-07-01,2008-06-30,false,151
+deco,Deco,Chelsea FC,GB,Midfielder,2008-07-01,2010-08-31,false,26
+fabregas,Cesc Fabregas,FC Barcelona,ES,Midfielder,2011-08-15,2014-06-30,false,74
+fabregas,Cesc Fabregas,Chelsea FC,GB,Midfielder,2014-07-01,2019-01-11,false,140
+etoo,Samuel Eto'o,FC Barcelona,CM,Forward,2004-08-01,2009-07-01,false,145
+etoo,Samuel Eto'o,Chelsea FC,GB,Forward,2013-08-29,2014-06-30,false,21
+ozil,Mesut Özil,Real Madrid,DE,Midfielder,2010-09-01,2013-09-02,false,104
+ozil,Mesut Özil,Arsenal FC,GB,Midfielder,2013-09-02,2021-01-21,false,184

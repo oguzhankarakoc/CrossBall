@@ -1,0 +1,48 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+/// Runtime configuration loaded from `.env`.
+abstract final class AppConfig {
+  static Future<void> load() async {
+    try {
+      await dotenv.load(fileName: '.env');
+    } catch (_) {
+      // .env may be missing in some Xcode builds — app falls back to demo mode.
+    }
+  }
+
+  static String get supabaseUrl => dotenv.env['SUPABASE_URL']?.trim() ?? '';
+  static String get supabaseAnonKey => dotenv.env['SUPABASE_ANON_KEY']?.trim() ?? '';
+
+  static bool get isSupabaseConfigured =>
+      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  static bool get isAdMobEnabled =>
+      dotenv.env['ADMOB_ENABLED']?.trim().toLowerCase() != 'false';
+
+  static bool get useTestAds =>
+      dotenv.env['ADMOB_USE_TEST_ADS']?.trim().toLowerCase() != 'false';
+
+  static String get adMobBannerAndroid =>
+      dotenv.env['ADMOB_BANNER_ANDROID']?.trim() ??
+      'ca-app-pub-3940256099942544/6300978111';
+
+  static String get adMobBannerIos =>
+      dotenv.env['ADMOB_BANNER_IOS']?.trim() ??
+      'ca-app-pub-3940256099942544/2934735716';
+
+  static String get adMobInterstitialAndroid =>
+      dotenv.env['ADMOB_INTERSTITIAL_ANDROID']?.trim() ??
+      'ca-app-pub-3940256099942544/1033173712';
+
+  static String get adMobInterstitialIos =>
+      dotenv.env['ADMOB_INTERSTITIAL_IOS']?.trim() ??
+      'ca-app-pub-3940256099942544/4411468910';
+
+  static String get adMobRewardedAndroid =>
+      dotenv.env['ADMOB_REWARDED_ANDROID']?.trim() ??
+      'ca-app-pub-3940256099942544/5224354917';
+
+  static String get adMobRewardedIos =>
+      dotenv.env['ADMOB_REWARDED_IOS']?.trim() ??
+      'ca-app-pub-3940256099942544/1712485313';
+}
