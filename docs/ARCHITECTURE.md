@@ -1,6 +1,6 @@
 # CrossBall — Technical Architecture
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Status:** Production MVP  
 **Tagline:** Connect clubs. Prove your football IQ.
 
@@ -58,10 +58,11 @@ lib/
 │   ├── network/         # Supabase client provider
 │   ├── analytics/       # Event tracking abstraction
 │   ├── routing/         # GoRouter
-│   ├── theme/           # Dark football theme
-│   └── utils/           # String normalization, scoring math
+│   ├── theme/           # Light Pitch + Dark Stadium themes
+│   ├── club_identity/   # Badge icon types, display name resolver
+│   └── utils/           # String normalization, scoring math, flags
 ├── shared/
-│   └── widgets/         # Reusable UI components
+│   └── widgets/         # Club badges, search cards, player avatar
 └── features/
     ├── auth/
     ├── onboarding/
@@ -118,6 +119,10 @@ App launch → SecureStorage read/write UUID
 
 ## 5. Validation Engine
 
+### Rule
+
+A cell answer is correct when the player has **senior first-team appearances at both the row club and the column club**. The player does not need to have played only for those two clubs.
+
 ### Inclusion rules
 
 - Senior official appearances (first team)
@@ -131,7 +136,11 @@ App launch → SecureStorage read/write UUID
 
 ### Implementation
 
-Server-side validation via `validate-answer` edge function queries `player_career_history` with `is_senior = true AND is_youth = false AND is_reserve = false`.
+Server-side validation via `validate-answer` edge function:
+
+1. Resolve club references through RPC `club_ids_equivalent_to` (merges legacy slug aliases like `fc-barcelona` → `barcelona`)
+2. Query `player_career_history` with `is_senior = true AND is_youth = false AND is_reserve = false` for both clubs
+3. Update rarity stats only when `puzzle_cell_id` is a valid UUID
 
 Client displays result; never trusts client-only validation for competitive modes.
 
@@ -268,7 +277,7 @@ Premium (`is_premium = true`) removes all ads.
 
 ### Cached locally
 
-- Daily puzzle payload (JSON file)
+- Daily puzzle payload (SharedPreferences + JSON file, cache key versioned)
 - Recent player picks (SharedPreferences)
 - User stats snapshot
 - Search index subset (top 5k players)
@@ -277,7 +286,8 @@ Premium (`is_premium = true`) removes all ads.
 
 - On reconnect: flush pending answers, refresh stats
 - Daily puzzle TTL: until next UTC midnight
-- Cache invalidation on version bump
+- Cache invalidation on version bump (`cache_daily_puzzle_v3`)
+- Invalid puzzle cache (non-UUID club IDs) is rejected and refetched
 
 ---
 
@@ -325,17 +335,17 @@ Same shape as daily puzzle + `creator_score`, `creator_uuid`.
 ```json
 // Request
 {
-  "puzzle_id": "uuid",
-  "row_club_id": "uuid",
-  "col_club_id": "uuid",
+  "row_club_id": "uuid-or-slug",
+  "col_club_id": "uuid-or-slug",
   "player_id": "uuid",
+  "puzzle_cell_id": "uuid",
   "session_id": "uuid"
 }
 
 // Response
 {
   "correct": true,
-  "player_name": "Pedro",
+  "player_name": "Robert Lewandowski",
   "usage_percentage": 67.2,
   "rarity_tier": "common",
   "rarity_score": 32.8,
@@ -343,7 +353,7 @@ Same shape as daily puzzle + `creator_score`, `creator_uuid`.
 }
 ```
 
-### GET `/functions/v1/search-players?q=ozil&limit=20`
+### GET `/functions/v1/search-players?q=ozil&limit=20&row_club_id=...&col_club_id=...`
 
 ```json
 {
@@ -352,17 +362,19 @@ Same shape as daily puzzle + `creator_score`, `creator_uuid`.
     "name": "Mesut Özil",
     "nationality_code": "DE",
     "primary_position": "Midfielder",
-    "clubs_preview": ["Arsenal", "Real Madrid"]
+    "clubs": [{"name": "Arsenal", "slug": "arsenal"}],
+    "matches_row_club": true,
+    "matches_col_club": false
   }],
   "latency_ms": 42
 }
 ```
 
-### POST `/functions/v1/hint`
+### POST `/functions/v1/request-hint`
 
 ```json
 // Request
-{ "session_id": "uuid", "cell_row": 0, "cell_col": 1, "hint_type": "nationality" }
+{ "session_id": "uuid", "puzzle_cell_id": "uuid", "row_club_id": "uuid", "col_club_id": "uuid", "hint_type": "nationality" }
 // Response
 { "hint_value": "Brazil", "hints_used": 1 }
 ```
@@ -455,8 +467,9 @@ See `docs/TESTING.md`.
 |-----------|--------|
 | Flutter | App Store, Google Play |
 | Supabase | Managed cloud project |
-| Edge functions | Supabase CLI deploy |
-| Pipeline | GitHub Actions cron / manual |
+| Edge functions | `supabase functions deploy` (npm imports via `deno.json`) |
+| Migrations | `./scripts/run_migrations.sh` or `supabase db push` |
+| Pipeline | GitHub Actions cron / `./scripts/run_etl.sh` |
 | Analytics | PostHog cloud |
 
 ---
@@ -471,4 +484,4 @@ See `docs/TESTING.md`.
 
 ---
 
-*CrossBall Architecture v1.0.0 — production MVP*
+*CrossBall Architecture v1.1.0 — production MVP*

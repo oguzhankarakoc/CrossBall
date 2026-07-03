@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
+import '../../../shared/providers/app_providers.dart';
 import '../ads_service.dart';
 
 class BannerAdWidget extends ConsumerStatefulWidget {
@@ -27,7 +28,13 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
     final ads = ref.read(adsServiceProvider);
     _banner = ads.createBanner(widget.placement);
     _banner?.load().then((_) {
-      if (mounted) setState(() => _loaded = true);
+      if (mounted) {
+        setState(() => _loaded = true);
+        ref.read(analyticsProvider).track('ad_impression', properties: {
+          'placement': widget.placement.name,
+          'format': 'banner',
+        });
+      }
     });
   }
 

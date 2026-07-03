@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../auth/presentation/auth_providers.dart';
 
@@ -25,6 +26,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish({bool skipped = false}) async {
     await ref.read(authRepositoryProvider).setOnboardingComplete(true);
+    ref.read(analyticsProvider).track('onboarding_completed', properties: {
+      'skipped': skipped,
+    });
     if (!mounted) return;
     context.go('/home');
   }

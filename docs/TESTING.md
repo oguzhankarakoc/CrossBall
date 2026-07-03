@@ -14,14 +14,16 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
         └─────────────┘
 ```
 
+**Current status:** 28 Flutter tests + data pipeline pytest suite, all passing in CI.
+
 ## Coverage targets
 
 | Layer | Target | Priority |
 |-------|--------|----------|
 | Domain (scoring, rarity, anti-cheat) | 90%+ | P0 |
-| Utils (string normalizer) | 95%+ | P0 |
-| Data (repositories) | 80%+ | P1 |
-| Widget (onboarding, puzzle grid) | Key paths | P1 |
+| Utils (string normalizer, club display) | 95%+ | P0 |
+| Data (repositories, cache) | 80%+ | P1 |
+| Widget (puzzle grid, app smoke) | Key paths | P1 |
 | Integration | Daily puzzle flow | P2 |
 
 ## Unit tests
@@ -33,10 +35,6 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
 - Mistake penalty
 - Session score aggregation
 
-### Rarity (`test/core/rarity_test.dart`)
-
-- Tier boundaries (50%, 25%, 10%, 3%)
-
 ### String normalizer (`test/core/string_normalizer_test.dart`)
 
 - Accent insensitivity: `özil` == `ozil`
@@ -45,60 +43,85 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
 
 ### Anti-cheat (`test/core/anti_cheat_test.dart`)
 
-- Suspicious duration detection
-- Background ratio flagging
-- Inactivity period counting
+- Metadata fields present
+- Evaluate runs without error
+
+### Club identity (`test/core/club_identity_test.dart`)
+
+- Barcelona → abstract stripes
+- Chelsea → abstract lion
+- Unknown club deterministic fallback
+
+### Club display (`test/core/club_display_test.dart`)
+
+- Short name resolution (Man United, Bayern)
+- DB `short_name` overrides registry
+
+### Deep links (`test/core/deep_link_test.dart`)
+
+- `crossball://challenge/abc123` parsing
+- Query param variant
+
+### Offline cache (`test/core/offline_cache_test.dart`)
+
+- Daily puzzle cache round-trip
+- Recent picks order and limit
 
 ## Widget tests
 
-- App smoke test (existing)
-- Onboarding page navigation
-- Puzzle grid cell tap states
-- Search modal empty state shows recent/popular
-
-## Integration tests
-
-- Offline daily puzzle cache hit/miss
-- Pending answer queue flush on reconnect
-- Demo validation flow end-to-end
+| File | Coverage |
+|------|----------|
+| `test/widget_test.dart` | App smoke test |
+| `test/features/puzzle/puzzle_grid_test.dart` | 9 cells + 6 club badges render |
 
 ## Data pipeline tests
 
 ```bash
 cd data_pipeline
-python -m pytest tests/  # when pytest added
-python -m pipeline run --input data/raw/players.csv --clubs data/raw/clubs.csv
+pytest tests/ -q
 ```
 
 - Youth team filtering
-- Duplicate normalization
-- Content hash determinism
+- Club name canonicalization
+- Transform output shape
 
-## CI pipeline (recommended)
+## CI pipeline
+
+`.github/workflows/ci.yml` runs on push/PR to `main` and `feature/**`:
 
 ```yaml
-# .github/workflows/ci.yml
-- flutter analyze
-- flutter test
-- python -m pipeline validate (dry run)
+flutter:
+  - flutter pub get
+  - flutter gen-l10n
+  - flutter analyze
+  - flutter test
+
+pipeline:
+  - pip install -r requirements.txt
+  - pytest tests/ -q
 ```
 
 ## Manual QA checklist
 
 - [ ] First launch shows onboarding (3 screens, skippable)
-- [ ] Daily puzzle loads (online + cached offline)
-- [ ] Player search: fuzzy, accent-insensitive
-- [ ] Correct answer shows rarity tier
+- [ ] Daily puzzle loads 3×3 grid with 6 club badges
+- [ ] Player search: fuzzy, accent-insensitive, rich cards with club chips
+- [ ] Correct answer (e.g. Lewandowski for Barcelona × Bayern) shows rarity tier
+- [ ] Wrong answer shows "Yanlış" feedback modal
 - [ ] Timer runs during background
 - [ ] Banners only on Home/Stats/Result
 - [ ] No banners during puzzle gameplay
 - [ ] Challenge create + share link
 - [ ] EN/TR/DE localization renders
+- [ ] Light Pitch and Dark Stadium themes switch correctly
 
 ## Test commands
 
 ```bash
 flutter test
 flutter test test/core/
+flutter test test/features/
 flutter analyze
+
+cd data_pipeline && pytest tests/ -q
 ```

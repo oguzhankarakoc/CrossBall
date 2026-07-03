@@ -10,14 +10,16 @@ class AuthRemoteDataSource {
 
   final http.Client _http;
 
-  Future<void> syncUser({
+  Future<Map<String, dynamic>?> syncUser({
     required String userUuid,
     bool onboardingComplete = false,
     bool isPremium = false,
+    String? locale,
+    String? themePreference,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return;
+    if (!AppConfig.isSupabaseConfigured) return null;
 
-    await _http.post(
+    final response = await _http.post(
       Uri.parse('${AppConfig.supabaseUrl}/functions/v1/sync-user'),
       headers: {
         'apikey': AppConfig.supabaseAnonKey,
@@ -28,7 +30,26 @@ class AuthRemoteDataSource {
         'user_uuid': userUuid,
         'onboarding_complete': onboardingComplete,
         'is_premium': isPremium,
+        if (locale != null) 'locale': locale,
+        if (themePreference != null) 'theme_preference': themePreference,
       }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+    return null;
+  }
+
+  Future<void> syncPreferences({
+    required String userUuid,
+    String? locale,
+    String? themePreference,
+  }) async {
+    await syncUser(
+      userUuid: userUuid,
+      locale: locale,
+      themePreference: themePreference,
     );
   }
 }

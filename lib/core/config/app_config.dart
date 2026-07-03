@@ -45,4 +45,21 @@ abstract final class AppConfig {
   static String get adMobRewardedIos =>
       dotenv.env['ADMOB_REWARDED_IOS']?.trim() ??
       'ca-app-pub-3940256099942544/1712485313';
+
+  // PostHog analytics
+  static String get postHogApiKey => dotenv.env['POSTHOG_API_KEY']?.trim() ?? '';
+  static String get postHogHost =>
+      dotenv.env['POSTHOG_HOST']?.trim() ?? 'https://us.i.posthog.com';
+
+  static bool get isPostHogConfigured => postHogApiKey.isNotEmpty;
+
+  // In-app purchase
+  static bool get isIapEnabled =>
+      dotenv.env['IAP_ENABLED']?.trim().toLowerCase() == 'true';
+
+  static String get iapPremiumProductIdIos =>
+      dotenv.env['IAP_PREMIUM_PRODUCT_ID_IOS']?.trim() ?? 'crossball_premium';
+
+  static String get iapPremiumProductIdAndroid =>
+      dotenv.env['IAP_PREMIUM_PRODUCT_ID_ANDROID']?.trim() ?? 'crossball_premium';
 }

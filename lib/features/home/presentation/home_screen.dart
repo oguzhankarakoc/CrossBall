@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/routing/app_routes.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../features/ads/presentation/banner_ad_widget.dart';
 import '../../../features/ads/ads_service.dart';
 import '../../../l10n/app_localizations.dart';
@@ -32,10 +33,10 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(AppSpacing.lg),
                   children: [
                     Center(child: CrossBallLogo(size: 72)),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: AppSpacing.md),
                     Text(
                       l10n.tagline,
                       textAlign: TextAlign.center,
@@ -44,7 +45,7 @@ class HomeScreen extends ConsumerWidget {
                             fontWeight: FontWeight.w600,
                           ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: AppSpacing.xl - 4),
                     CrossBallCard(
                       icon: Icons.calendar_today_outlined,
                       title: l10n.dailyChallenge,
@@ -63,7 +64,7 @@ class HomeScreen extends ConsumerWidget {
                       subtitle: l10n.practiceDesc,
                       onTap: () => context.push('${AppRoutes.puzzle}?mode=practice'),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: AppSpacing.md),
                     Row(
                       children: [
                         Expanded(
@@ -72,7 +73,7 @@ class HomeScreen extends ConsumerWidget {
                             child: Text(l10n.stats),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: AppSpacing.md),
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () => context.push(AppRoutes.settings),

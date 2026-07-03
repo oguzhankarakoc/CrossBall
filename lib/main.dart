@@ -6,7 +6,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/config/app_config.dart';
+import 'core/sync/offline_sync_service.dart';
 import 'features/ads/ads_service.dart';
+import 'features/auth/presentation/auth_providers.dart';
+import 'features/premium/premium_service.dart';
+import 'shared/providers/app_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,14 +35,56 @@ Future<void> main() async {
   }
 
   final container = ProviderContainer();
+
+  try {
+    final profile = await container.read(userProfileProvider.future);
+    await container.read(analyticsProvider).identify(
+          profile.userUuid,
+          traits: {'is_premium': profile.isPremium},
+        );
+  } catch (e, st) {
+    debugPrint('Analytics identify failed: $e\n$st');
+  }
+
   if (AppConfig.isAdMobEnabled) {
     try {
-      await container.read(adsServiceProvider).initialize();
+      final ads = container.read(adsServiceProvider);
+      final isPremium = container.read(isPremiumProvider);
+      ads.isPremium = isPremium;
+      await ads.initialize();
     } catch (e, st) {
       debugPrint('AdMob initialize failed: $e\n$st');
     }
   }
+
+  try {
+    await container.read(premiumServiceProvider).initialize();
+  } catch (e, st) {
+    debugPrint('Premium init failed: $e\n$st');
+  }
+
+  try {
+    OfflineSyncService(cache: container.read(offlineCacheProvider)).startListening();
+  } catch (e, st) {
+    debugPrint('OfflineSync start failed: $e\n$st');
+  }
+
   container.dispose();
 
-  runApp(const ProviderScope(child: CrossBallApp()));
+  runApp(const ProviderScope(child: PremiumAdsSync(child: CrossBallApp())));
+}
+
+/// Keeps ads premium flag in sync with profile/IAP state.
+class PremiumAdsSync extends ConsumerWidget {
+  const PremiumAdsSync({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen<bool>(isPremiumProvider, (_, isPremium) {
+      ref.read(adsServiceProvider).isPremium = isPremium;
+    });
+    return child;
+  }
 }

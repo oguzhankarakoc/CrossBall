@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "**/supabase/**/*.sql": "postgres"
+  },
+  "sql.dialect": "PostgreSQL",
+  "sql.validate.enable": false,
+  "mssql.intelliSense.enableErrorChecking": false
+}

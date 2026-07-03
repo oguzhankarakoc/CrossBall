@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/analytics/analytics_service.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/challenge/data/challenge_repository_impl.dart';
 import '../../features/challenge/domain/challenge.dart';
@@ -9,15 +10,12 @@ import '../../features/search/data/search_repository_impl.dart';
 import '../../features/search/domain/search.dart';
 import '../../features/stats/data/stats_repository_impl.dart';
 import '../../features/stats/domain/stats.dart';
-import '../../core/analytics/analytics_service.dart';
 import '../../core/cache/offline_cache.dart';
 import '../../core/network/supabase_provider.dart';
 
 final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
 
-final analyticsProvider = Provider<AnalyticsService>(
-  (ref) => ConsoleAnalyticsService(),
-);
+final analyticsProvider = Provider<AnalyticsService>((ref) => createAnalyticsService());
 
 final puzzleRepositoryProvider = Provider<PuzzleRepository>((ref) {
   return PuzzleRepositoryImpl(

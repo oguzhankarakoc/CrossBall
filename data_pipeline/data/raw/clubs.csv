@@ -1,11 +1,75 @@
-name,country_code,is_top_club
-FC Barcelona,ES,true
-Chelsea FC,GB,true
-Real Madrid,ES,true
-Manchester United,GB,true
-Bayern Munich,DE,true
-Juventus,IT,true
-AC Milan,IT,true
-Inter Milan,IT,true
-Paris Saint-Germain,FR,true
-Arsenal FC,GB,true
+name,country_code,is_top_club,badge_primary_color,badge_secondary_color,badge_initials,badge_gradient_style,short_name
+AC Milan,,true,#bd6633,#424422,AM,vertical,AC Milan
+AIK,,true,#130663,#974422,A,vertical,AIK
+APOEL,,true,#103663,#c44422,A,vertical,APOEL
+Ajax,,true,#152663,#754422,A,vertical,Ajax
+Al Ahli,,true,#ac6633,#534422,AA,vertical,Al Ahli
+Al Hilal,,true,#456633,#ba4422,AH,vertical,Al Hilal
+Al Nassr,,true,#4a6633,#b54422,AN,vertical,Al Nassr
+Anderlecht,,true,#396633,#c64422,A,vertical,Anderlecht
+Arsenal FC,GB,true,#EF0107,#FFFFFF,ARS,vertical,Arsenal
+Aston Villa,,true,#de6633,#e94422,AV,vertical,Aston Villa
+Atletico Madrid,,true,#e26633,#e54422,AM,vertical,Atletico
+Basel,,true,#15c663,#6b4422,B,vertical,Basel
+Bayern Munich,DE,true,#DC052D,#0066B2,BAY,vertical,Bayern
+Benfica,,true,#596633,#a64422,B,vertical,Benfica
+Besiktas,TR,true,#000000,#FFFFFF,BJK,vertical,Besiktas
+Boca Juniors,,true,#056633,#fa4422,BJ,vertical,Boca Juniors
+Borussia Dortmund,,true,#109663,#be4422,BD,vertical,Borussia
+Borussia Mönchengladbach,,true,#cc6633,#fb4422,BM,vertical,Borussia
+CFR Cluj,,true,#256633,#da4422,CC,vertical,CFR Cluj
+Celtic FC,,true,#159663,#6e4422,CF,vertical,Celtic FC
+Chelsea FC,GB,true,#034694,#FFFFFF,CHE,horizontal,Chelsea
+Club Brugge,,true,#162663,#654422,CB,vertical,Club Brugge
+Corinthians,,true,#13d663,#8a4422,C,vertical,Corinthians
+Dinamo Zagreb,,true,#c76633,#384422,DZ,vertical,Dinamo Zagreb
+Dynamo Kyiv,,true,#086633,#f74422,DK,vertical,Dynamo Kyiv
+FC Barcelona,ES,true,#A50044,#004D98,BAR,vertical,Barcelona
+FC Porto,,true,#eb6633,#dc4422,FP,vertical,FC Porto
+Fenerbahce,TR,true,#FFED00,#00205B,FEN,horizontal,Fenerbahce
+Feyenoord,,true,#12c663,#9b4422,F,vertical,Feyenoord
+Fiorentina,,true,#14b663,#7c4422,F,vertical,Fiorentina
+Flamengo,,true,#13e663,#894422,F,vertical,Flamengo
+Galatasaray,TR,true,#FDB912,#A90432,GAL,vertical,Galatasaray
+Guangzhou FC,,true,#046633,#fb4422,GF,vertical,Guangzhou FC
+HJK Helsinki,,true,#150663,#774422,HH,vertical,HJK Helsinki
+Hajduk Split,,true,#826633,#7d4422,HS,vertical,Hajduk Split
+Inter Miami,,true,#246633,#db4422,IM,vertical,Inter Miami
+Inter Milan,,true,#13d663,#8a4422,IM,vertical,Inter Milan
+Juventus,IT,true,#000000,#FFFFFF,JUV,horizontal,Juventus
+Kaizer Chiefs,,true,#1d6633,#e24422,KC,vertical,Kaizer Chiefs
+Kashima Antlers,,true,#656633,#9a4422,KA,vertical,Kashima
+LA Galaxy,,true,#016633,#fe4422,LG,vertical,LA Galaxy
+Lazio,,true,#db6633,#ec4422,L,vertical,Lazio
+Liverpool FC,GB,true,#C8102E,#FFFFFF,LIV,vertical,Liverpool
+Lyon,,true,#153663,#744422,L,vertical,Lyon
+Manchester City,,true,#137663,#904422,MC,vertical,Manchester
+Manchester United,GB,true,#DA291C,#FBE122,MUN,vertical,Man United
+Marseille,,true,#d56633,#f24422,M,vertical,Marseille
+Melbourne City,,true,#163663,#644422,MC,vertical,Melbourne City
+Molde FK,,true,#8c6633,#734422,MF,vertical,Molde FK
+Monaco,,true,#7a6633,#854422,M,vertical,Monaco
+Napoli,,true,#7f6633,#804422,N,vertical,Napoli
+Newcastle United,,true,#5e6633,#a14422,NU,vertical,Newcastle
+Orlando Pirates,,true,#596633,#a64422,OP,vertical,Orlando
+Palmeiras,,true,#121663,#a64422,P,vertical,Palmeiras
+Panathinaikos,,true,#161663,#664422,P,vertical,Panathinaikos
+Paris Saint-Germain,FR,true,#004170,#DA020E,PSG,horizontal,PSG
+RB Leipzig,,true,#2d6633,#d24422,RL,vertical,RB Leipzig
+Rangers FC,,true,#12e663,#994422,RF,vertical,Rangers FC
+Rapid Vienna,,true,#2c6633,#d34422,RV,vertical,Rapid Vienna
+Real Madrid,ES,true,#FEBE10,#FFFFFF,RMA,horizontal,Real Madrid
+River Plate,,true,#526633,#ad4422,RP,vertical,River Plate
+Rosenborg,,true,#157663,#704422,R,vertical,Rosenborg
+Salzburg,,true,#143663,#844422,S,vertical,Salzburg
+Sevilla FC,,true,#e06633,#e74422,SF,vertical,Sevilla FC
+Shakhtar Donetsk,,true,#fe6633,#c94422,SD,vertical,Shakhtar
+Shanghai SIPG,,true,#11e663,#a94422,SS,vertical,Shanghai SIPG
+Sporting CP,,true,#046633,#fb4422,SC,vertical,Sporting CP
+Sydney FC,,true,#123663,#a44422,SF,vertical,Sydney FC
+Tottenham Hotspur,,true,#1d6633,#e24422,TH,vertical,Tottenham
+Trabzonspor,,true,#15f663,#684422,T,vertical,Trabzonspor
+Urawa Red Diamonds,,true,#fe6633,#c94422,UR,vertical,Urawa
+Valencia CF,,true,#066633,#f94422,VC,vertical,Valencia CF
+West Ham United,,true,#d76633,#f04422,WH,vertical,West
+Young Boys,,true,#117663,#b04422,YB,vertical,Young Boys

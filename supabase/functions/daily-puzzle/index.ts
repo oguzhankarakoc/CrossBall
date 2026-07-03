@@ -23,8 +23,8 @@ serve(async (req) => {
       .from('puzzles')
       .select(`
         id, puzzle_date, grid_size, difficulty,
-        puzzle_row_clubs (row_index, clubs (id, name, slug, country_code, logo_url)),
-        puzzle_col_clubs (col_index, clubs (id, name, slug, country_code, logo_url)),
+        puzzle_row_clubs (row_index, clubs (id, name, slug, country_code, logo_url, display_name, short_name, short_code, league_name, badge_primary_color, badge_secondary_color, badge_accent_color, badge_initials, badge_icon_type, badge_gradient_style)),
+        puzzle_col_clubs (col_index, clubs (id, name, slug, country_code, logo_url, display_name, short_name, short_code, league_name, badge_primary_color, badge_secondary_color, badge_accent_color, badge_initials, badge_icon_type, badge_gradient_style)),
         puzzle_cells (id, row_index, col_index, valid_answer_count, difficulty)
       `)
       .eq('puzzle_date', today)

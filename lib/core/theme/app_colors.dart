@@ -13,19 +13,24 @@ abstract final class AppColors {
   static const silverLight = Color(0xFFD1D2D6);
   static const error = Color(0xFFE53935);
 
-  // Dark mode surfaces
-  static const darkBackground = Color(0xFF051F14);
-  static const darkSurface = Color(0xFF0A2A1B);
-  static const darkSurfaceElevated = Color(0xFF124A32);
+  // Dark mode surfaces (premium football — spec)
+  static const darkBackground = Color(0xFF0D0D0D);
+  static const darkSurface = Color(0xFF161616);
+  static const darkSurfaceElevated = Color(0xFF1E2A24);
   static const darkTextPrimary = Color(0xFFF5F5F5);
-  static const darkTextSecondary = Color(0xFFB0C4BC);
+  static const darkTextSecondary = Color(0xFFB0B0B0);
+  static const gold = Color(0xFFD4AF37);
 
-  // Light mode surfaces
-  static const lightBackground = Color(0xFFF4F7F5);
-  static const lightSurface = Color(0xFFFFFFFF);
-  static const lightSurfaceElevated = Color(0xFFE8F0EC);
-  static const lightTextPrimary = Color(0xFF051F14);
-  static const lightTextSecondary = Color(0xFF4A6358);
+  // Light Pitch — football-inspired light palette (not generic white)
+  static const lightPitchBackground = Color(0xFFEEF6EE);
+  static const lightPitchSurface = Color(0xFFFFFFFF);
+  static const lightPitchSurfaceElevated = Color(0xFFF7FBF7);
+  static const lightPitchPrimary = Color(0xFF2E7D32);
+  static const lightPitchSecondary = Color(0xFF66BB6A);
+  static const lightPitchGold = Color(0xFFC8A951);
+  static const lightPitchTextPrimary = Color(0xFF1B1B1B);
+  static const lightPitchTextSecondary = Color(0xFF5F6368);
+  static const lightPitchStripe = Color(0xFFE8F2E8);
 
   // Legacy aliases (dark defaults for gradual migration)
   static const background = darkBackground;
@@ -70,31 +75,39 @@ class CrossBallColors extends ThemeExtension<CrossBallColors> {
   final Color cardBorder;
   final Color iconTint;
 
-  static const dark = CrossBallColors(
+  /// Dark Stadium — black pitch, gold accents, primary brand theme.
+  static const darkStadium = CrossBallColors(
     background: AppColors.darkBackground,
     surface: AppColors.darkSurface,
     surfaceElevated: AppColors.darkSurfaceElevated,
     primary: AppColors.pitchGreenLight,
-    accent: AppColors.copper,
+    accent: AppColors.gold,
     secondaryAccent: AppColors.silver,
     textPrimary: AppColors.darkTextPrimary,
     textSecondary: AppColors.darkTextSecondary,
-    cardBorder: Color(0x33C5A391),
-    iconTint: AppColors.copper,
+    cardBorder: Color(0x33D4AF37),
+    iconTint: AppColors.gold,
   );
 
-  static const light = CrossBallColors(
-    background: AppColors.lightBackground,
-    surface: AppColors.lightSurface,
-    surfaceElevated: AppColors.lightSurfaceElevated,
-    primary: AppColors.pitchForest,
-    accent: AppColors.copperDark,
-    secondaryAccent: AppColors.silver,
-    textPrimary: AppColors.lightTextPrimary,
-    textSecondary: AppColors.lightTextSecondary,
-    cardBorder: Color(0x33A67B6B),
-    iconTint: AppColors.pitchForest,
+  /// Light Pitch — soft field green, premium gold accents.
+  static const lightPitch = CrossBallColors(
+    background: AppColors.lightPitchBackground,
+    surface: AppColors.lightPitchSurface,
+    surfaceElevated: AppColors.lightPitchSurfaceElevated,
+    primary: AppColors.lightPitchPrimary,
+    accent: AppColors.lightPitchGold,
+    secondaryAccent: AppColors.lightPitchSecondary,
+    textPrimary: AppColors.lightPitchTextPrimary,
+    textSecondary: AppColors.lightPitchTextSecondary,
+    cardBorder: Color(0x332E7D32),
+    iconTint: AppColors.lightPitchPrimary,
   );
+
+  /// @deprecated Use [darkStadium].
+  static const dark = darkStadium;
+
+  /// @deprecated Use [lightPitch].
+  static const light = lightPitch;
 
   @override
   CrossBallColors copyWith({

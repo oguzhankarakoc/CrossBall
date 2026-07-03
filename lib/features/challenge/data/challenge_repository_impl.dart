@@ -11,6 +11,11 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
 
   final http.Client _http;
 
+  Map<String, String> get _headers => {
+        'apikey': AppConfig.supabaseAnonKey,
+        'Content-Type': 'application/json',
+      };
+
   @override
   Future<Challenge> createChallenge({
     required String puzzleId,
@@ -22,11 +27,7 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
       try {
         final response = await _http.post(
           Uri.parse('${AppConfig.supabaseUrl}/functions/v1/challenge-create'),
-          headers: {
-            'apikey': AppConfig.supabaseAnonKey,
-            'Content-Type': 'application/json',
-            'x-user-uuid': userUuid,
-          },
+          headers: {..._headers, 'x-user-uuid': userUuid},
           body: jsonEncode({
             'puzzle_id': puzzleId,
             'session_id': sessionId,
@@ -53,10 +54,68 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
 
   @override
   Future<Challenge> getChallenge(String challengeId) async {
+    if (AppConfig.isSupabaseConfigured) {
+      try {
+        final response = await _http.get(
+          Uri.parse(
+            '${AppConfig.supabaseUrl}/functions/v1/challenge-get?code=$challengeId',
+          ),
+          headers: _headers,
+        );
+        if (response.statusCode == 200) {
+          return Challenge.fromJson(
+            jsonDecode(response.body) as Map<String, dynamic>,
+          );
+        }
+      } catch (_) {}
+    }
+
     return Challenge(
       id: challengeId,
       puzzleId: '',
       shareUrl: 'crossball://challenge/$challengeId',
+    );
+  }
+
+  @override
+  Future<ChallengeResult> completeChallenge({
+    required String challengeId,
+    required String sessionId,
+    required double challengerScore,
+    required String userUuid,
+    required int mistakes,
+    required int hintsUsed,
+    required int durationMs,
+  }) async {
+    if (AppConfig.isSupabaseConfigured) {
+      try {
+        final response = await _http.post(
+          Uri.parse('${AppConfig.supabaseUrl}/functions/v1/challenge-complete'),
+          headers: {..._headers, 'x-user-uuid': userUuid},
+          body: jsonEncode({
+            'challenge_id': challengeId,
+            'session_id': sessionId,
+            'challenger_score': challengerScore,
+            'user_uuid': userUuid,
+            'mistakes': mistakes,
+            'hints_used': hintsUsed,
+            'duration_ms': durationMs,
+          }),
+        );
+        if (response.statusCode == 200) {
+          return ChallengeResult.fromJson(
+            jsonDecode(response.body) as Map<String, dynamic>,
+          );
+        }
+      } catch (_) {}
+    }
+
+    return ChallengeResult(
+      challengeId: challengeId,
+      creatorScore: 0,
+      challengerScore: challengerScore,
+      youWon: challengerScore > 0,
+      isTie: false,
     );
   }
 }

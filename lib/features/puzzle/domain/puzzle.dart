@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/club_identity/club_display_resolver.dart';
+
 enum PuzzleMode { daily, practice, challenge }
 
 enum HintType { nationality, position, firstLetter }
@@ -13,6 +15,16 @@ class Club extends Equatable {
     required this.slug,
     this.countryCode,
     this.logoUrl,
+    this.badgePrimaryColor,
+    this.badgeSecondaryColor,
+    this.badgeAccentColor,
+    this.badgeInitials,
+    this.badgeIconType,
+    this.badgeGradientStyle,
+    this.displayName,
+    this.shortName,
+    this.shortCode,
+    this.leagueName,
   });
 
   final String id;
@@ -20,6 +32,25 @@ class Club extends Equatable {
   final String slug;
   final String? countryCode;
   final String? logoUrl;
+  final String? badgePrimaryColor;
+  final String? badgeSecondaryColor;
+  final String? badgeAccentColor;
+  final String? badgeInitials;
+  final String? badgeIconType;
+  final String? badgeGradientStyle;
+  final String? displayName;
+  final String? shortName;
+  final String? shortCode;
+  final String? leagueName;
+
+  /// Human-readable label for puzzle headers (e.g. "Man United").
+  String get shortLabel => ClubDisplayResolver.resolve(this).shortLabel;
+
+  /// Full club name for detail sheets (e.g. "Manchester United").
+  String get fullDisplayName => ClubDisplayResolver.resolve(this).displayName;
+
+  /// 3-letter code on badge (e.g. "MUN").
+  String get code => ClubDisplayResolver.shortCode(this);
 
   factory Club.fromJson(Map<String, dynamic> json) => Club(
         id: json['id'] as String,
@@ -27,6 +58,16 @@ class Club extends Equatable {
         slug: json['slug'] as String,
         countryCode: json['country_code'] as String?,
         logoUrl: json['logo_url'] as String?,
+        badgePrimaryColor: json['badge_primary_color'] as String?,
+        badgeSecondaryColor: json['badge_secondary_color'] as String?,
+        badgeAccentColor: json['badge_accent_color'] as String?,
+        badgeInitials: json['badge_initials'] as String?,
+        badgeIconType: json['badge_icon_type'] as String?,
+        badgeGradientStyle: json['badge_gradient_style'] as String?,
+        displayName: json['display_name'] as String?,
+        shortName: json['short_name'] as String?,
+        shortCode: json['short_code'] as String? ?? json['badge_initials'] as String?,
+        leagueName: json['league_name'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -35,6 +76,16 @@ class Club extends Equatable {
         'slug': slug,
         'country_code': countryCode,
         'logo_url': logoUrl,
+        'badge_primary_color': badgePrimaryColor,
+        'badge_secondary_color': badgeSecondaryColor,
+        'badge_accent_color': badgeAccentColor,
+        'badge_initials': badgeInitials,
+        'badge_icon_type': badgeIconType,
+        'badge_gradient_style': badgeGradientStyle,
+        'display_name': displayName,
+        'short_name': shortName,
+        'short_code': shortCode,
+        'league_name': leagueName,
       };
 
   @override
@@ -197,6 +248,33 @@ class Puzzle extends Equatable {
 
   @override
   List<Object?> get props => [id, date, gridSize];
+}
+
+class HintResult extends Equatable {
+  const HintResult({
+    required this.hintType,
+    required this.hintValue,
+  });
+
+  final HintType hintType;
+  final String hintValue;
+
+  factory HintResult.fromJson(Map<String, dynamic> json) {
+    final typeRaw = (json['hint_type'] as String? ?? 'nationality').replaceAll('-', '_');
+    HintType hintType = HintType.nationality;
+    if (typeRaw.contains('position')) {
+      hintType = HintType.position;
+    } else if (typeRaw.contains('letter')) {
+      hintType = HintType.firstLetter;
+    }
+    return HintResult(
+      hintType: hintType,
+      hintValue: json['hint_value'] as String? ?? '',
+    );
+  }
+
+  @override
+  List<Object?> get props => [hintType, hintValue];
 }
 
 class AnswerResult extends Equatable {

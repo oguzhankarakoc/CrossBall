@@ -12,37 +12,45 @@ serve(async (req) => {
   }
 
   try {
-    const { user_uuid, onboarding_complete, is_premium } = await req.json()
+    const body = await req.json()
+    const { user_uuid, onboarding_complete, is_premium, locale, theme_preference } = body
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
+    const upsertPayload: Record<string, unknown> = {
+      user_uuid,
+      updated_at: new Date().toISOString(),
+    }
+
+    if (onboarding_complete !== undefined) upsertPayload.onboarding_complete = onboarding_complete
+    if (is_premium !== undefined) upsertPayload.is_premium = is_premium
+    if (locale !== undefined) upsertPayload.locale = locale
+    if (theme_preference !== undefined) upsertPayload.theme_preference = theme_preference
+
     const { data, error } = await supabase
       .from('users')
-      .upsert(
-        {
-          user_uuid,
-          onboarding_complete: onboarding_complete ?? false,
-          is_premium: is_premium ?? false,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'user_uuid' },
-      )
-      .select('id, user_uuid')
+      .upsert(upsertPayload, { onConflict: 'user_uuid' })
+      .select('id, user_uuid, locale, theme_preference, is_premium')
       .single()
 
     if (error) throw error
 
-    // Ensure stats row exists
     await supabase.from('user_stats').upsert(
       { user_id: data.id },
       { onConflict: 'user_id', ignoreDuplicates: true },
     )
 
     return new Response(
-      JSON.stringify({ user_id: data.id, user_uuid: data.user_uuid }),
+      JSON.stringify({
+        user_id: data.id,
+        user_uuid: data.user_uuid,
+        locale: data.locale,
+        theme_preference: data.theme_preference,
+        is_premium: data.is_premium ?? false,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

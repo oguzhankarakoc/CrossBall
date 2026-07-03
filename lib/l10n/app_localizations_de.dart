@@ -140,6 +140,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get popularPicks => 'Beliebte Tipps';
 
   @override
+  String get suggestedForCell => 'Für dieses Feld vorgeschlagen';
+
+  @override
   String get noPlayersFound => 'Keine Spieler gefunden';
 
   @override
@@ -181,8 +184,86 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeSystem => 'Systemstandard';
 
   @override
-  String get themeDark => 'Dunkel';
+  String get themeDark => 'Dark Stadium';
 
   @override
-  String get themeLight => 'Hell';
+  String get themeLight => 'Light Pitch';
+
+  @override
+  String get themeSystemDesc => 'Geräte-Erscheinungsbild übernehmen';
+
+  @override
+  String get themeDarkDesc =>
+      'Schwarzer Platz, Stadionlichter, Rasengrün-Akzente';
+
+  @override
+  String get themeLightDesc => 'Sanftes Rasengrün, premium Gold-Akzente';
+
+  @override
+  String get localeSystem => 'Systemstandard';
+
+  @override
+  String get localeEnglish => 'English';
+
+  @override
+  String get localeTurkish => 'Türkçe';
+
+  @override
+  String get localeGerman => 'Deutsch';
+
+  @override
+  String get hintNationality => 'Werbung für Nationalitätshinweis ansehen';
+
+  @override
+  String get hintPosition => 'Werbung für Positionshinweis ansehen';
+
+  @override
+  String get hintFirstLetter => 'Werbung für Anfangsbuchstaben ansehen';
+
+  @override
+  String get practiceLimitReached =>
+      'Gratis-Übungslimit erreicht. Upgrade auf Premium für unbegrenzte Spiele.';
+
+  @override
+  String get premiumFeatureGrid => '4×4 Premium-Gitter';
+
+  @override
+  String get premiumFeaturePractice => 'Unbegrenztes Training';
+
+  @override
+  String get premiumFeatureStats => 'Erweiterte Statistiken';
+
+  @override
+  String get premiumFeatureThemes => 'Exklusive Themes';
+
+  @override
+  String get premiumFeatureNoAds => 'Keine Werbung';
+
+  @override
+  String get premiumActivated => 'Premium aktiviert!';
+
+  @override
+  String get premiumActive => 'Premium aktiv';
+
+  @override
+  String get restorePurchases => 'Käufe wiederherstellen';
+
+  @override
+  String get completeDailyFirst =>
+      'Schließe zuerst das heutige Tagesrätsel ab, um eine Herausforderung zu erstellen.';
+
+  @override
+  String get challengeYouWon => 'Du hast gewonnen!';
+
+  @override
+  String get challengeYouLost => 'Du hast diese Runde verloren.';
+
+  @override
+  String get challengeTie => 'Unentschieden!';
+
+  @override
+  String get challengeCreator => 'Ersteller';
+
+  @override
+  String get challengeYou => 'Du';
 }

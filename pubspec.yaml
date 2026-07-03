@@ -29,6 +29,8 @@ dependencies:
   path_provider: ^2.1.5
   http: ^1.4.0
   share_plus: ^11.0.0
+  in_app_purchase: ^3.2.3
+  app_links: ^6.4.0
 
 dev_dependencies:
   flutter_test:

@@ -12,8 +12,8 @@ class OfflineCache {
 
   final SharedPreferences? _prefsOverride;
 
-  static const _keyDailyPuzzle = 'cache_daily_puzzle';
-  static const _keyDailyPuzzleDate = 'cache_daily_puzzle_date';
+  static const _keyDailyPuzzle = 'cache_daily_puzzle_v3';
+  static const _keyDailyPuzzleDate = 'cache_daily_puzzle_date_v3';
   static const _keyStats = 'cache_user_stats';
   static const _keyRecentPicks = 'cache_recent_picks';
   static const _keyPendingAnswers = 'cache_pending_answers';

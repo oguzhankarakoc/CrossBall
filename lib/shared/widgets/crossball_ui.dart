@@ -12,6 +12,7 @@ class PitchBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.cb;
+    final isLight = Theme.of(context).brightness == Brightness.light;
 
     return Stack(
       fit: StackFit.expand,
@@ -21,24 +22,59 @@ class PitchBackground extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [
-                colors.background,
-                colors.surface,
-                colors.background,
-              ],
+              colors: isLight
+                  ? [
+                      colors.background,
+                      AppColors.lightPitchStripe.withValues(alpha: 0.55),
+                      colors.background,
+                    ]
+                  : [
+                      colors.background,
+                      colors.surface,
+                      colors.background,
+                    ],
             ),
           ),
         ),
+        if (isLight)
+          CustomPaint(
+            painter: _GrassStripePainter(
+              stripeColor: AppColors.lightPitchSecondary.withValues(alpha: 0.035),
+            ),
+          ),
         CustomPaint(
           painter: _PitchLinesPainter(
-            lineColor: colors.accent.withValues(alpha: 0.06),
-            centerColor: colors.secondaryAccent.withValues(alpha: 0.04),
+            lineColor: isLight
+                ? colors.primary.withValues(alpha: 0.07)
+                : colors.accent.withValues(alpha: 0.06),
+            centerColor: isLight
+                ? colors.secondaryAccent.withValues(alpha: 0.05)
+                : colors.secondaryAccent.withValues(alpha: 0.04),
           ),
         ),
         child,
       ],
     );
   }
+}
+
+class _GrassStripePainter extends CustomPainter {
+  _GrassStripePainter({required this.stripeColor});
+
+  final Color stripeColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = stripeColor;
+    const stripeHeight = 28.0;
+    for (var y = 0.0; y < size.height; y += stripeHeight * 2) {
+      canvas.drawRect(Rect.fromLTWH(0, y, size.width, stripeHeight), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _GrassStripePainter oldDelegate) =>
+      oldDelegate.stripeColor != stripeColor;
 }
 
 class _PitchLinesPainter extends CustomPainter {

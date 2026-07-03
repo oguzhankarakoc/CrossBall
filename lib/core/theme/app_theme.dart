@@ -4,9 +4,17 @@ import 'package:flutter/services.dart';
 import 'app_colors.dart';
 
 abstract final class AppTheme {
-  static ThemeData dark() => _build(CrossBallColors.dark, Brightness.dark);
+  /// Dark Stadium — premium night-match atmosphere.
+  static ThemeData darkStadium() => _build(CrossBallColors.darkStadium, Brightness.dark);
 
-  static ThemeData light() => _build(CrossBallColors.light, Brightness.light);
+  /// Light Pitch — soft football field palette.
+  static ThemeData lightPitch() => _build(CrossBallColors.lightPitch, Brightness.light);
+
+  /// @deprecated Use [darkStadium].
+  static ThemeData dark() => darkStadium();
+
+  /// @deprecated Use [lightPitch].
+  static ThemeData light() => lightPitch();
 
   static ThemeData _build(CrossBallColors colors, Brightness brightness) {
     final isDark = brightness == Brightness.dark;
@@ -16,7 +24,7 @@ abstract final class AppTheme {
       primary: colors.primary,
       onPrimary: colors.textPrimary,
       secondary: colors.accent,
-      onSecondary: isDark ? AppColors.pitchDeep : Colors.white,
+      onSecondary: isDark ? AppColors.pitchDeep : AppColors.lightPitchTextPrimary,
       surface: colors.surface,
       onSurface: colors.textPrimary,
       error: AppColors.error,
@@ -49,7 +57,7 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: colors.accent,
-          foregroundColor: isDark ? AppColors.pitchDeep : Colors.white,
+          foregroundColor: isDark ? AppColors.pitchDeep : AppColors.lightPitchTextPrimary,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),

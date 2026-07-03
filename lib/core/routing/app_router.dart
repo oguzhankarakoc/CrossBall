@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/puzzle/domain/puzzle.dart';
+import '../../features/puzzle/presentation/puzzle_providers.dart';
 import '../../features/puzzle/presentation/puzzle_screen.dart';
 import '../../features/challenge/presentation/challenge_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
@@ -36,7 +37,10 @@ GoRouter createAppRouter({required bool onboardingComplete}) {
             (m) => m.name == modeParam,
             orElse: () => PuzzleMode.daily,
           );
-          return PuzzleScreen(mode: mode);
+          final challengeId = state.uri.queryParameters['id'];
+          return PuzzleScreen(
+            params: PuzzleGameParams(mode: mode, challengeId: challengeId),
+          );
         },
       ),
       GoRoute(

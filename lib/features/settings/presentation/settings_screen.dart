@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/providers/locale_provider.dart';
 import '../../../shared/providers/theme_mode_provider.dart';
 import '../../../shared/widgets/crossball_ui.dart';
-
-enum AppLocale { system, en, tr, de }
-
-final localeProvider = StateProvider<AppLocale>((ref) => AppLocale.system);
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -23,7 +21,7 @@ class SettingsScreen extends ConsumerWidget {
       appBar: CrossBallAppBar(title: l10n.settings),
       body: PitchBackground(
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           children: [
             CrossBallCard(
               icon: Icons.brightness_6_outlined,
@@ -35,17 +33,17 @@ class SettingsScreen extends ConsumerWidget {
             CrossBallCard(
               icon: Icons.language,
               title: l10n.language,
-              subtitle: _localeLabel(currentLocale),
+              subtitle: _localeLabel(currentLocale, l10n),
               trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
-              onTap: () => _showLocalePicker(context, ref),
+              onTap: () => _showLocalePicker(context, ref, l10n),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               child: Row(
                 children: [
-                  CrossBallLogo(size: 48),
-                  const SizedBox(width: 16),
+                  const CrossBallLogo(size: 48),
+                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,11 +62,11 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  String _localeLabel(AppLocale locale) => switch (locale) {
-        AppLocale.system => 'System default',
-        AppLocale.en => 'English',
-        AppLocale.tr => 'Türkçe',
-        AppLocale.de => 'Deutsch',
+  String _localeLabel(AppLocale locale, AppLocalizations l10n) => switch (locale) {
+        AppLocale.system => l10n.localeSystem,
+        AppLocale.en => l10n.localeEnglish,
+        AppLocale.tr => l10n.localeTurkish,
+        AppLocale.de => l10n.localeGerman,
       };
 
   String _themeLabel(AppThemeMode mode, AppLocalizations l10n) => switch (mode) {
@@ -77,24 +75,30 @@ class SettingsScreen extends ConsumerWidget {
         AppThemeMode.light => l10n.themeLight,
       };
 
-  void _showLocalePicker(BuildContext context, WidgetRef ref) {
+  String _themeDescription(AppThemeMode mode, AppLocalizations l10n) => switch (mode) {
+        AppThemeMode.system => l10n.themeSystemDesc,
+        AppThemeMode.dark => l10n.themeDarkDesc,
+        AppThemeMode.light => l10n.themeLightDesc,
+      };
+
+  void _showLocalePicker(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: context.cb.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (context) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: AppLocale.values.map((locale) {
             return ListTile(
-              title: Text(_localeLabel(locale)),
+              title: Text(_localeLabel(locale, l10n)),
               trailing: ref.watch(localeProvider) == locale
                   ? Icon(Icons.check, color: context.cb.accent)
                   : null,
               onTap: () {
-                ref.read(localeProvider.notifier).state = locale;
+                ref.read(localeProvider.notifier).setLocale(locale);
                 Navigator.pop(context);
               },
             );
@@ -108,8 +112,8 @@ class SettingsScreen extends ConsumerWidget {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: context.cb.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -119,12 +123,16 @@ class SettingsScreen extends ConsumerWidget {
               leading: Icon(
                 switch (mode) {
                   AppThemeMode.system => Icons.brightness_auto,
-                  AppThemeMode.dark => Icons.dark_mode,
-                  AppThemeMode.light => Icons.light_mode,
+                  AppThemeMode.dark => Icons.stadium_outlined,
+                  AppThemeMode.light => Icons.grass_outlined,
                 },
                 color: context.cb.accent,
               ),
               title: Text(_themeLabel(mode, l10n)),
+              subtitle: Text(
+                _themeDescription(mode, l10n),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               trailing: ref.watch(themeModeProvider) == mode
                   ? Icon(Icons.check, color: context.cb.accent)
                   : null,

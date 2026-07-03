@@ -7,8 +7,17 @@ import 'core/routing/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'l10n/app_localizations.dart';
+import 'shared/providers/locale_provider.dart';
 import 'shared/providers/theme_mode_provider.dart';
 import 'shared/widgets/crossball_ui.dart';
+import 'core/routing/deep_link_listener.dart';
+
+const _localizationDelegates = [
+  AppLocalizations.delegate,
+  GlobalMaterialLocalizations.delegate,
+  GlobalWidgetsLocalizations.delegate,
+  GlobalCupertinoLocalizations.delegate,
+];
 
 class CrossBallApp extends ConsumerWidget {
   const CrossBallApp({super.key});
@@ -17,18 +26,38 @@ class CrossBallApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingAsync = ref.watch(onboardingCompleteProvider);
     final themeMode = ref.watch(themeModeProvider).flutterThemeMode;
+    final localePref = ref.watch(localeProvider);
+    final locale = resolveAppLocale(localePref);
+
+    Locale? localeListResolutionCallback(List<Locale>? locales, Iterable<Locale> supported) {
+      if (localePref != AppLocale.system) return locale;
+      for (final deviceLocale in locales ?? const <Locale>[]) {
+        if (deviceLocale.languageCode == 'tr') return const Locale('tr');
+        if (deviceLocale.languageCode == 'de') return const Locale('de');
+        if (deviceLocale.languageCode == 'en') return const Locale('en');
+      }
+      return const Locale('en');
+    }
 
     return onboardingAsync.when(
       loading: () => MaterialApp(
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
+        theme: AppTheme.lightPitch(),
+        darkTheme: AppTheme.darkStadium(),
         themeMode: themeMode,
+        locale: locale,
+        localizationsDelegates: _localizationDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeListResolutionCallback: localeListResolutionCallback,
         home: const _BootScreen(),
       ),
       error: (error, stackTrace) => MaterialApp(
-        theme: AppTheme.light(),
-        darkTheme: AppTheme.dark(),
+        theme: AppTheme.lightPitch(),
+        darkTheme: AppTheme.darkStadium(),
         themeMode: themeMode,
+        locale: locale,
+        localizationsDelegates: _localizationDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeListResolutionCallback: localeListResolutionCallback,
         home: Scaffold(
           body: PitchBackground(
             child: Center(
@@ -42,20 +71,20 @@ class CrossBallApp extends ConsumerWidget {
       ),
       data: (onboardingComplete) {
         final router = createAppRouter(onboardingComplete: onboardingComplete);
-        return MaterialApp.router(
-          title: 'CrossBall',
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.light(),
-          darkTheme: AppTheme.dark(),
-          themeMode: themeMode,
-          routerConfig: router,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: AppLocalizations.supportedLocales,
+        return DeepLinkListener(
+          router: router,
+          child: MaterialApp.router(
+            title: 'CrossBall',
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightPitch(),
+            darkTheme: AppTheme.darkStadium(),
+            themeMode: themeMode,
+            locale: locale,
+            localizationsDelegates: _localizationDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            localeListResolutionCallback: localeListResolutionCallback,
+            routerConfig: router,
+          ),
         );
       },
     );

@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/routing/app_routes.dart';
+import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/session_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../auth/presentation/auth_providers.dart';
 
@@ -25,22 +27,43 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.challengeId != null) {
+      _codeController.text = widget.challengeId!;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _joinChallenge());
+    }
+  }
+
+  @override
   void dispose() {
     _codeController.dispose();
     super.dispose();
   }
 
   Future<void> _createChallenge() async {
+    final lastSession = ref.read(lastCompletedSessionProvider);
+    if (lastSession == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.createChallengeDesc)),
+      );
+      context.push('${AppRoutes.puzzle}?mode=daily');
+      return;
+    }
+
     setState(() => _loading = true);
     try {
       final profile = await ref.read(userProfileProvider.future);
-      final puzzle = await ref.read(dailyPuzzleProvider.future);
       final challenge = await ref.read(challengeRepositoryProvider).createChallenge(
-            puzzleId: puzzle.id,
-            sessionId: 'demo-session',
-            creatorScore: 750,
+            puzzleId: lastSession.puzzleId,
+            sessionId: lastSession.sessionId,
+            creatorScore: lastSession.score,
             userUuid: profile.userUuid,
           );
+      ref.read(analyticsProvider).track('challenge_created', properties: {
+        'challenge_id': challenge.id,
+      });
       setState(() => _createdLink = challenge.shareUrl);
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -58,31 +81,36 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
+    final hasSession = ref.watch(lastCompletedSessionProvider) != null;
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.friendChallenge),
       body: PitchBackground(
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text(
-                  l10n.challengeDesc,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                const SizedBox(height: 32),
+                Text(l10n.challengeDesc, style: Theme.of(context).textTheme.bodyLarge),
+                const SizedBox(height: AppSpacing.xl),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(l10n.createChallenge, style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(l10n.createChallengeDesc, style: Theme.of(context).textTheme.bodySmall),
-                        const SizedBox(height: 16),
+                        if (!hasSession) ...[
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            l10n.completeDailyFirst,
+                            style: TextStyle(color: colors.accent, fontSize: 12),
+                          ),
+                        ],
+                        const SizedBox(height: AppSpacing.md),
                         FilledButton(
                           onPressed: _loading ? null : _createChallenge,
                           child: _loading
@@ -94,17 +122,17 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                               : Text(l10n.createChallenge),
                         ),
                         if (_createdLink != null) ...[
-                          const SizedBox(height: 16),
+                          const SizedBox(height: AppSpacing.md),
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            padding: const EdgeInsets.all(AppSpacing.md),
                             decoration: BoxDecoration(
                               color: colors.surfaceElevated,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: AppRadius.smBorder,
                               border: Border.all(color: colors.cardBorder),
                             ),
                             child: Text(_createdLink!, style: const TextStyle(fontFamily: 'monospace')),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: AppSpacing.sm),
                           Row(
                             children: [
                               Expanded(
@@ -118,7 +146,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                                   child: Text(l10n.copyLink),
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: AppSpacing.sm),
                               Expanded(
                                 child: FilledButton(
                                   onPressed: () => SharePlus.instance.share(
@@ -134,15 +162,15 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppSpacing.lg),
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(20),
+                    padding: const EdgeInsets.all(AppSpacing.lg),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         Text(l10n.joinChallenge, style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.md),
                         TextField(
                           controller: _codeController,
                           decoration: InputDecoration(
@@ -150,16 +178,13 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                             filled: true,
                             fillColor: colors.surfaceElevated,
                             border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: AppRadius.mdBorder,
                               borderSide: BorderSide.none,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        FilledButton(
-                          onPressed: _joinChallenge,
-                          child: Text(l10n.joinChallenge),
-                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        FilledButton(onPressed: _joinChallenge, child: Text(l10n.joinChallenge)),
                       ],
                     ),
                   ),

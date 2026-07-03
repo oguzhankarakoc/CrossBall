@@ -2,6 +2,7 @@ import '../../puzzle/domain/puzzle.dart';
 
 abstract interface class PuzzleRepository {
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false});
+  Future<Puzzle> getPuzzleById(String puzzleId);
   Future<Puzzle> getPracticePuzzle({required int gridSize});
   Future<Puzzle> getChallengePuzzle(String challengeId);
   Future<AnswerResult> validateAnswer({
@@ -11,6 +12,13 @@ abstract interface class PuzzleRepository {
     required String colClubId,
     required String playerId,
     required String sessionId,
+  });
+  Future<HintResult> requestHint({
+    required String puzzleCellId,
+    required String rowClubId,
+    required String colClubId,
+    required String sessionId,
+    required HintType hintType,
   });
   Future<String> createSession({
     required String puzzleId,

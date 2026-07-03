@@ -139,6 +139,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get popularPicks => 'Popüler seçimler';
 
   @override
+  String get suggestedForCell => 'Bu hücre için önerilen';
+
+  @override
   String get noPlayersFound => 'Oyuncu bulunamadı';
 
   @override
@@ -177,11 +180,89 @@ class AppLocalizationsTr extends AppLocalizations {
   String get appearance => 'Görünüm';
 
   @override
-  String get themeSystem => 'Sistem varsayılanı';
+  String get themeSystem => 'Sistem Varsayılanı';
 
   @override
-  String get themeDark => 'Koyu';
+  String get themeDark => 'Dark Stadium';
 
   @override
-  String get themeLight => 'Açık';
+  String get themeLight => 'Light Pitch';
+
+  @override
+  String get themeSystemDesc => 'Cihaz görünümünü takip et';
+
+  @override
+  String get themeDarkDesc =>
+      'Siyah saha, stadyum ışıkları, saha yeşili vurgular';
+
+  @override
+  String get themeLightDesc => 'Yumuşak saha yeşili, premium altın vurgular';
+
+  @override
+  String get localeSystem => 'Sistem varsayılanı';
+
+  @override
+  String get localeEnglish => 'English';
+
+  @override
+  String get localeTurkish => 'Türkçe';
+
+  @override
+  String get localeGerman => 'Deutsch';
+
+  @override
+  String get hintNationality => 'Milliyet ipucu için reklam izle';
+
+  @override
+  String get hintPosition => 'Pozisyon ipucu için reklam izle';
+
+  @override
+  String get hintFirstLetter => 'İlk harf ipucu için reklam izle';
+
+  @override
+  String get practiceLimitReached =>
+      'Ücretsiz antrenman limitine ulaştın. Sınırsız oyun için Premium\'a yükselt.';
+
+  @override
+  String get premiumFeatureGrid => '4×4 premium ızgaralar';
+
+  @override
+  String get premiumFeaturePractice => 'Sınırsız antrenman';
+
+  @override
+  String get premiumFeatureStats => 'Gelişmiş istatistikler';
+
+  @override
+  String get premiumFeatureThemes => 'Özel temalar';
+
+  @override
+  String get premiumFeatureNoAds => 'Reklamsız';
+
+  @override
+  String get premiumActivated => 'Premium aktif!';
+
+  @override
+  String get premiumActive => 'Premium aktif';
+
+  @override
+  String get restorePurchases => 'Satın alımları geri yükle';
+
+  @override
+  String get completeDailyFirst =>
+      'Mücadele oluşturmak için önce bugünün günlük bulmacasını tamamla.';
+
+  @override
+  String get challengeYouWon => 'Mücadeleyi kazandın!';
+
+  @override
+  String get challengeYouLost => 'Bu turu kaybettin.';
+
+  @override
+  String get challengeTie => 'Berabere!';
+
+  @override
+  String get challengeCreator => 'Oluşturan';
+
+  @override
+  String get challengeYou => 'Sen';
 }

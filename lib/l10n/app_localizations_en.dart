@@ -138,6 +138,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get popularPicks => 'Popular picks';
 
   @override
+  String get suggestedForCell => 'Suggested for this cell';
+
+  @override
   String get noPlayersFound => 'No players found';
 
   @override
@@ -176,11 +179,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearance => 'Appearance';
 
   @override
-  String get themeSystem => 'System default';
+  String get themeSystem => 'System Default';
 
   @override
-  String get themeDark => 'Dark';
+  String get themeDark => 'Dark Stadium';
 
   @override
-  String get themeLight => 'Light';
+  String get themeLight => 'Light Pitch';
+
+  @override
+  String get themeSystemDesc => 'Follow your device appearance';
+
+  @override
+  String get themeDarkDesc =>
+      'Black pitch, stadium lights, pitch green accents';
+
+  @override
+  String get themeLightDesc => 'Soft field green, premium gold accents';
+
+  @override
+  String get localeSystem => 'System default';
+
+  @override
+  String get localeEnglish => 'English';
+
+  @override
+  String get localeTurkish => 'Türkçe';
+
+  @override
+  String get localeGerman => 'Deutsch';
+
+  @override
+  String get hintNationality => 'Watch ad for nationality hint';
+
+  @override
+  String get hintPosition => 'Watch ad for position hint';
+
+  @override
+  String get hintFirstLetter => 'Watch ad for first letter hint';
+
+  @override
+  String get practiceLimitReached =>
+      'Free practice limit reached. Upgrade to Premium for unlimited games.';
+
+  @override
+  String get premiumFeatureGrid => '4×4 premium grids';
+
+  @override
+  String get premiumFeaturePractice => 'Unlimited practice';
+
+  @override
+  String get premiumFeatureStats => 'Advanced stats';
+
+  @override
+  String get premiumFeatureThemes => 'Exclusive themes';
+
+  @override
+  String get premiumFeatureNoAds => 'No ads';
+
+  @override
+  String get premiumActivated => 'Premium activated!';
+
+  @override
+  String get premiumActive => 'Premium active';
+
+  @override
+  String get restorePurchases => 'Restore purchases';
+
+  @override
+  String get completeDailyFirst =>
+      'Complete today\'s daily puzzle first to create a challenge.';
+
+  @override
+  String get challengeYouWon => 'You won the challenge!';
+
+  @override
+  String get challengeYouLost => 'You lost this round.';
+
+  @override
+  String get challengeTie => 'It\'s a tie!';
+
+  @override
+  String get challengeCreator => 'Creator';
+
+  @override
+  String get challengeYou => 'You';
 }

@@ -11,30 +11,85 @@ load_dotenv()
 
 
 def get_connection():
-    return psycopg2.connect(os.environ['DATABASE_URL'])
+    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+    with conn.cursor() as cur:
+        cur.execute("SET statement_timeout = '0'")
+    conn.commit()
+    return conn
 
 
-def upsert_clubs(conn, clubs: list[dict]) -> int:
+def upsert_clubs(conn, clubs: list[dict]) -> dict[str, str]:
+    """Upsert clubs and return slug → database id (handles ON CONFLICT id reuse)."""
+    slug_to_id: dict[str, str] = {}
     with conn.cursor() as cur:
         for club in clubs:
             cur.execute(
                 """
-                INSERT INTO clubs (id, name, slug, country_code, is_top_club)
-                VALUES (%(id)s, %(name)s, %(slug)s, %(country_code)s, %(is_top_club)s)
+                INSERT INTO clubs (
+                  id, name, slug, country_code, is_top_club,
+                  badge_primary_color, badge_secondary_color, badge_initials,
+                  badge_gradient_style, short_name, display_name, short_code, league_name
+                )
+                VALUES (
+                  %(id)s, %(name)s, %(slug)s, %(country_code)s, %(is_top_club)s,
+                  %(badge_primary_color)s, %(badge_secondary_color)s, %(badge_initials)s,
+                  %(badge_gradient_style)s, %(short_name)s, %(display_name)s, %(short_code)s,
+                  %(league_name)s
+                )
                 ON CONFLICT (slug) DO UPDATE SET
                   name = EXCLUDED.name,
                   country_code = EXCLUDED.country_code,
-                  is_top_club = EXCLUDED.is_top_club
+                  is_top_club = EXCLUDED.is_top_club,
+                  badge_primary_color = EXCLUDED.badge_primary_color,
+                  badge_secondary_color = EXCLUDED.badge_secondary_color,
+                  badge_initials = EXCLUDED.badge_initials,
+                  badge_gradient_style = EXCLUDED.badge_gradient_style,
+                  short_name = EXCLUDED.short_name,
+                  display_name = COALESCE(EXCLUDED.display_name, clubs.display_name),
+                  short_code = COALESCE(EXCLUDED.short_code, clubs.short_code),
+                  league_name = COALESCE(EXCLUDED.league_name, clubs.league_name)
+                RETURNING id, slug
                 """,
-                club,
+                {
+                    'id': club['id'],
+                    'name': club['name'],
+                    'slug': club['slug'],
+                    'country_code': club.get('country_code'),
+                    'is_top_club': club.get('is_top_club', True),
+                    'badge_primary_color': club.get('badge_primary_color'),
+                    'badge_secondary_color': club.get('badge_secondary_color'),
+                    'badge_initials': club.get('badge_initials'),
+                    'badge_gradient_style': club.get('badge_gradient_style', 'vertical'),
+                    'short_name': club.get('short_name'),
+                    'display_name': club.get('display_name') or club['name'],
+                    'short_code': club.get('short_code') or club.get('badge_initials'),
+                    'league_name': club.get('league_name'),
+                },
             )
+            row = cur.fetchone()
+            slug_to_id[row[1]] = str(row[0])
     conn.commit()
-    return len(clubs)
+    return slug_to_id
 
 
-def upsert_players(conn, players: list[dict]) -> int:
+def remap_career_club_ids(
+    players: list[dict],
+    clubs: list[dict],
+    slug_to_id: dict[str, str],
+) -> None:
+    """Replace in-memory club UUIDs with ids returned from the database."""
+    temp_id_to_slug = {club['id']: club['slug'] for club in clubs}
+    for player in players:
+        for career in player.get('careers', []):
+            slug = temp_id_to_slug.get(career['club_id'])
+            if slug and slug in slug_to_id:
+                career['club_id'] = slug_to_id[slug]
+
+
+def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
+    total = 0
     with conn.cursor() as cur:
-        for player in players:
+        for index, player in enumerate(players, start=1):
             cur.execute(
                 """
                 INSERT INTO players (id, external_id, name, normalized_name,
@@ -46,9 +101,11 @@ def upsert_players(conn, players: list[dict]) -> int:
                   normalized_name = EXCLUDED.normalized_name,
                   nationality_code = EXCLUDED.nationality_code,
                   primary_position = EXCLUDED.primary_position
+                RETURNING id
                 """,
                 player,
             )
+            player_id = str(cur.fetchone()[0])
 
             for career in player.get('careers', []):
                 if career.get('is_youth') or career.get('is_reserve'):
@@ -62,10 +119,39 @@ def upsert_players(conn, players: list[dict]) -> int:
                             %(is_loan)s, %(is_senior)s, false, false, %(appearances)s)
                     ON CONFLICT (player_id, club_id, start_date, is_loan) DO NOTHING
                     """,
-                    {**career, 'player_id': player['id']},
+                    {**career, 'player_id': player_id},
                 )
+
+            total += 1
+            if index % batch_size == 0:
+                conn.commit()
+                print(f'  Loaded {index}/{len(players)} players...')
+
     conn.commit()
-    return len(players)
+    return total
+
+
+def refresh_intersections(conn) -> None:
+    """Refresh materialized view if present (optional post-load step)."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT EXISTS (
+              SELECT 1 FROM pg_matviews WHERE matviewname = 'player_club_intersections'
+            )
+            """
+        )
+        exists = cur.fetchone()[0]
+        if not exists:
+            return
+
+        try:
+            cur.execute('SELECT public.refresh_player_club_intersections()')
+        except psycopg2.Error:
+            conn.rollback()
+            cur.execute('REFRESH MATERIALIZED VIEW player_club_intersections')
+        conn.commit()
+        print('  Refreshed player_club_intersections materialized view.')
 
 
 def compute_content_hash(data: dict) -> str:

@@ -8,6 +8,7 @@ import '../domain/user_profile.dart';
 
 const _keyUserUuid = 'crossball_user_uuid';
 const _keyOnboardingComplete = 'crossball_onboarding_complete';
+const _keyIsPremium = 'crossball_is_premium';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -27,6 +28,9 @@ class AuthRepositoryImpl implements AuthRepository {
       _prefsOverride ?? SharedPreferences.getInstance();
 
   @override
+  Future<String?> getUserUuid() => _secureStorage.read(key: _keyUserUuid);
+
+  @override
   Future<UserProfile> getOrCreateAnonymousUser() async {
     var id = await _secureStorage.read(key: _keyUserUuid);
     if (id == null || id.isEmpty) {
@@ -34,8 +38,33 @@ class AuthRepositoryImpl implements AuthRepository {
       await _secureStorage.write(key: _keyUserUuid, value: id);
     }
     final onboarding = await isOnboardingComplete();
-    await _remote.syncUser(userUuid: id, onboardingComplete: onboarding);
-    return UserProfile(userUuid: id, onboardingComplete: onboarding);
+    final prefs = await _prefs;
+    final localPremium = prefs.getBool(_keyIsPremium) ?? false;
+
+    final remote = await _remote.syncUser(
+      userUuid: id,
+      onboardingComplete: onboarding,
+      isPremium: localPremium,
+    );
+
+    final isPremium = remote?['is_premium'] as bool? ?? localPremium;
+    await prefs.setBool(_keyIsPremium, isPremium);
+
+    return UserProfile(
+      userUuid: id,
+      onboardingComplete: onboarding,
+      isPremium: isPremium,
+    );
+  }
+
+  @override
+  Future<void> setPremium(bool value) async {
+    final prefs = await _prefs;
+    await prefs.setBool(_keyIsPremium, value);
+    final id = await _secureStorage.read(key: _keyUserUuid);
+    if (id != null) {
+      await _remote.syncUser(userUuid: id, isPremium: value);
+    }
   }
 
   @override

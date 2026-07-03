@@ -53,6 +53,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         challenge_id: challenge.challenge_code,
+        puzzle_id,
+        creator_score,
         share_url: `crossball://challenge/${challenge.challenge_code}`,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },

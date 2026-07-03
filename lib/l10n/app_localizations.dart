@@ -352,6 +352,12 @@ abstract class AppLocalizations {
   /// **'Popular picks'**
   String get popularPicks;
 
+  /// No description provided for @suggestedForCell.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested for this cell'**
+  String get suggestedForCell;
+
   /// No description provided for @noPlayersFound.
   ///
   /// In en, this message translates to:
@@ -427,20 +433,170 @@ abstract class AppLocalizations {
   /// No description provided for @themeSystem.
   ///
   /// In en, this message translates to:
-  /// **'System default'**
+  /// **'System Default'**
   String get themeSystem;
 
   /// No description provided for @themeDark.
   ///
   /// In en, this message translates to:
-  /// **'Dark'**
+  /// **'Dark Stadium'**
   String get themeDark;
 
   /// No description provided for @themeLight.
   ///
   /// In en, this message translates to:
-  /// **'Light'**
+  /// **'Light Pitch'**
   String get themeLight;
+
+  /// No description provided for @themeSystemDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow your device appearance'**
+  String get themeSystemDesc;
+
+  /// No description provided for @themeDarkDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Black pitch, stadium lights, pitch green accents'**
+  String get themeDarkDesc;
+
+  /// No description provided for @themeLightDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft field green, premium gold accents'**
+  String get themeLightDesc;
+
+  /// No description provided for @localeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get localeSystem;
+
+  /// No description provided for @localeEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get localeEnglish;
+
+  /// No description provided for @localeTurkish.
+  ///
+  /// In en, this message translates to:
+  /// **'Türkçe'**
+  String get localeTurkish;
+
+  /// No description provided for @localeGerman.
+  ///
+  /// In en, this message translates to:
+  /// **'Deutsch'**
+  String get localeGerman;
+
+  /// No description provided for @hintNationality.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for nationality hint'**
+  String get hintNationality;
+
+  /// No description provided for @hintPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for position hint'**
+  String get hintPosition;
+
+  /// No description provided for @hintFirstLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for first letter hint'**
+  String get hintFirstLetter;
+
+  /// No description provided for @practiceLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Free practice limit reached. Upgrade to Premium for unlimited games.'**
+  String get practiceLimitReached;
+
+  /// No description provided for @premiumFeatureGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'4×4 premium grids'**
+  String get premiumFeatureGrid;
+
+  /// No description provided for @premiumFeaturePractice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited practice'**
+  String get premiumFeaturePractice;
+
+  /// No description provided for @premiumFeatureStats.
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced stats'**
+  String get premiumFeatureStats;
+
+  /// No description provided for @premiumFeatureThemes.
+  ///
+  /// In en, this message translates to:
+  /// **'Exclusive themes'**
+  String get premiumFeatureThemes;
+
+  /// No description provided for @premiumFeatureNoAds.
+  ///
+  /// In en, this message translates to:
+  /// **'No ads'**
+  String get premiumFeatureNoAds;
+
+  /// No description provided for @premiumActivated.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium activated!'**
+  String get premiumActivated;
+
+  /// No description provided for @premiumActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium active'**
+  String get premiumActive;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get restorePurchases;
+
+  /// No description provided for @completeDailyFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete today\'s daily puzzle first to create a challenge.'**
+  String get completeDailyFirst;
+
+  /// No description provided for @challengeYouWon.
+  ///
+  /// In en, this message translates to:
+  /// **'You won the challenge!'**
+  String get challengeYouWon;
+
+  /// No description provided for @challengeYouLost.
+  ///
+  /// In en, this message translates to:
+  /// **'You lost this round.'**
+  String get challengeYouLost;
+
+  /// No description provided for @challengeTie.
+  ///
+  /// In en, this message translates to:
+  /// **'It\'s a tie!'**
+  String get challengeTie;
+
+  /// No description provided for @challengeCreator.
+  ///
+  /// In en, this message translates to:
+  /// **'Creator'**
+  String get challengeCreator;
+
+  /// No description provided for @challengeYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get challengeYou;
 }
 
 class _AppLocalizationsDelegate
