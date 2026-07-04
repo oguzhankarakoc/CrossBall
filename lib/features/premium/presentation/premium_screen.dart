@@ -29,9 +29,9 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   Future<void> _purchase() async {
     setState(() => _loading = true);
     try {
-      final success = await ref.read(premiumServiceProvider).purchasePremium();
+      final profile = await ref.read(userProfileProvider.future);
+      final success = await ref.read(premiumServiceProvider).purchasePremium(profile.userUuid);
       if (success) {
-        await ref.read(authRepositoryProvider).setPremium(true);
         ref.invalidate(userProfileProvider);
         ref.read(analyticsProvider).track('premium_conversion');
         if (mounted) {
@@ -56,7 +56,7 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
       appBar: CrossBallAppBar(title: l10n.premium),
       body: PitchBackground(
         child: SafeArea(
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             child: Column(
               children: [
@@ -74,12 +74,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                _PremiumFeature(icon: Icons.grid_4x4, text: l10n.premiumFeatureGrid),
                 _PremiumFeature(icon: Icons.all_inclusive, text: l10n.premiumFeaturePractice),
                 _PremiumFeature(icon: Icons.analytics_outlined, text: l10n.premiumFeatureStats),
                 _PremiumFeature(icon: Icons.palette_outlined, text: l10n.premiumFeatureThemes),
                 _PremiumFeature(icon: Icons.block, text: l10n.premiumFeatureNoAds),
-                const Spacer(),
+                const SizedBox(height: AppSpacing.xxl),
                 if (isPremium)
                   Text(l10n.premiumActive, style: TextStyle(color: colors.accent))
                 else ...[
@@ -97,7 +96,11 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () => ref.read(premiumServiceProvider).restorePurchases(),
+                    onPressed: () async {
+                      final profile = await ref.read(userProfileProvider.future);
+                      await ref.read(premiumServiceProvider).restorePurchases(profile.userUuid);
+                      ref.invalidate(userProfileProvider);
+                    },
                     child: Text(l10n.restorePurchases),
                   ),
                 ],

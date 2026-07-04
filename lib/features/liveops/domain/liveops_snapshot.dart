@@ -11,11 +11,10 @@ abstract final class LiveOpsDefaults {
     'experimental_puzzle_generator': false,
     'special_events': true,
     'premium_features': true,
-    'tournament_mode': false,
-    'leaderboards': true,
-    'achievements': true,
-    'statistics': true,
-    'ai_features': false,
+    'tournament_mode': true,
+    'friend_activity_feed': true,
+    'timeline_mode': true,
+    'ai_features': true,
   };
 
   static bool isFeatureEnabled(String slug) =>

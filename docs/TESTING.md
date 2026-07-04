@@ -14,7 +14,7 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
         └─────────────┘
 ```
 
-**Current status:** 32+ Flutter tests + 7 pipeline pytest tests, all passing in CI.
+**Current status:** 56+ Flutter tests + pipeline pytest tests, all passing in CI.
 
 ## Coverage targets
 
@@ -50,7 +50,14 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
 
 - Barcelona → abstract stripes
 - Chelsea → abstract lion
+- Liverpool → abstract wings
 - Unknown club deterministic fallback
+- All 105 DB seed slugs have curated symbol (not generic shield)
+
+### Theme contrast (`test/core/app_theme_test.dart`)
+
+- Dark mode `headlineSmall` uses light text
+- Light mode `headlineSmall` uses dark text
 
 ### Club display (`test/core/club_display_test.dart`)
 

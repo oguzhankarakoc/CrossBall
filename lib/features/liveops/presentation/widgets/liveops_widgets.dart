@@ -17,9 +17,9 @@ class LiveOpsAnnouncementBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.cb;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: CrossBallGlassPanel(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,16 +72,23 @@ class LiveOpsEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.cb;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: ListTile(
-        leading: Icon(Icons.local_fire_department, color: colors.accent),
-        title: Text(event.title),
-        subtitle: Text(event.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-        trailing: event.ctaLabel != null
-            ? Text(event.ctaLabel!, style: TextStyle(color: colors.primary))
-            : null,
-        onTap: onTap,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: CrossBallGlassPanel(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.sm,
+        ),
+        child: ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.local_fire_department, color: colors.accent),
+          title: Text(event.title),
+          subtitle: Text(event.description, maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: event.ctaLabel != null
+              ? Text(event.ctaLabel!, style: TextStyle(color: colors.primary))
+              : null,
+          onTap: onTap,
+        ),
       ),
     );
   }
@@ -97,9 +104,9 @@ class LiveOpsCommunityGoalBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: Padding(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: CrossBallGlassPanel(
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

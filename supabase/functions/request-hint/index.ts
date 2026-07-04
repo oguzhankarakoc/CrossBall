@@ -43,12 +43,86 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { row_club_id, col_club_id, puzzle_cell_id, session_id, hint_type } = await req.json()
+    const body = await req.json()
+    const { row_club_id, col_club_id, puzzle_cell_id, session_id, hint_type } = body
+    const userUuid = req.headers.get('x-user-uuid') ?? body.user_uuid ?? ''
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
+
+    if (session_id) {
+      const { error: sessionError } = await supabase.rpc('assert_active_session', {
+        p_session_id: session_id,
+        p_user_uuid: userUuid || null,
+      })
+      if (sessionError) {
+        const msg = sessionError.message ?? String(sessionError)
+        return new Response(JSON.stringify({ error: msg }), {
+          status: msg.includes('forbidden') ? 403 : 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    const type = (hint_type as HintType) ?? 'nationality'
+    const adToken = body.ad_token ? String(body.ad_token) : ''
+    const skipAdVerify = Deno.env.get('HINT_SKIP_AD') === 'true'
+
+    if (type === 'career_club') {
+      if (!userUuid) {
+        return new Response(JSON.stringify({ error: 'premium_required' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      const { data: isPremium } = await supabase.rpc('user_is_premium', {
+        p_user_uuid: userUuid,
+      })
+      if (!isPremium) {
+        const { data: available } = await supabase.rpc('career_hint_taste_available', {
+          p_user_uuid: userUuid,
+        })
+        if (available !== true) {
+          return new Response(JSON.stringify({ error: 'premium_required' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const { data: consumed } = await supabase.rpc('consume_career_hint_taste', {
+          p_user_uuid: userUuid,
+        })
+        if (consumed !== true) {
+          return new Response(JSON.stringify({ error: 'hint_taste_used' }), {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
+    } else if (!skipAdVerify) {
+      const { data: isPremium } = userUuid
+        ? await supabase.rpc('user_is_premium', { p_user_uuid: userUuid })
+        : { data: false }
+      if (!isPremium) {
+        if (!adToken || !/^[0-9a-f-]{36}$/i.test(adToken)) {
+          return new Response(JSON.stringify({ error: 'ad_token_required' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        const { data: consumed, error: consumeError } = await supabase.rpc(
+          'consume_hint_ad_token',
+          { p_token: adToken, p_user_uuid: userUuid || 'anonymous' },
+        )
+        if (consumeError || consumed !== true) {
+          return new Response(JSON.stringify({ error: 'invalid_ad_token' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
+    }
 
     const { data: validPlayers, error: validError } = await supabase.rpc(
       'get_intersection_players',
@@ -68,7 +142,6 @@ Deno.serve(async (req) => {
 
     const seed = `${session_id ?? ''}:${puzzle_cell_id ?? ''}`
     const sample = players[stableIndex(seed, players.length)]
-    const type = (hint_type as HintType) ?? 'nationality'
 
     const rowIds = await resolveClubIds(supabase, String(row_club_id))
     const colIds = await resolveClubIds(supabase, String(col_club_id))

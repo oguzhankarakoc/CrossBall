@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/cache/offline_cache.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/debug/practice_debug_log.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
@@ -41,11 +42,12 @@ class PuzzleApiService {
         'apikey': AppConfig.supabaseAnonKey,
       };
 
-  Future<Map<String, dynamic>> fetchDailyPuzzle() async {
+  Future<Map<String, dynamic>> fetchDailyPuzzle({String? userUuid}) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
+        final query = userUuid != null ? '?user_uuid=$userUuid' : '';
         final response = await _http.get(
-          Uri.parse('$_baseUrl/functions/v1/daily-puzzle'),
+          Uri.parse('$_baseUrl/functions/v1/daily-puzzle$query'),
           headers: _headers,
         );
         if (response.statusCode == 200) {
@@ -101,18 +103,24 @@ class PuzzleApiService {
     required String playerId,
     required String puzzleCellId,
     required String sessionId,
+    required String userUuid,
+    int? responseTimeMs,
   }) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
         final response = await _http.post(
           Uri.parse('$_baseUrl/functions/v1/validate-answer'),
-          headers: _headers,
+          headers: {
+            ..._headers,
+            'x-user-uuid': userUuid,
+          },
           body: jsonEncode({
             'row_club_id': rowClubId,
             'col_club_id': colClubId,
             'player_id': playerId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
+            if (responseTimeMs != null) 'response_time_ms': responseTimeMs,
           }),
         );
         if (response.statusCode == 200) {
@@ -123,6 +131,38 @@ class PuzzleApiService {
       } catch (_) {}
     }
     return _demoValidate(playerId, rowClubId, colClubId);
+  }
+
+  Future<String> startSession({
+    required String userUuid,
+    required String puzzleId,
+    required String mode,
+    required int gridSize,
+  }) async {
+    final response = await _http.post(
+      Uri.parse('$_baseUrl/functions/v1/start-session'),
+      headers: {
+        ..._headers,
+        'x-user-uuid': userUuid,
+      },
+      body: jsonEncode({
+        'user_uuid': userUuid,
+        'puzzle_id': puzzleId,
+        'mode': mode,
+        'grid_size': gridSize,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      final sessionId = data['session_id'] as String?;
+      if (sessionId != null && sessionId.isNotEmpty) return sessionId;
+    }
+
+    throw PuzzleFetchException(
+      'Failed to start session (${response.statusCode})',
+      statusCode: response.statusCode,
+    );
   }
 
   Map<String, dynamic> _clubBadge(
@@ -160,31 +200,90 @@ class PuzzleApiService {
   Future<Map<String, dynamic>> fetchPracticePuzzle({
     required int gridSize,
     required String userUuid,
+    String? excludePuzzleId,
   }) async {
+    practiceDebug('fetchPracticePuzzle start', {
+      'gridSize': gridSize,
+      'userUuid': userUuid,
+      'excludePuzzleId': excludePuzzleId,
+      'supabaseConfigured': AppConfig.isSupabaseConfigured,
+      'hasClient': _client != null,
+    });
+
     if (_client != null && AppConfig.isSupabaseConfigured) {
+      final stopwatch = Stopwatch()..start();
       try {
-        final response = await _http.get(
-          Uri.parse(
-            '$_baseUrl/functions/v1/practice-puzzle?grid_size=$gridSize&user_uuid=$userUuid',
-          ),
-          headers: {
-            ..._headers,
-            'x-user-uuid': userUuid,
-          },
+        final excludeQuery = excludePuzzleId != null && excludePuzzleId.isNotEmpty
+            ? '&exclude_puzzle_id=$excludePuzzleId'
+            : '';
+        final uri = Uri.parse(
+          '$_baseUrl/functions/v1/practice-puzzle?grid_size=$gridSize&user_uuid=$userUuid$excludeQuery',
         );
+        practiceDebug('HTTP GET', uri.toString());
+
+        final response = await _http
+            .get(
+              uri,
+              headers: {
+                ..._headers,
+                'x-user-uuid': userUuid,
+              },
+            )
+            .timeout(
+              const Duration(seconds: 60),
+              onTimeout: () {
+                throw PuzzleFetchException(
+                  'Practice puzzle request timed out after 60s',
+                );
+              },
+            );
+        stopwatch.stop();
+        practiceDebug('HTTP response', {
+          'status': response.statusCode,
+          'elapsedMs': stopwatch.elapsedMilliseconds,
+          'bodyPreview': response.body.length > 400
+              ? '${response.body.substring(0, 400)}…'
+              : response.body,
+        });
+
         if (response.statusCode == 200) {
-          return jsonDecode(response.body) as Map<String, dynamic>;
+          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          practiceDebug('fetchPracticePuzzle OK', {
+            'puzzle_id': decoded['puzzle_id'] ?? decoded['id'],
+            'row_clubs': (decoded['row_clubs'] as List?)?.length,
+            'col_clubs': (decoded['col_clubs'] as List?)?.length,
+          });
+          return decoded;
         }
+        String detail = '';
+        try {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          detail = body['error']?.toString() ?? '';
+        } catch (parseErr) {
+          practiceDebug('error body parse failed', parseErr);
+        }
+        practiceDebug('HTTP non-200', {'detail': detail, 'status': response.statusCode});
         throw PuzzleFetchException(
-          'Practice puzzle unavailable (${response.statusCode})',
+          detail.isNotEmpty
+              ? 'Practice puzzle unavailable: $detail'
+              : 'Practice puzzle unavailable (${response.statusCode})',
           statusCode: response.statusCode,
         );
-      } on PuzzleFetchException {
+      } on PuzzleFetchException catch (e, st) {
+        practiceDebugError('PuzzleFetchException', e, st);
         rethrow;
-      } catch (_) {
-        throw const PuzzleFetchException('Practice puzzle network error');
+      } catch (e, st) {
+        stopwatch.stop();
+        practiceDebugError(
+          'network/parse error after ${stopwatch.elapsedMilliseconds}ms',
+          e,
+          st,
+        );
+        throw PuzzleFetchException('Practice puzzle network error: $e');
       }
     }
+
+    practiceDebug('using demo puzzle (Supabase not configured or no client)');
     return _demoPuzzle();
   }
 
@@ -277,18 +376,26 @@ class PuzzleApiService {
     required String puzzleCellId,
     required String sessionId,
     required HintType hintType,
+    String? userUuid,
+    String? adToken,
   }) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
+        final headers = {
+          ..._headers,
+          if (userUuid != null) 'x-user-uuid': userUuid,
+        };
         final response = await _http.post(
           Uri.parse('$_baseUrl/functions/v1/request-hint'),
-          headers: _headers,
+          headers: headers,
           body: jsonEncode({
             'row_club_id': rowClubId,
             'col_club_id': colClubId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
             'hint_type': _hintTypeToApi(hintType),
+            if (adToken != null) 'ad_token': adToken,
+            if (userUuid != null) 'user_uuid': userUuid,
           }),
         );
         if (response.statusCode == 200) {
@@ -299,6 +406,34 @@ class PuzzleApiService {
       } catch (_) {}
     }
     return _demoHint(hintType);
+  }
+
+  Future<bool> grantHintAdToken({
+    required String userUuid,
+    required String adToken,
+    required String sessionId,
+  }) async {
+    if (_client == null || !AppConfig.isSupabaseConfigured) return false;
+
+    try {
+      final response = await _http.post(
+        Uri.parse('$_baseUrl/functions/v1/grant-hint-ad'),
+        headers: {
+          ..._headers,
+          'x-user-uuid': userUuid,
+        },
+        body: jsonEncode({
+          'ad_token': adToken,
+          'user_uuid': userUuid,
+          'session_id': sessionId,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body) as Map<String, dynamic>;
+        return json['ok'] == true;
+      }
+    } catch (_) {}
+    return false;
   }
 
   String _hintTypeToApi(HintType hintType) => switch (hintType) {
@@ -332,7 +467,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   final _uuid = const Uuid();
 
   @override
-  Future<Puzzle> getDailyPuzzle({bool forceRefresh = false}) async {
+  Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid}) async {
     final today = DateTime.now().toIso8601String().split('T').first;
 
     if (!forceRefresh) {
@@ -346,7 +481,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     }
 
     try {
-      final raw = await _api.fetchDailyPuzzle();
+      final raw = await _api.fetchDailyPuzzle(userUuid: userUuid);
       if (!_isValidLivePuzzleCache(raw) && AppConfig.isSupabaseConfigured) {
         throw const PuzzleFetchException('Invalid daily puzzle payload');
       }
@@ -375,8 +510,23 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   Future<Puzzle> getPracticePuzzle({
     required int gridSize,
     required String userUuid,
+    String? excludePuzzleId,
   }) async {
-    final raw = await _api.fetchPracticePuzzle(gridSize: gridSize, userUuid: userUuid);
+    final raw = await _api.fetchPracticePuzzle(
+      gridSize: gridSize,
+      userUuid: userUuid,
+      excludePuzzleId: excludePuzzleId,
+    );
+    try {
+      return _practiceFromRaw(raw);
+    } catch (e, st) {
+      practiceDebugError('Puzzle.fromJson failed for practice payload', e, st);
+      practiceDebug('raw keys', raw.keys.toList());
+      rethrow;
+    }
+  }
+
+  Puzzle _practiceFromRaw(Map<String, dynamic> raw) {
     final puzzle = Puzzle.fromJson(raw);
     return Puzzle(
       id: puzzle.id,
@@ -387,6 +537,8 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       cells: puzzle.cells,
       mode: PuzzleMode.practice,
       difficulty: puzzle.difficulty,
+      difficultyTier: puzzle.difficultyTier,
+      qualityScore: puzzle.qualityScore,
     );
   }
 
@@ -407,6 +559,8 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required String colClubId,
     required String playerId,
     required String sessionId,
+    required String userUuid,
+    int? responseTimeMs,
   }) =>
       _api.validateAnswer(
         rowClubId: rowClubId,
@@ -414,6 +568,8 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         playerId: playerId,
         puzzleCellId: puzzleCellId,
         sessionId: sessionId,
+        userUuid: userUuid,
+        responseTimeMs: responseTimeMs,
       );
 
   @override
@@ -423,6 +579,8 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required String colClubId,
     required String sessionId,
     required HintType hintType,
+    String? userUuid,
+    String? adToken,
   }) =>
       _api.requestHint(
         rowClubId: rowClubId,
@@ -430,6 +588,20 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         puzzleCellId: puzzleCellId,
         sessionId: sessionId,
         hintType: hintType,
+        userUuid: userUuid,
+        adToken: adToken,
+      );
+
+  @override
+  Future<bool> grantHintAdToken({
+    required String userUuid,
+    required String adToken,
+    required String sessionId,
+  }) =>
+      _api.grantHintAdToken(
+        userUuid: userUuid,
+        adToken: adToken,
+        sessionId: sessionId,
       );
 
   @override
@@ -437,8 +609,18 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required String puzzleId,
     required PuzzleMode mode,
     required int gridSize,
-  }) async =>
-      _uuid.v4();
+    String? userUuid,
+  }) async {
+    if (AppConfig.isSupabaseConfigured && userUuid != null) {
+      return _api.startSession(
+        userUuid: userUuid,
+        puzzleId: puzzleId,
+        mode: mode.name,
+        gridSize: gridSize,
+      );
+    }
+    return _uuid.v4();
+  }
 
   @override
   Future<void> completeSession({

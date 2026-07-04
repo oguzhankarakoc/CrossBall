@@ -1,0 +1,16 @@
+{
+  "club_id": "manchester-city",
+  "display_name": "Manchester City",
+  "short_name": "Man City",
+  "short_code": "MCI",
+  "country": "GB",
+  "league": "Premier League",
+  "primary_color": "#6CABDD",
+  "secondary_color": "#FFFFFF",
+  "accent_color": "#1C2C5B",
+  "symbol_type": "abstract_compass",
+  "badge_style": "radial",
+  "shape_type": "rounded_shield",
+  "theme_variant": "industrial",
+  "heritage_note": "Compass and industrial geometry"
+}

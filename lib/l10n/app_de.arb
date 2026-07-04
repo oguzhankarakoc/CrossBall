@@ -8,7 +8,7 @@
   "friendChallenge": "Freundes-Herausforderung",
   "friendChallengeDesc": "Link teilen und async wetteifern.",
   "practice": "Übung",
-  "practiceDesc": "Verbessere deine Fähigkeiten. Begrenzte Gratis-Spiele.",
+  "practiceDesc": "5 Trainingseinheiten pro Tag. Werbung für die nächste Runde.",
   "stats": "Statistiken",
   "activeEvents": "Aktive Events",
   "communityGoals": "Community-Ziele",
@@ -27,6 +27,7 @@
   "onboarding3Body": "Weniger bekannte Spieler geben mehr Punkte.",
   "comingSoon": "Laden...",
   "puzzleLoadFailed": "Das Tagesrätsel konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+  "practiceLoadFailed": "Das Trainingsrätsel konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.",
   "retry": "Erneut versuchen",
   "gamesPlayed": "Gespielte Spiele",
   "level": "Level",
@@ -47,7 +48,7 @@
   "copied": "Link kopiert!",
   "language": "Sprache",
   "premiumTitle": "CrossBall Premium",
-  "premiumDesc": "4×4 Gitter, unbegrenztes Training, erweiterte Stats, keine Werbung.",
+  "premiumDesc": "10 werbefreie Trainingseinheiten pro Tag, erweiterte Stats, keine Werbung.",
   "upgradePremium": "Premium upgraden",
   "searchPlayer": "Spieler suchen...",
   "recentPicks": "Letzte Tipps",
@@ -81,9 +82,42 @@
   "hintCareerLeague": "Werbung für Karriere-Liga ansehen",
   "hintRetiredStatus": "Werbung für Aktiv/Retired ansehen",
   "hintCareerClub": "Premium: weiteren Verein aus Karriere",
-  "practiceLimitReached": "Gratis-Übungslimit erreicht. Upgrade auf Premium für unbegrenzte Spiele.",
+  "practiceLimitReached": "Tägliches Trainingslimit erreicht. Morgen wieder oder Premium upgraden.",
+  "practiceAdRequiredTitle": "Nächstes Training",
+  "practiceAdRequired": "Schau eine kurze Werbung, um die nächste Trainingseinheit zu starten.",
+  "practiceWatchAdForNewSession": "Werbung ansehen — neues Training",
+  "practiceNewSession": "Neues Training",
+  "practiceCompleteDesc": "Bei jeder Einheit neue Vereins-Kombinationen.",
+  "practiceFinishTraining": "Training beenden",
+  "practiceFinishConfirmTitle": "Training beenden?",
+  "practiceFinishConfirmBody": "Diese Einheit endet und verbraucht 1 deiner täglichen Trainingseinheiten.",
+  "practiceResultTitle": "Training abgeschlossen",
+  "practiceResultEarlyDesc": "Früh beendet — Punkte und Fortschritt wurden gespeichert.",
+  "practiceSessionProgress": "Training {current}/{limit}",
+  "@practiceSessionProgress": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceDailyProgress": "Heute {used}/{limit} Trainingseinheiten genutzt",
+  "@practiceDailyProgress": {
+    "placeholders": {
+      "used": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceAdGateHint": "Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.",
+  "practicePremiumSkipAds": "Premium: bis zu 10 Einheiten pro Tag, keine Werbung zwischen Runden.",
+  "cancel": "Abbrechen",
+  "practiceSessionsRemaining": "Noch {count} Trainingseinheiten heute",
+  "@practiceSessionsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "premiumFeatureGrid": "4×4 Premium-Gitter",
-  "premiumFeaturePractice": "Unbegrenztes Training",
+  "premiumFeaturePractice": "10 werbefreie Trainingseinheiten pro Tag",
   "premiumFeatureStats": "Erweiterte Statistiken",
   "premiumFeatureThemes": "Exklusive Themes",
   "premiumFeatureNoAds": "Keine Werbung",
@@ -95,5 +129,111 @@
   "challengeYouLost": "Du hast diese Runde verloren.",
   "challengeTie": "Unentschieden!",
   "challengeCreator": "Ersteller",
-  "challengeYou": "Du"
+  "challengeYou": "Du",
+  "playerNickname": "Spitzname",
+  "playerNicknameDesc": "Optionaler Name für Herausforderungen und künftige Bestenlisten.",
+  "playerNicknameHint": "3–20 Zeichen",
+  "playerNicknameSaved": "Spitzname gespeichert",
+  "playerNicknameTaken": "Dieser Spitzname ist bereits vergeben",
+  "playerNicknameInvalid": "3–20 Buchstaben, Ziffern, Punkte, Bindestriche oder Unterstriche",
+  "gridSelectCell": "WÄHLEN",
+  "achievements": "Erfolge",
+  "achievementPoints": "Erfolgspunkte",
+  "achievementUnlocked": "Erfolg freigeschaltet!",
+  "noAchievementsYet": "Schließe Rätsel ab, um Erfolge freizuschalten.",
+  "dailyMissions": "Tägliche Missionen",
+  "missionsProgress": "{completed}/{total} erledigt",
+  "@missionsProgress": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "shareResult": "Ergebnis teilen",
+  "leaderboard": "Bestenliste",
+  "leaderboardEmpty": "Noch keine Rangliste. Spiele Rätsel, um gelistet zu werden.",
+  "pushNotifications": "Benachrichtigungen",
+  "pushNotificationsOn": "Serien-Erinnerungen aktiv",
+  "pushNotificationsOff": "Benachrichtigungen aus",
+  "hintAdRequired": "Sieh dir eine Werbung an, um diesen Tipp freizuschalten.",
+  "errorGeneric": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
+  "errorNetwork": "Netzwerkfehler. Verbindung prüfen.",
+  "themeDarkGold": "Gold-Stadion",
+  "themeLightClassic": "Klassischer Rasen",
+  "themeDarkGoldDesc": "Premium: dunkles Stadion mit Goldakzenten",
+  "themeLightClassicDesc": "Premium: helles Feld mit Goldakzenten",
+  "mythicCelebration": "MYTHISCH!",
+  "mythicCelebrationBody": "Ultra-seltene Wahl — elite Fußball-IQ.",
+  "challengeFromAnySession": "Teile dein zuletzt gelöstes Rätsel mit einem Freund.",
+  "challengeNeedSession": "Schließe zuerst ein Rätsel ab, um eine Herausforderung zu erstellen.",
+  "challengeRematch": "Revanche — neuen Link teilen",
+  "dailyChallengeEasyDesc": "Leichteres Rätsel zum Lernen — baue deine Serie auf.",
+  "seasonPoints": "{points} SP",
+  "@seasonPoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "seasonNextReward": "Nächste Belohnung bei {points} SP: {reward}",
+  "@seasonNextReward": {
+    "placeholders": {
+      "points": {"type": "int"},
+      "reward": {"type": "String"}
+    }
+  },
+  "clubMastery": "Vereins-Meisterschaft",
+  "clubMasteryEmpty": "Löse Schnittpunkte, um Vereins-Meisterschaft aufzubauen.",
+  "hintCareerClubTaste": "Wöchentliche Gratisprobe: weiteren Verein enthüllen",
+  "practiceGrid4Title": "4×4 Premium-Gitter",
+  "practiceGrid4Desc": "Größeres Gitter mit mehr Vereinskombinationen.",
+  "premiumGridRequired": "4×4-Gitter sind eine Premium-Funktion.",
+  "timelineMode": "Timeline-Training",
+  "timelineModeDesc": "Sieh Karrierejahre nach jeder richtigen Antwort.",
+  "timelineSheetTitle": "{name} — Karriere-Timeline",
+  "@timelineSheetTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "timelineEmpty": "Keine Karrieredaten für diesen Spieler.",
+  "present": "Heute",
+  "activityFeed": "Community-Aktivität",
+  "activityDailyCompleted": "{name} hat das Tagesrätsel gelöst ({score} Pkt.)",
+  "@activityDailyCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityChallengeCompleted": "{name} hat eine Freundes-Herausforderung abgeschlossen",
+  "@activityChallengeCompleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "activityTimelineCompleted": "{name} hat Timeline-Training beendet ({score} Pkt.)",
+  "@activityTimelineCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityGeneric": "{name}: {action}",
+  "@activityGeneric": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "action": {"type": "String"}
+    }
+  },
+  "footballFactTitle": "Wusstest du?",
+  "tournament": "Turnier",
+  "tournamentDesc": "Wöchentlicher Highscore-Wettbewerb",
+  "tournamentInactive": "Derzeit kein aktives Turnier. Schau bald wieder vorbei.",
+  "tournamentEmpty": "Noch keine Punkte — sei der Erste!",
+  "tournamentYourRank": "Dein Rang: #{rank}",
+  "@tournamentYourRank": {
+    "placeholders": {
+      "rank": {"type": "int"}
+    }
+  }
 }

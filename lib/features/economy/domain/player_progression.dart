@@ -1,5 +1,9 @@
 import 'package:equatable/equatable.dart';
 
+import 'club_mastery.dart';
+import 'player_mission.dart';
+import 'season_info.dart';
+
 class PlayerAchievement extends Equatable {
   const PlayerAchievement({
     required this.slug,
@@ -121,6 +125,29 @@ class PlayerProgression extends Equatable {
   List<Object?> get props => [experiencePoints, currentLevel, competitiveRating];
 }
 
+/// Level XP thresholds mirror [economy_level_thresholds] in Supabase.
+extension PlayerProgressionLevel on PlayerProgression {
+  static int xpRequiredForLevel(int level) {
+    if (level <= 1) return 0;
+    final l = level - 1;
+    return l * l * 50 + l * 100;
+  }
+
+  int get xpForCurrentLevelStart => xpRequiredForLevel(currentLevel);
+
+  int get xpForNextLevelStart => xpRequiredForLevel(currentLevel + 1);
+
+  double get levelProgress {
+    final span = xpForNextLevelStart - xpForCurrentLevelStart;
+    if (span <= 0) return 1;
+    return ((experiencePoints - xpForCurrentLevelStart) / span).clamp(0.0, 1.0);
+  }
+}
+
 abstract interface class EconomyRepository {
   Future<PlayerProgression> getProgression(String userUuid);
+  Future<List<PlayerMission>> getMissions(String userUuid);
+  Future<SeasonInfo> getSeason(String userUuid);
+  Future<List<ClubMasteryEntry>> getClubMastery(String userUuid, {int limit = 12});
+  Future<bool> careerHintTasteAvailable(String userUuid);
 }

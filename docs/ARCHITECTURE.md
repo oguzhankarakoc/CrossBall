@@ -1,7 +1,7 @@
 # CrossBall — Technical Architecture
 
-**Version:** 1.1.0  
-**Status:** Production MVP  
+**Version:** 1.2.0  
+**Status:** Production MVP (Phases 0–5 shipped)  
 **Tagline:** Connect clubs. Prove your football IQ.
 
 ---
@@ -58,11 +58,11 @@ lib/
 │   ├── network/         # Supabase client provider
 │   ├── analytics/       # Event tracking abstraction
 │   ├── routing/         # GoRouter
-│   ├── theme/           # Light Pitch + Dark Stadium themes
-│   ├── club_identity/   # Badge icon types, display name resolver
+│   ├── theme/           # Light Pitch, Dark Stadium, contrast-safe typography
+│   ├── club_identity/   # Original badge registry, tokens, display resolver
 │   └── utils/           # String normalization, scoring math, flags
 ├── shared/
-│   └── widgets/         # Club badges, search cards, player avatar
+│   └── widgets/         # Club badges, glass UI, search cards, player avatar
 └── features/
     ├── auth/
     ├── onboarding/
@@ -73,6 +73,9 @@ lib/
     ├── stats/
     ├── economy/
     ├── liveops/
+    ├── social/          # activity feed, career timeline, football facts
+    ├── tournament/
+    ├── leaderboard/
     ├── settings/
     ├── premium/
     └── ads/
@@ -115,7 +118,44 @@ App launch → SecureStorage read/write UUID
 | Friend Challenge | 3×3 | Free | Interstitial on complete |
 | Practice | 3×3 | Free (limited) | Every N games |
 | Practice | 4×4 | Premium | None |
+| Timeline | Career years overlay | Premium (flag) | None |
 | Unlimited Practice | Any | Premium | None |
+
+---
+
+## 4b. Original Club Identity System
+
+CrossBall never displays official club logos. Every club uses a **procedural CrossBall badge** rendered in Flutter (`CustomPaint`).
+
+### Resolution order
+
+1. `assets/clubs/{slug}/metadata.json` override (optional)
+2. `ClubIdentityData.bySlug` — **105 curated** slugs (colors + abstract symbol)
+3. API fields from `clubs` table (`badge_primary_color`, `badge_icon_type`, …)
+4. Deterministic hash fallback for unknown slugs
+
+Curated Flutter symbols **override** generic DB `abstract_shield` values.
+
+### Symbol types (legal-safe)
+
+Abstract geometry only: stripes, crown, lion, orb, chevron, diamond, star, waves, cross, flame, wings, compass, oak, eagle, shield.
+
+### Client components
+
+| Widget | Use |
+|--------|-----|
+| `ClubBadge` | Core badge renderer with visual states |
+| `ClubHeaderCell` / `PuzzleClubTile` | Puzzle grid headers (badge + name) |
+| `ClubIdentityChip` | Compact list/search pill |
+| `LeaderboardClubIcon` | Stats, mastery, leaderboard rows |
+
+### Design tokens
+
+`ClubBadgeTokens` — shared proportions, glow, animation, high-contrast helpers. All badges use the same rounded-shield silhouette.
+
+### Database
+
+Migration `025_club_identity_full_coverage.sql` syncs `badge_icon_type` + accent for all 105 seed clubs.
 
 ---
 
@@ -612,7 +652,7 @@ See `docs/TESTING.md`.
 | Flutter | App Store, Google Play |
 | Supabase | Managed cloud project |
 | Edge functions | `supabase functions deploy` (npm imports via `deno.json`) |
-| Migrations | `./scripts/run_migrations.sh` (001–015) or `supabase db push` |
+| Migrations | `./scripts/run_migrations.sh` (001–025) or `supabase db push` |
 | Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — API-Football + patches + daily puzzle |
 | Pipeline (weekly) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh |
 | Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh` |
@@ -630,4 +670,4 @@ See `docs/TESTING.md`.
 
 ---
 
-*CrossBall Architecture v1.2.0 — puzzle engine, GEE, LOE, API-Football sync*
+*CrossBall Architecture v1.2.0 — Phases 0–5, club identity, GEE, LOE, API-Football sync*

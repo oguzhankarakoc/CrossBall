@@ -49,6 +49,14 @@ class ClubSymbolPainter extends CustomPainter {
         _drawCross(canvas, center, size);
       case ClubSymbolType.abstractFlame:
         _drawFlame(canvas, center, size);
+      case ClubSymbolType.abstractWings:
+        _drawWings(canvas, center, size);
+      case ClubSymbolType.abstractCompass:
+        _drawCompass(canvas, center, size);
+      case ClubSymbolType.abstractOak:
+        _drawOak(canvas, center, size);
+      case ClubSymbolType.abstractEagle:
+        _drawEagle(canvas, center, size);
       case ClubSymbolType.abstractShield:
         _drawShortCode(canvas, center, size);
     }
@@ -223,6 +231,98 @@ class ClubSymbolPainter extends CustomPainter {
       );
     canvas.drawPath(path, Paint()..color = accent.withValues(alpha: 0.85));
     _drawShortCode(canvas, Offset(center.dx, center.dy + size.height * 0.22), size, scale: 0.78);
+  }
+
+  /// Abstract wing geometry — inspired by heritage, not trademarked birds.
+  void _drawWings(Canvas canvas, Offset center, Size size) {
+    final paint = Paint()..color = accent.withValues(alpha: 0.82);
+    for (final sign in [-1.0, 1.0]) {
+      final path = Path()
+        ..moveTo(center.dx, center.dy - size.height * 0.04)
+        ..quadraticBezierTo(
+          center.dx + sign * size.width * 0.34,
+          center.dy - size.height * 0.12,
+          center.dx + sign * size.width * 0.28,
+          center.dy + size.height * 0.08,
+        )
+        ..quadraticBezierTo(
+          center.dx + sign * size.width * 0.1,
+          center.dy + size.height * 0.02,
+          center.dx,
+          center.dy - size.height * 0.04,
+        );
+      canvas.drawPath(path, paint);
+    }
+    _drawShortCode(canvas, Offset(center.dx, center.dy + size.height * 0.2), size, scale: 0.76);
+  }
+
+  /// Modern compass / industrial geometry.
+  void _drawCompass(Canvas canvas, Offset center, Size size) {
+    final r = size.width * 0.24;
+    canvas.drawCircle(
+      center,
+      r,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = size.width * 0.035
+        ..color = accent.withValues(alpha: 0.85),
+    );
+    for (var i = 0; i < 4; i++) {
+      final angle = (i / 4) * math.pi * 2;
+      final outer = center + Offset(math.cos(angle) * r * 0.85, math.sin(angle) * r * 0.85);
+      canvas.drawLine(center, outer, Paint()
+        ..color = secondary.withValues(alpha: 0.9)
+        ..strokeWidth = size.width * 0.03
+        ..strokeCap = StrokeCap.round);
+    }
+    canvas.drawCircle(center, r * 0.12, Paint()..color = accent);
+    _drawShortCode(canvas, Offset(center.dx, center.dy + r * 1.15), size, scale: 0.72);
+  }
+
+  /// Oak leaf abstraction — heritage symbol, not official crest.
+  void _drawOak(Canvas canvas, Offset center, Size size) {
+    final leaf = Path()
+      ..moveTo(center.dx, center.dy - size.height * 0.18)
+      ..quadraticBezierTo(
+        center.dx + size.width * 0.2,
+        center.dy,
+        center.dx,
+        center.dy + size.height * 0.16,
+      )
+      ..quadraticBezierTo(
+        center.dx - size.width * 0.2,
+        center.dy,
+        center.dx,
+        center.dy - size.height * 0.18,
+      );
+    canvas.drawPath(leaf, Paint()..color = accent.withValues(alpha: 0.85));
+    canvas.drawLine(
+      center + Offset(0, -size.height * 0.18),
+      center + Offset(0, size.height * 0.16),
+      Paint()
+        ..color = secondary.withValues(alpha: 0.7)
+        ..strokeWidth = size.width * 0.025,
+    );
+    _drawShortCode(canvas, Offset(center.dx, center.dy + size.height * 0.22), size, scale: 0.74);
+  }
+
+  /// Minimal eagle silhouette — abstract, not official initials.
+  void _drawEagle(Canvas canvas, Offset center, Size size) {
+    final body = Path()
+      ..moveTo(center.dx, center.dy - size.height * 0.14)
+      ..lineTo(center.dx + size.width * 0.08, center.dy + size.height * 0.06)
+      ..lineTo(center.dx - size.width * 0.08, center.dy + size.height * 0.06)
+      ..close();
+    canvas.drawPath(body, Paint()..color = secondary.withValues(alpha: 0.9));
+    final wingPaint = Paint()..color = accent.withValues(alpha: 0.8);
+    for (final sign in [-1.0, 1.0]) {
+      canvas.drawLine(
+        center + Offset(0, -size.height * 0.04),
+        center + Offset(sign * size.width * 0.3, -size.height * 0.1),
+        wingPaint..strokeWidth = size.width * 0.045,
+      );
+    }
+    _drawShortCode(canvas, Offset(center.dx, center.dy + size.height * 0.2), size, scale: 0.76);
   }
 
   void _drawShortCode(Canvas canvas, Offset center, Size size, {double scale = 1.0}) {

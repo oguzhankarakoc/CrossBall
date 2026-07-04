@@ -8,7 +8,7 @@
   "friendChallenge": "Arkadaş Mücadelesi",
   "friendChallengeDesc": "Link paylaş ve async yarış.",
   "practice": "Antrenman",
-  "practiceDesc": "Becerilerini geliştir. Sınırlı ücretsiz oyun.",
+  "practiceDesc": "Günde 5 antrenman. Sonraki oturumlar için reklam izle.",
   "stats": "İstatistikler",
   "activeEvents": "Aktif Etkinlikler",
   "communityGoals": "Topluluk Hedefleri",
@@ -27,6 +27,7 @@
   "onboarding3Body": "Daha az bilinen oyuncular daha fazla puan verir.",
   "comingSoon": "Yükleniyor...",
   "puzzleLoadFailed": "Günün bulmacası yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
+  "practiceLoadFailed": "Antrenman bulmacası yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.",
   "retry": "Tekrar dene",
   "gamesPlayed": "Oynanan Oyun",
   "level": "Seviye",
@@ -47,7 +48,7 @@
   "copied": "Link kopyalandı!",
   "language": "Dil",
   "premiumTitle": "CrossBall Premium",
-  "premiumDesc": "4×4 ızgaralar, sınırsız antrenman, gelişmiş istatistikler, reklamsız.",
+  "premiumDesc": "Günde 10 reklamsız antrenman, gelişmiş istatistikler, reklamsız.",
   "upgradePremium": "Premium'a Yükselt",
   "searchPlayer": "Oyuncu ara...",
   "recentPicks": "Son seçimler",
@@ -81,9 +82,42 @@
   "hintCareerLeague": "Kariyer ligi ipucu için reklam izle",
   "hintRetiredStatus": "Aktif/emekli ipucu için reklam izle",
   "hintCareerClub": "Premium: kariyerden bir kulüp daha",
-  "practiceLimitReached": "Ücretsiz antrenman limitine ulaştın. Sınırsız oyun için Premium'a yükselt.",
+  "practiceLimitReached": "Bugünkü antrenman hakkın bitti. Yarın tekrar dene veya Premium'a yükselt.",
+  "practiceAdRequiredTitle": "Sonraki antrenman",
+  "practiceAdRequired": "Yeni bir antrenman için kısa bir reklam izlemen gerekiyor.",
+  "practiceWatchAdForNewSession": "Reklam izle — yeni antrenman",
+  "practiceNewSession": "Yeni antrenman",
+  "practiceCompleteDesc": "Her antrenmanda farklı takım kombinasyonları.",
+  "practiceFinishTraining": "Antrenmanı bitir",
+  "practiceFinishConfirmTitle": "Antrenmanı bitir?",
+  "practiceFinishConfirmBody": "Bu oturum sona erer ve günlük antrenman hakkından 1 düşer.",
+  "practiceResultTitle": "Antrenman tamamlandı",
+  "practiceResultEarlyDesc": "Erken bitirdin — skorun ve ilerlemen kaydedildi.",
+  "practiceSessionProgress": "Antrenman {current}/{limit}",
+  "@practiceSessionProgress": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceDailyProgress": "Bugün {used}/{limit} antrenman kullanıldı",
+  "@practiceDailyProgress": {
+    "placeholders": {
+      "used": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceAdGateHint": "Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.",
+  "practicePremiumSkipAds": "Premium ile reklam beklemeden günde 10 antrenman.",
+  "cancel": "Vazgeç",
+  "practiceSessionsRemaining": "Bugün {count} antrenman hakkın kaldı",
+  "@practiceSessionsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "premiumFeatureGrid": "4×4 premium ızgaralar",
-  "premiumFeaturePractice": "Sınırsız antrenman",
+  "premiumFeaturePractice": "Günde 10 reklamsız antrenman",
   "premiumFeatureStats": "Gelişmiş istatistikler",
   "premiumFeatureThemes": "Özel temalar",
   "premiumFeatureNoAds": "Reklamsız",
@@ -95,5 +129,111 @@
   "challengeYouLost": "Bu turu kaybettin.",
   "challengeTie": "Berabere!",
   "challengeCreator": "Oluşturan",
-  "challengeYou": "Sen"
+  "challengeYou": "Sen",
+  "playerNickname": "Takma ad",
+  "playerNicknameDesc": "Mücadeleler ve sıralamalarda görünecek isteğe bağlı isim.",
+  "playerNicknameHint": "3–20 karakter",
+  "playerNicknameSaved": "Takma ad kaydedildi",
+  "playerNicknameTaken": "Bu takma ad zaten kullanılıyor",
+  "playerNicknameInvalid": "3–20 harf, rakam, nokta, tire veya alt çizgi kullanın",
+  "gridSelectCell": "SEÇ",
+  "achievements": "Başarımlar",
+  "achievementPoints": "Başarım Puanı",
+  "achievementUnlocked": "Başarım açıldı!",
+  "noAchievementsYet": "Başarımları açmak için bulmacaları tamamla.",
+  "dailyMissions": "Günlük Görevler",
+  "missionsProgress": "{completed}/{total} tamamlandı",
+  "@missionsProgress": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "shareResult": "Sonucu paylaş",
+  "leaderboard": "Sıralama",
+  "leaderboardEmpty": "Henüz sıralama yok. Listeye girmek için bulmaca tamamla.",
+  "pushNotifications": "Bildirimler",
+  "pushNotificationsOn": "Seri hatırlatıcıları açık",
+  "pushNotificationsOff": "Bildirimler kapalı",
+  "hintAdRequired": "Bu ipucu için reklam izlemen gerekiyor.",
+  "errorGeneric": "Bir şeyler ters gitti. Lütfen tekrar dene.",
+  "errorNetwork": "Ağ hatası. Bağlantını kontrol et.",
+  "themeDarkGold": "Altın Stadyum",
+  "themeLightClassic": "Klasik Saha",
+  "themeDarkGoldDesc": "Premium: altın vurgulu karanlık stadyum",
+  "themeLightClassicDesc": "Premium: altın vurgulu klasik açık saha",
+  "mythicCelebration": "MİTİK!",
+  "mythicCelebrationBody": "Ultra nadir seçim — elit futbol zekası.",
+  "challengeFromAnySession": "Son tamamladığın bulmacayı arkadaşınla paylaş.",
+  "challengeNeedSession": "Mücadele için önce herhangi bir bulmacayı tamamla.",
+  "challengeRematch": "Rövanş — yeni link paylaş",
+  "dailyChallengeEasyDesc": "Öğrenirken daha kolay bulmaca — serini koru.",
+  "seasonPoints": "{points} SP",
+  "@seasonPoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "seasonNextReward": "Sonraki ödül {points} SP: {reward}",
+  "@seasonNextReward": {
+    "placeholders": {
+      "points": {"type": "int"},
+      "reward": {"type": "String"}
+    }
+  },
+  "clubMastery": "Kulüp Ustalığı",
+  "clubMasteryEmpty": "Kesişim çözerek kulüp ustalığını artır.",
+  "hintCareerClubTaste": "Haftalık ücretsiz deneme: başka bir kulüp ipucu",
+  "practiceGrid4Title": "4×4 Premium Izgara",
+  "practiceGrid4Desc": "Daha fazla kulüp kombinasyonu ile büyük ızgara.",
+  "premiumGridRequired": "4×4 ızgaralar Premium özelliğidir.",
+  "timelineMode": "Zaman Çizelgesi Antrenmanı",
+  "timelineModeDesc": "Her doğru cevaptan sonra kariyer yıllarını gör.",
+  "timelineSheetTitle": "{name} — kariyer zaman çizelgesi",
+  "@timelineSheetTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "timelineEmpty": "Bu oyuncu için kariyer verisi yok.",
+  "present": "Günümüz",
+  "activityFeed": "Topluluk Aktivitesi",
+  "activityDailyCompleted": "{name} günlük bulmacayı tamamladı ({score} puan)",
+  "@activityDailyCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityChallengeCompleted": "{name} bir arkadaş mücadelesi bitirdi",
+  "@activityChallengeCompleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "activityTimelineCompleted": "{name} zaman çizelgesi antrenmanını bitirdi ({score} puan)",
+  "@activityTimelineCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityGeneric": "{name}: {action}",
+  "@activityGeneric": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "action": {"type": "String"}
+    }
+  },
+  "footballFactTitle": "Biliyor muydun?",
+  "tournament": "Turnuva",
+  "tournamentDesc": "Haftalık yüksek skor yarışması",
+  "tournamentInactive": "Şu an aktif turnuva yok. Yakında tekrar bak.",
+  "tournamentEmpty": "Henüz skor yok — ilk sen oyna!",
+  "tournamentYourRank": "Sıralaman: #{rank}",
+  "@tournamentYourRank": {
+    "placeholders": {
+      "rank": {"type": "int"}
+    }
+  }
 }

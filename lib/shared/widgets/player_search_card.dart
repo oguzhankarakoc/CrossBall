@@ -16,12 +16,14 @@ class PlayerSearchCard extends StatefulWidget {
     required this.onTap,
     this.highlightClubs = const {},
     this.showRelevanceBadge = false,
+    this.animationDelay = 0,
   });
 
   final Player player;
   final VoidCallback onTap;
   final Set<String> highlightClubs;
   final bool showRelevanceBadge;
+  final int animationDelay;
 
   @override
   State<PlayerSearchCard> createState() => _PlayerSearchCardState();
@@ -29,6 +31,15 @@ class PlayerSearchCard extends StatefulWidget {
 
 class _PlayerSearchCardState extends State<PlayerSearchCard> {
   bool _pressed = false;
+  bool _visible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.delayed(Duration(milliseconds: widget.animationDelay), () {
+      if (mounted) setState(() => _visible = true);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,103 +48,134 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
     final flag = CountryFlags.emoji(player.nationalityCode);
     final country = CountryFlags.name(player.nationalityCode);
     final position = PositionLabels.abbreviate(player.primaryPosition);
+    final careerPreview = player.clubsPreview.take(4).join(', ');
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-      child: AnimatedScale(
-        scale: _pressed ? 0.985 : 1,
-        duration: AppDuration.fast,
+    return AnimatedOpacity(
+      opacity: _visible ? 1 : 0,
+      duration: AppDuration.medium,
+      curve: Curves.easeOutCubic,
+      child: AnimatedSlide(
+        offset: _visible ? Offset.zero : const Offset(0, 0.04),
+        duration: AppDuration.medium,
         curve: Curves.easeOutCubic,
-        child: Material(
-          color: colors.surfaceElevated,
-          elevation: _pressed ? AppElevation.level0 : AppElevation.level1,
-          shadowColor: colors.accent.withValues(alpha: 0.12),
-          borderRadius: AppRadius.lgBorder,
-          child: InkWell(
-            onTap: widget.onTap,
-            onHighlightChanged: (v) => setState(() => _pressed = v),
-            borderRadius: AppRadius.lgBorder,
-            splashColor: colors.accent.withValues(alpha: 0.12),
-            highlightColor: colors.primary.withValues(alpha: 0.08),
-            child: Ink(
-              decoration: BoxDecoration(
-                borderRadius: AppRadius.lgBorder,
-                border: Border.all(
-                  color: widget.showRelevanceBadge
-                      ? colors.accent.withValues(alpha: 0.45)
-                      : colors.cardBorder,
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.md),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    PlayerAvatar(
-                      seed: player.id,
-                      size: 56,
-                      nationalityCode: player.nationalityCode,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+          child: AnimatedScale(
+            scale: _pressed ? 0.98 : 1,
+            duration: AppDuration.fast,
+            curve: Curves.easeOutCubic,
+            child: Material(
+              color: colors.surfaceElevated.withValues(alpha: 0.85),
+              elevation: _pressed ? AppElevation.level0 : AppElevation.level1,
+              shadowColor: colors.lime.withValues(alpha: 0.1),
+              borderRadius: AppRadius.xlBorder,
+              child: InkWell(
+                onTap: widget.onTap,
+                onHighlightChanged: (v) => setState(() => _pressed = v),
+                borderRadius: AppRadius.xlBorder,
+                splashColor: colors.lime.withValues(alpha: 0.12),
+                highlightColor: colors.primary.withValues(alpha: 0.08),
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: AppRadius.xlBorder,
+                    border: Border.all(
+                      color: widget.showRelevanceBadge
+                          ? colors.lime.withValues(alpha: 0.45)
+                          : colors.glassBorder,
                     ),
-                    const SizedBox(width: AppSpacing.md),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.md),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        PlayerAvatar(
+                          seed: player.id,
+                          size: 64,
+                          nationalityCode: player.nationalityCode,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  player.name,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                        color: colors.textPrimary,
-                                        fontWeight: FontWeight.w700,
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      player.name,
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: colors.textPrimary,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (widget.showRelevanceBadge)
+                                    Container(
+                                      margin: const EdgeInsets.only(left: AppSpacing.xs),
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: colors.lime.withValues(alpha: 0.18),
+                                        borderRadius: AppRadius.smBorder,
+                                      ),
+                                      child: Icon(Icons.bolt_rounded, size: 14, color: colors.lime),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Row(
+                                children: [
+                                  Text(flag, style: const TextStyle(fontSize: 14)),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      '$country • $position',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: colors.textSecondary,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (careerPreview.isNotEmpty) ...[
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  careerPreview,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: colors.textSecondary.withValues(alpha: 0.85),
+                                        fontSize: 12,
                                       ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              if (widget.showRelevanceBadge)
-                                Container(
-                                  margin: const EdgeInsets.only(left: AppSpacing.xs),
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: colors.accent.withValues(alpha: 0.18),
-                                    borderRadius: AppRadius.smBorder,
+                                if (player.clubsPreview.length > 1) ...[
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Wrap(
+                                    spacing: AppSpacing.xs,
+                                    runSpacing: AppSpacing.xs,
+                                    children: player.clubsPreview.take(3).map((club) {
+                                      final normalized = club.toLowerCase();
+                                      final highlight = widget.highlightClubs.any(
+                                        (h) =>
+                                            normalized.contains(h.toLowerCase()) ||
+                                            h.toLowerCase().contains(normalized),
+                                      );
+                                      return ClubChip(label: club, highlighted: highlight);
+                                    }).toList(),
                                   ),
-                                  child: Icon(Icons.bolt, size: 14, color: colors.accent),
-                                ),
+                                ],
+                              ],
                             ],
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '$flag $country • $position',
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: colors.textSecondary,
-                                  height: 1.2,
-                                ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          if (player.clubsPreview.isNotEmpty) ...[
-                            const SizedBox(height: AppSpacing.sm),
-                            Wrap(
-                              spacing: AppSpacing.xs,
-                              runSpacing: AppSpacing.xs,
-                              children: player.clubsPreview.map((club) {
-                                final normalized = club.toLowerCase();
-                                final highlight = widget.highlightClubs.any(
-                                  (h) => normalized.contains(h.toLowerCase()) || h.toLowerCase().contains(normalized),
-                                );
-                                return ClubChip(label: club, highlighted: highlight);
-                              }).toList(),
-                            ),
-                          ],
-                        ],
-                      ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, size: 20, color: colors.lime),
+                      ],
                     ),
-                    const SizedBox(width: AppSpacing.xs),
-                    Icon(Icons.chevron_right, size: 18, color: colors.textSecondary),
-                  ],
+                  ),
                 ),
               ),
             ),

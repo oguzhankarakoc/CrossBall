@@ -5,22 +5,65 @@ import '../../../ads/presentation/banner_ad_widget.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/crossball_ui.dart';
+import '../../../share/share_result_service.dart';
 
-class PuzzleResultScreen extends StatelessWidget {
+class PuzzleResultScreen extends StatefulWidget {
   const PuzzleResultScreen({
     super.key,
     required this.score,
     required this.mistakes,
     required this.hintsUsed,
     required this.onHome,
-    required this.onShare,
+    required this.onShareChallenge,
+    this.onShareResult,
+    this.streak = 0,
+    this.subtitle,
+    this.title,
+    this.remainingSessions,
+    this.sessionsUsed,
+    this.sessionsLimit,
+    this.onNewSession,
+    this.newSessionLabel,
+    this.newSessionRequiresAd = false,
+    this.showShare = true,
   });
 
   final double score;
   final int mistakes;
   final int hintsUsed;
+  final int streak;
   final VoidCallback onHome;
-  final VoidCallback onShare;
+  final VoidCallback onShareChallenge;
+  final Future<void> Function(GlobalKey cardKey)? onShareResult;
+  final String? subtitle;
+  final String? title;
+  final int? remainingSessions;
+  final int? sessionsUsed;
+  final int? sessionsLimit;
+  final VoidCallback? onNewSession;
+  final String? newSessionLabel;
+  final bool newSessionRequiresAd;
+  final bool showShare;
+
+  @override
+  State<PuzzleResultScreen> createState() => _PuzzleResultScreenState();
+}
+
+class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
+  final _shareCardKey = GlobalKey();
+
+  Future<void> _shareResult() async {
+    if (widget.onShareResult != null) {
+      await widget.onShareResult!(_shareCardKey);
+      return;
+    }
+    await ShareResultService.shareDailyResult(
+      context: context,
+      cardKey: _shareCardKey,
+      score: widget.score,
+      streak: widget.streak,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,47 +76,163 @@ class PuzzleResultScreen extends StatelessWidget {
           child: Column(
             children: [
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(AppSpacing.xl),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.emoji_events, size: 64, color: colors.accent),
-                      const SizedBox(height: AppSpacing.lg),
-                      Text(
-                        l10n.puzzleComplete,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                child: ListView(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  children: [
+                    Offstage(
+                      offstage: true,
+                      child: RepaintBoundary(
+                        key: _shareCardKey,
+                        child: DailyShareCard(
+                          score: widget.score,
+                          mistakes: widget.mistakes,
+                          hintsUsed: widget.hintsUsed,
+                          streak: widget.streak,
+                        ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      Text(
-                        score.toStringAsFixed(0),
-                        style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                              color: colors.accent,
-                              fontSize: 48,
-                              fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Center(
+                      child: Container(
+                        width: 96,
+                        height: 96,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: colors.lime.withValues(alpha: 0.12),
+                          border: Border.all(color: colors.lime.withValues(alpha: 0.35)),
+                          boxShadow: AppElevation.limeGlow(colors.lime),
+                        ),
+                        child: Icon(Icons.workspace_premium_rounded, size: 48, color: colors.lime),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        widget.title ?? l10n.puzzleComplete,
+                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
                             ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: AppSpacing.lg),
-                      _StatRow(label: l10n.mistakes, value: mistakes.toString()),
-                      _StatRow(label: l10n.hintsUsed, value: hintsUsed.toString()),
-                      const SizedBox(height: AppSpacing.xl),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: onHome,
-                          child: Text(l10n.backToHome),
-                        ),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: onShare,
-                          child: Text(l10n.createChallenge),
-                        ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      widget.subtitle ?? l10n.dailyChallengeDesc,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    if (widget.streak > 0) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '${l10n.currentStreak}: ${widget.streak} 🔥',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: colors.lime,
+                              fontWeight: FontWeight.w700,
+                            ),
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  ),
+                    if (widget.remainingSessions != null) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        l10n.practiceSessionsRemaining(widget.remainingSessions!),
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: colors.lime,
+                              fontWeight: FontWeight.w700,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    if (widget.sessionsUsed != null && widget.sessionsLimit != null) ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        l10n.practiceDailyProgress(widget.sessionsUsed!, widget.sessionsLimit!),
+                        style: Theme.of(context).textTheme.bodySmall,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                    const SizedBox(height: AppSpacing.xl),
+                    CrossBallGlassPanel(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CrossBallLabelCaps(l10n.totalScore),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            widget.score.toStringAsFixed(0),
+                            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                                  color: colors.lime,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 44,
+                                ),
+                          ),
+                          const SizedBox(height: AppSpacing.lg),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _VictoryStat(
+                                  label: l10n.mistakes,
+                                  value: widget.mistakes.toString(),
+                                ),
+                              ),
+                              Expanded(
+                                child: _VictoryStat(
+                                  label: l10n.hintsUsed,
+                                  value: widget.hintsUsed.toString(),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
+                    if (widget.onNewSession != null) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: widget.onNewSession,
+                          icon: Icon(
+                            widget.newSessionRequiresAd
+                                ? Icons.play_circle_outline_rounded
+                                : Icons.refresh_rounded,
+                          ),
+                          label: Text((widget.newSessionLabel ?? l10n.practiceNewSession).toUpperCase()),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    if (widget.showShare) ...[
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: _shareResult,
+                          icon: const Icon(Icons.ios_share_rounded),
+                          label: Text(l10n.shareResult.toUpperCase()),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: widget.onShareChallenge,
+                          icon: const Icon(Icons.people_outline_rounded),
+                          label: Text(l10n.createChallenge.toUpperCase()),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: widget.onHome,
+                        icon: const Icon(Icons.home_rounded),
+                        label: Text(l10n.backToHome),
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const BannerAdWidget(placement: AdPlacement.result),
@@ -85,23 +244,24 @@ class PuzzleResultScreen extends StatelessWidget {
   }
 }
 
-class _StatRow extends StatelessWidget {
-  const _StatRow({required this.label, required this.value});
+class _VictoryStat extends StatelessWidget {
+  const _VictoryStat({required this.label, required this.value});
 
   final String label;
   final String value;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          Text(value, style: Theme.of(context).textTheme.titleMedium),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CrossBallLabelCaps(label),
+        const SizedBox(height: AppSpacing.xs),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ],
     );
   }
 }

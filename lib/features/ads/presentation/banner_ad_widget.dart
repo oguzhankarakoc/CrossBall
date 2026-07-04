@@ -46,7 +46,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_loaded || _banner == null) return const SizedBox.shrink();
+    if (!_loaded || _banner == null) {
+      return const SizedBox(height: 50);
+    }
     return SizedBox(
       width: _banner!.size.width.toDouble(),
       height: _banner!.size.height.toDouble(),

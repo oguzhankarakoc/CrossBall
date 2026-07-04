@@ -1,0 +1,16 @@
+{
+  "club_id": "bayern-munich",
+  "display_name": "Bayern Munich",
+  "short_name": "Bayern",
+  "short_code": "BAY",
+  "country": "DE",
+  "league": "Bundesliga",
+  "primary_color": "#DC052D",
+  "secondary_color": "#0066B2",
+  "accent_color": "#FFFFFF",
+  "symbol_type": "abstract_diamond",
+  "badge_style": "vertical",
+  "shape_type": "rounded_shield",
+  "theme_variant": "bavarian",
+  "heritage_note": "Diamond geometry inspired by Munich heritage"
+}

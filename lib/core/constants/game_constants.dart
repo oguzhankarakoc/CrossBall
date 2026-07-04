@@ -1,7 +1,12 @@
 abstract final class GameConstants {
+  static const int gridSize = 3;
   static const int freeGridSize = 3;
   static const int premiumGridSize = 4;
-  static const int freePracticeLimit = 5;
+  /// Max practice sessions per calendar day (free users).
+  static const int freePracticeDailyLimit = 5;
+
+  /// Max practice sessions per calendar day (premium — ad-free between sessions).
+  static const int premiumPracticeDailyLimit = 10;
 
   static const int suspiciousDurationMs3x3 = 40 * 60 * 1000;
   static const int suspiciousDurationMs4x4 = 60 * 60 * 1000;

@@ -43,6 +43,10 @@ Deno.serve(async (req) => {
   }
 
   try {
+    const url = new URL(req.url)
+    const userUuid =
+      url.searchParams.get('user_uuid') ?? req.headers.get('x-user-uuid') ?? ''
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -50,9 +54,21 @@ Deno.serve(async (req) => {
 
     const today = new Date().toISOString().split('T')[0]
 
+    let difficultyTier = 'hard'
+    if (userUuid) {
+      const { data: profile } = await supabase.rpc('gee_get_profile', {
+        p_user_uuid: userUuid,
+      })
+      const gamesPlayed =
+        profile && typeof profile === 'object'
+          ? (profile as { games_played?: number }).games_played ?? 0
+          : 0
+      if (gamesPlayed < 7) difficultyTier = 'easy'
+    }
+
     const { data: puzzleId, error: ensureError } = await supabase.rpc('ensure_daily_puzzle', {
       p_date: today,
-      p_difficulty_tier: 'hard',
+      p_difficulty_tier: difficultyTier,
     })
 
     if (ensureError) throw ensureError

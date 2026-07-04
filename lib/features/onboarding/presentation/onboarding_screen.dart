@@ -26,6 +26,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish({bool skipped = false}) async {
     await ref.read(authRepositoryProvider).setOnboardingComplete(true);
+    ref.invalidate(onboardingCompleteProvider);
     ref.read(analyticsProvider).track('onboarding_completed', properties: {
       'skipped': skipped,
     });

@@ -1,0 +1,16 @@
+{
+  "club_id": "fenerbahce",
+  "display_name": "Fenerbahçe",
+  "short_name": "Fenerbahçe",
+  "short_code": "FEN",
+  "country": "TR",
+  "league": "Süper Lig",
+  "primary_color": "#FFED00",
+  "secondary_color": "#00205B",
+  "accent_color": "#FFFFFF",
+  "symbol_type": "abstract_oak",
+  "badge_style": "horizontal",
+  "shape_type": "rounded_shield",
+  "theme_variant": "heritage",
+  "heritage_note": "Oak leaf abstraction — not official crest"
+}

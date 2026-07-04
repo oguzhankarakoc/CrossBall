@@ -3,8 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/routing/app_router.dart';
-import 'core/theme/app_theme.dart';
+import 'core/routing/app_router_provider.dart';
+import 'features/economy/presentation/achievement_unlock_listener.dart';
+import 'core/theme/theme_resolver.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'l10n/app_localizations.dart';
 import 'shared/providers/locale_provider.dart';
@@ -25,7 +26,8 @@ class CrossBallApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final onboardingAsync = ref.watch(onboardingCompleteProvider);
-    final themeMode = ref.watch(themeModeProvider).flutterThemeMode;
+    final themePref = ref.watch(themeModeProvider);
+    final themes = resolveAppThemes(themePref);
     final localePref = ref.watch(localeProvider);
     final locale = resolveAppLocale(localePref);
 
@@ -41,9 +43,9 @@ class CrossBallApp extends ConsumerWidget {
 
     return onboardingAsync.when(
       loading: () => MaterialApp(
-        theme: AppTheme.lightPitch(),
-        darkTheme: AppTheme.darkStadium(),
-        themeMode: themeMode,
+        theme: themes.light,
+        darkTheme: themes.dark,
+        themeMode: themes.mode,
         locale: locale,
         localizationsDelegates: _localizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -51,9 +53,9 @@ class CrossBallApp extends ConsumerWidget {
         home: const _BootScreen(),
       ),
       error: (error, stackTrace) => MaterialApp(
-        theme: AppTheme.lightPitch(),
-        darkTheme: AppTheme.darkStadium(),
-        themeMode: themeMode,
+        theme: themes.light,
+        darkTheme: themes.dark,
+        themeMode: themes.mode,
         locale: locale,
         localizationsDelegates: _localizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -69,21 +71,23 @@ class CrossBallApp extends ConsumerWidget {
           ),
         ),
       ),
-      data: (onboardingComplete) {
-        final router = createAppRouter(onboardingComplete: onboardingComplete);
-        return DeepLinkListener(
-          router: router,
-          child: MaterialApp.router(
-            title: 'CrossBall',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightPitch(),
-            darkTheme: AppTheme.darkStadium(),
-            themeMode: themeMode,
-            locale: locale,
-            localizationsDelegates: _localizationDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            localeListResolutionCallback: localeListResolutionCallback,
-            routerConfig: router,
+      data: (_) {
+        final router = ref.watch(appRouterProvider);
+        return AchievementUnlockListener(
+          child: DeepLinkListener(
+            router: router,
+            child: MaterialApp.router(
+              title: 'CrossBall',
+              debugShowCheckedModeBanner: false,
+              theme: themes.light,
+              darkTheme: themes.dark,
+              themeMode: themes.mode,
+              locale: locale,
+              localizationsDelegates: _localizationDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localeListResolutionCallback: localeListResolutionCallback,
+              routerConfig: router,
+            ),
           ),
         );
       },

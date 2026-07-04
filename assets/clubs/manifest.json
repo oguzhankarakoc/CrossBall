@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "shape": "rounded_shield",
+  "clubs": [
+    "barcelona",
+    "liverpool-fc",
+    "manchester-city",
+    "galatasaray",
+    "fenerbahce",
+    "besiktas",
+    "juventus",
+    "bayern-munich"
+  ]
+}

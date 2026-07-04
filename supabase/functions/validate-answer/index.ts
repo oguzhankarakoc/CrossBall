@@ -1,4 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import {
+  checkRateLimit,
+  clientIp,
+  rateLimitKey,
+  rateLimitResponse,
+} from '../_shared/rate_limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,12 +28,81 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { row_club_id, col_club_id, player_id, puzzle_cell_id } = body
+    const {
+      row_club_id,
+      col_club_id,
+      player_id,
+      puzzle_cell_id,
+      session_id,
+      response_time_ms,
+    } = body
+    const userUuid = req.headers.get('x-user-uuid') ?? body.user_uuid ?? ''
+
+    const rl = checkRateLimit(
+      rateLimitKey(userUuid || null, clientIp(req), 'validate-answer'),
+      120,
+      60_000,
+    )
+    if (!rl.allowed) {
+      return rateLimitResponse(rl.retryAfterSec!, corsHeaders)
+    }
+
+    if (!session_id || !UUID_RE.test(String(session_id))) {
+      return new Response(JSON.stringify({ error: 'invalid_session' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
+
+    const { error: sessionError } = await supabase.rpc('assert_active_session', {
+      p_session_id: session_id,
+      p_user_uuid: userUuid || null,
+    })
+
+    if (sessionError) {
+      const msg = sessionError.message ?? String(sessionError)
+      return new Response(JSON.stringify({ error: msg }), {
+        status: msg.includes('forbidden') ? 403 : 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const validCellId = puzzle_cell_id && UUID_RE.test(String(puzzle_cell_id))
+    const validPlayerId = player_id && UUID_RE.test(String(player_id))
+
+    if (validCellId) {
+      const { data: existing } = await supabase
+        .from('answers')
+        .select('id, is_correct, player_id')
+        .eq('session_id', session_id)
+        .eq('puzzle_cell_id', puzzle_cell_id)
+        .maybeSingle()
+
+      if (existing?.is_correct) {
+        const { data: player } = await supabase
+          .from('players')
+          .select('name')
+          .eq('id', existing.player_id)
+          .maybeSingle()
+
+        return new Response(
+          JSON.stringify({
+            correct: true,
+            player_name: player?.name ?? '',
+            usage_percentage: 0,
+            rarity_tier: 'common',
+            rarity_score: 0,
+            already_used_in_session: true,
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+        )
+      }
+    }
 
     const { data: correct, error: validateError } = await supabase.rpc(
       'validate_player_intersection',
@@ -46,9 +121,8 @@ Deno.serve(async (req) => {
 
     let usagePercentage = 0
     let rarityScore = 0
-    const validCellId = puzzle_cell_id && UUID_RE.test(String(puzzle_cell_id))
 
-    if (isCorrect && validCellId) {
+    if (isCorrect && validCellId && validPlayerId) {
       try {
         const { data: rarity } = await supabase
           .from('rarity_stats')
@@ -74,8 +148,23 @@ Deno.serve(async (req) => {
           p_cell_id: puzzle_cell_id,
           p_player_id: player_id,
         }).catch(() => {/* optional RPC */})
-      } catch {
-        // Rarity is best-effort; a valid answer must still register as correct.
+
+        const tier = tierFromUsage(usagePercentage)
+        await supabase.from('answers').upsert(
+          {
+            session_id,
+            puzzle_cell_id,
+            player_id,
+            is_correct: true,
+            usage_percentage: usagePercentage,
+            rarity_tier: tier,
+            rarity_score: rarityScore,
+            response_time_ms: Number(response_time_ms ?? 60000),
+          },
+          { onConflict: 'session_id, puzzle_cell_id' },
+        )
+      } catch (e) {
+        console.error('answer persist failed:', e)
       }
     }
 

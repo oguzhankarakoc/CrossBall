@@ -1,3 +1,5 @@
+import 'club_badge_tokens.dart';
+
 /// Legally safe abstract symbol — never official crests or logos.
 enum ClubSymbolType {
   abstractStripes,
@@ -11,6 +13,10 @@ enum ClubSymbolType {
   abstractCross,
   abstractFlame,
   abstractShield,
+  abstractWings,
+  abstractCompass,
+  abstractOak,
+  abstractEagle,
 }
 
 enum ClubBadgeStyle {
@@ -29,6 +35,8 @@ class ClubIdentity {
     required this.symbolType,
     required this.shortCode,
     required this.badgeStyle,
+    this.shape = ClubBadgeShape.roundedShield,
+    this.themeVariant = 'default',
   });
 
   final String primaryColor;
@@ -37,6 +45,19 @@ class ClubIdentity {
   final ClubSymbolType symbolType;
   final String shortCode;
   final ClubBadgeStyle badgeStyle;
+  final ClubBadgeShape shape;
+  final String themeVariant;
+
+  factory ClubIdentity.fromJson(Map<String, dynamic> json) => ClubIdentity(
+        primaryColor: json['primary_color'] as String? ?? '#333333',
+        secondaryColor: json['secondary_color'] as String? ?? '#666666',
+        accentColor: json['accent_color'] as String? ?? '#FFD700',
+        symbolType: parseSymbolType(json['symbol_type'] as String?),
+        shortCode: json['short_code'] as String? ?? 'CLB',
+        badgeStyle: parseBadgeStyle(json['badge_style'] as String?),
+        shape: ClubBadgeShape.roundedShield,
+        themeVariant: json['theme_variant'] as String? ?? 'default',
+      );
 
   static ClubSymbolType parseSymbolType(String? raw) {
     if (raw == null || raw.isEmpty) return ClubSymbolType.abstractShield;
@@ -52,6 +73,10 @@ class ClubIdentity {
       'abstract_waves' || 'waves' => ClubSymbolType.abstractWaves,
       'abstract_cross' || 'cross' => ClubSymbolType.abstractCross,
       'abstract_flame' || 'flame' => ClubSymbolType.abstractFlame,
+      'abstract_wings' || 'wings' => ClubSymbolType.abstractWings,
+      'abstract_compass' || 'compass' => ClubSymbolType.abstractCompass,
+      'abstract_oak' || 'oak' => ClubSymbolType.abstractOak,
+      'abstract_eagle' || 'eagle' => ClubSymbolType.abstractEagle,
       _ => ClubSymbolType.abstractShield,
     };
   }
@@ -78,5 +103,9 @@ class ClubIdentity {
         ClubSymbolType.abstractCross => 'abstract_cross',
         ClubSymbolType.abstractFlame => 'abstract_flame',
         ClubSymbolType.abstractShield => 'abstract_shield',
+        ClubSymbolType.abstractWings => 'abstract_wings',
+        ClubSymbolType.abstractCompass => 'abstract_compass',
+        ClubSymbolType.abstractOak => 'abstract_oak',
+        ClubSymbolType.abstractEagle => 'abstract_eagle',
       };
 }

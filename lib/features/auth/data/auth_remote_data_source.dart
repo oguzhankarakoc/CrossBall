@@ -4,20 +4,50 @@ import 'package:http/http.dart' as http;
 
 import '../../../core/config/app_config.dart';
 
+class SyncUserException implements Exception {
+  SyncUserException(this.errorCode, this.statusCode);
+
+  final String errorCode;
+  final int statusCode;
+
+  @override
+  String toString() => errorCode;
+}
+
 class AuthRemoteDataSource {
   AuthRemoteDataSource({http.Client? httpClient})
       : _http = httpClient ?? http.Client();
 
   final http.Client _http;
 
-  Future<Map<String, dynamic>?> syncUser({
+  Future<Map<String, dynamic>> syncUser({
     required String userUuid,
-    bool onboardingComplete = false,
-    bool isPremium = false,
+    bool? onboardingComplete,
     String? locale,
     String? themePreference,
+    String? displayName,
+    int? timezoneOffsetMinutes,
+    bool? pushOptIn,
+    bool clearDisplayName = false,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return null;
+    if (!AppConfig.isSupabaseConfigured) {
+      throw SyncUserException('supabase_not_configured', 0);
+    }
+
+    final body = <String, dynamic>{
+      'user_uuid': userUuid,
+      if (onboardingComplete != null) 'onboarding_complete': onboardingComplete,
+      if (locale != null) 'locale': locale,
+      if (themePreference != null) 'theme_preference': themePreference,
+      if (timezoneOffsetMinutes != null) 'timezone_offset_minutes': timezoneOffsetMinutes,
+      if (pushOptIn != null) 'push_opt_in': pushOptIn,
+    };
+
+    if (clearDisplayName) {
+      body['display_name'] = '';
+    } else if (displayName != null) {
+      body['display_name'] = displayName;
+    }
 
     final response = await _http.post(
       Uri.parse('${AppConfig.supabaseUrl}/functions/v1/sync-user'),
@@ -26,19 +56,21 @@ class AuthRemoteDataSource {
         'Content-Type': 'application/json',
         'x-user-uuid': userUuid,
       },
-      body: jsonEncode({
-        'user_uuid': userUuid,
-        'onboarding_complete': onboardingComplete,
-        'is_premium': isPremium,
-        'locale': ?locale,
-        'theme_preference': ?themePreference,
-      }),
+      body: jsonEncode(body),
     );
 
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+    final decoded = response.body.isNotEmpty
+        ? jsonDecode(response.body)
+        : <String, dynamic>{};
+
+    if (response.statusCode == 200 && decoded is Map<String, dynamic>) {
+      return decoded;
     }
-    return null;
+
+    final errorCode = decoded is Map
+        ? (decoded['error'] as String? ?? 'sync_failed')
+        : 'sync_failed';
+    throw SyncUserException(errorCode, response.statusCode);
   }
 
   Future<void> syncPreferences({
@@ -51,5 +83,42 @@ class AuthRemoteDataSource {
       locale: locale,
       themePreference: themePreference,
     );
+  }
+
+  /// Activates premium server-side after IAP (or dev/staging bypass).
+  Future<void> verifyPremium({
+    required String userUuid,
+    required String platform,
+    required String productId,
+    String? verificationData,
+    String? source,
+  }) async {
+    if (!AppConfig.isSupabaseConfigured) return;
+
+    final response = await _http.post(
+      Uri.parse('${AppConfig.supabaseUrl}/functions/v1/verify-premium'),
+      headers: {
+        'apikey': AppConfig.supabaseAnonKey,
+        'Content-Type': 'application/json',
+        'x-user-uuid': userUuid,
+      },
+      body: jsonEncode({
+        'user_uuid': userUuid,
+        'platform': platform,
+        'product_id': productId,
+        if (verificationData != null) 'verification_data': verificationData,
+        if (source != null) 'source': source,
+      }),
+    );
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final decoded = response.body.isNotEmpty
+          ? jsonDecode(response.body)
+          : <String, dynamic>{};
+      final errorCode = decoded is Map
+          ? (decoded['error'] as String? ?? 'verify_failed')
+          : 'verify_failed';
+      throw SyncUserException(errorCode, response.statusCode);
+    }
   }
 }

@@ -1,0 +1,16 @@
+{
+  "club_id": "liverpool-fc",
+  "display_name": "Liverpool FC",
+  "short_name": "Liverpool",
+  "short_code": "LIV",
+  "country": "GB",
+  "league": "Premier League",
+  "primary_color": "#C8102E",
+  "secondary_color": "#FFFFFF",
+  "accent_color": "#FFD700",
+  "symbol_type": "abstract_wings",
+  "badge_style": "vertical",
+  "shape_type": "rounded_shield",
+  "theme_variant": "heritage",
+  "heritage_note": "Abstract wing geometry — not the official Liver Bird"
+}

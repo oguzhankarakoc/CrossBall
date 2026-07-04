@@ -1,14 +1,19 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'core/ads/tracking_permission_service.dart';
+import 'core/club_identity/club_metadata_loader.dart';
 import 'core/config/app_config.dart';
+import 'core/crash/crash_reporting_service.dart';
 import 'core/sync/offline_sync_service.dart';
 import 'features/ads/ads_service.dart';
 import 'features/auth/presentation/auth_providers.dart';
+import 'features/notifications/push_notification_service.dart';
 import 'features/premium/premium_service.dart';
 import 'shared/providers/app_providers.dart';
 
@@ -19,6 +24,7 @@ Future<void> main() async {
 
   try {
     await AppConfig.load();
+    await ClubMetadataLoader.loadBundled();
   } catch (e, st) {
     debugPrint('AppConfig.load failed: $e\n$st');
   }
@@ -35,19 +41,31 @@ Future<void> main() async {
   }
 
   final container = ProviderContainer();
+  installCrashHandlers(createCrashReportingService(container.read(analyticsProvider)));
 
   try {
     final profile = await container.read(userProfileProvider.future);
+    await container.read(authRepositoryProvider).syncDeviceProfile(
+          pushOptIn: profile.pushOptIn,
+        );
+    await pushNotificationService.initialize(
+      userUuid: profile.userUuid,
+      pushOptIn: profile.pushOptIn,
+    );
     await container.read(analyticsProvider).identify(
           profile.userUuid,
-          traits: {'is_premium': profile.isPremium},
+          traits: {
+            'is_premium': profile.isPremium,
+            if (profile.displayName != null) 'display_name': profile.displayName,
+          },
         );
   } catch (e, st) {
-    debugPrint('Analytics identify failed: $e\n$st');
+    debugPrint('Startup profile sync failed: $e\n$st');
   }
 
   if (AppConfig.isAdMobEnabled) {
     try {
+      await requestTrackingPermissionIfNeeded();
       final ads = container.read(adsServiceProvider);
       final isPremium = container.read(isPremiumProvider);
       ads.isPremium = isPremium;

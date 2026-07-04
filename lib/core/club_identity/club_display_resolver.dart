@@ -50,6 +50,52 @@ abstract final class ClubDisplayResolver {
     'sporting-cp': ClubDisplayInfo('Sporting CP', 'Sporting', 'Primeira Liga', countryCode: 'PT'),
     'celtic-fc': ClubDisplayInfo('Celtic FC', 'Celtic', 'Scottish Premiership', countryCode: 'GB'),
     'rangers-fc': ClubDisplayInfo('Rangers FC', 'Rangers', 'Scottish Premiership', countryCode: 'GB'),
+    'aik': ClubDisplayInfo('AIK', 'AIK', 'Allsvenskan', countryCode: 'SE'),
+    'anderlecht': ClubDisplayInfo('RSC Anderlecht', 'Anderlecht', 'Pro League', countryCode: 'BE'),
+    'apoel': ClubDisplayInfo('APOEL FC', 'APOEL', 'Cypriot First Division', countryCode: 'CY'),
+    'basel': ClubDisplayInfo('FC Basel', 'Basel', 'Super League', countryCode: 'CH'),
+    'brondby': ClubDisplayInfo('Brøndby IF', 'Brondby', 'Superliga', countryCode: 'DK'),
+    'cfr-cluj': ClubDisplayInfo('CFR Cluj', 'CFR Cluj', 'Liga I', countryCode: 'RO'),
+    'club-america': ClubDisplayInfo('Club América', 'America', 'Liga MX', countryCode: 'MX'),
+    'club-brugge': ClubDisplayInfo('Club Brugge', 'Club Brugge', 'Pro League', countryCode: 'BE'),
+    'copenhagen': ClubDisplayInfo('FC Copenhagen', 'Copenhagen', 'Superliga', countryCode: 'DK'),
+    'dinamo-zagreb': ClubDisplayInfo('Dinamo Zagreb', 'Dinamo', 'HNL', countryCode: 'HR'),
+    'dynamo-kyiv': ClubDisplayInfo('Dynamo Kyiv', 'Dynamo Kyiv', 'Premier League', countryCode: 'UA'),
+    'esperance-tunis': ClubDisplayInfo('Espérance de Tunis', 'Esperance', 'Ligue 1', countryCode: 'TN'),
+    'guangzhou-fc': ClubDisplayInfo('Guangzhou FC', 'Guangzhou', 'CSL', countryCode: 'CN'),
+    'hajduk-split': ClubDisplayInfo('Hajduk Split', 'Hajduk', 'HNL', countryCode: 'HR'),
+    'hjk-helsinki': ClubDisplayInfo('HJK Helsinki', 'HJK', 'Veikkausliiga', countryCode: 'FI'),
+    'jeonbuk-hyundai': ClubDisplayInfo('Jeonbuk Hyundai', 'Jeonbuk', 'K League', countryCode: 'KR'),
+    'kaizer-chiefs': ClubDisplayInfo('Kaizer Chiefs', 'Kaizer', 'Premier Soccer League', countryCode: 'ZA'),
+    'kashima-antlers': ClubDisplayInfo('Kashima Antlers', 'Kashima', 'J1 League', countryCode: 'JP'),
+    'legia-warsaw': ClubDisplayInfo('Legia Warsaw', 'Legia', 'Ekstraklasa', countryCode: 'PL'),
+    'maccabi-haifa': ClubDisplayInfo('Maccabi Haifa', 'M. Haifa', 'Ligat HaAl', countryCode: 'IL'),
+    'maccabi-tel-aviv': ClubDisplayInfo('Maccabi Tel Aviv', 'M. Tel Aviv', 'Ligat HaAl', countryCode: 'IL'),
+    'malmo-ff': ClubDisplayInfo('Malmö FF', 'Malmo', 'Allsvenskan', countryCode: 'SE'),
+    'melbourne-city': ClubDisplayInfo('Melbourne City', 'Melbourne', 'A-League', countryCode: 'AU'),
+    'molde-fk': ClubDisplayInfo('Molde FK', 'Molde', 'Eliteserien', countryCode: 'NO'),
+    'monterrey': ClubDisplayInfo('CF Monterrey', 'Monterrey', 'Liga MX', countryCode: 'MX'),
+    'olympiacos': ClubDisplayInfo('Olympiacos FC', 'Olympiacos', 'Super League', countryCode: 'GR'),
+    'omonia': ClubDisplayInfo('AC Omonia', 'Omonia', 'Cypriot First Division', countryCode: 'CY'),
+    'orlando-pirates': ClubDisplayInfo('Orlando Pirates', 'Pirates', 'Premier Soccer League', countryCode: 'ZA'),
+    'panathinaikos': ClubDisplayInfo('Panathinaikos FC', 'Panathinaikos', 'Super League', countryCode: 'GR'),
+    'partizan': ClubDisplayInfo('FK Partizan', 'Partizan', 'SuperLiga', countryCode: 'RS'),
+    'qarabag-fk': ClubDisplayInfo('Qarabağ FK', 'Qarabag', 'Premier League', countryCode: 'AZ'),
+    'raja-casablanca': ClubDisplayInfo('Raja CA', 'Raja', 'Botola', countryCode: 'MA'),
+    'rapid-vienna': ClubDisplayInfo('SK Rapid Wien', 'Rapid', 'Bundesliga', countryCode: 'AT'),
+    'red-star-belgrade': ClubDisplayInfo('Red Star Belgrade', 'Red Star', 'SuperLiga', countryCode: 'RS'),
+    'rosenborg': ClubDisplayInfo('Rosenborg BK', 'Rosenborg', 'Eliteserien', countryCode: 'NO'),
+    'salzburg': ClubDisplayInfo('FC Salzburg', 'Salzburg', 'Bundesliga', countryCode: 'AT'),
+    'shakhtar-donetsk': ClubDisplayInfo('Shakhtar Donetsk', 'Shakhtar', 'Premier League', countryCode: 'UA'),
+    'shanghai-sipg': ClubDisplayInfo('Shanghai Port', 'SIPG', 'CSL', countryCode: 'CN'),
+    'slavia-prague': ClubDisplayInfo('Slavia Prague', 'Slavia', 'Fortuna Liga', countryCode: 'CZ'),
+    'sparta-prague': ClubDisplayInfo('Sparta Prague', 'Sparta', 'Fortuna Liga', countryCode: 'CZ'),
+    'steaua-bucharest': ClubDisplayInfo('FCSB', 'Steaua', 'Liga I', countryCode: 'RO'),
+    'sydney-fc': ClubDisplayInfo('Sydney FC', 'Sydney', 'A-League', countryCode: 'AU'),
+    'ulsan-hd': ClubDisplayInfo('Ulsan HD', 'Ulsan', 'K League', countryCode: 'KR'),
+    'urawa-red-diamonds': ClubDisplayInfo('Urawa Red Diamonds', 'Urawa', 'J1 League', countryCode: 'JP'),
+    'wydad-ac': ClubDisplayInfo('Wydad AC', 'Wydad', 'Botola', countryCode: 'MA'),
+    'young-boys': ClubDisplayInfo('Young Boys', 'Young Boys', 'Super League', countryCode: 'CH'),
   };
 
   static const Map<String, String> _countryNames = {
@@ -65,6 +111,32 @@ abstract final class ClubDisplayResolver {
     'BR': 'Brazil',
     'US': 'United States',
     'SA': 'Saudi Arabia',
+    'SE': 'Sweden',
+    'BE': 'Belgium',
+    'CY': 'Cyprus',
+    'CH': 'Switzerland',
+    'DK': 'Denmark',
+    'RO': 'Romania',
+    'MX': 'Mexico',
+    'HR': 'Croatia',
+    'UA': 'Ukraine',
+    'TN': 'Tunisia',
+    'CN': 'China',
+    'FI': 'Finland',
+    'KR': 'South Korea',
+    'ZA': 'South Africa',
+    'JP': 'Japan',
+    'PL': 'Poland',
+    'IL': 'Israel',
+    'AU': 'Australia',
+    'NO': 'Norway',
+    'GR': 'Greece',
+    'RS': 'Serbia',
+    'AZ': 'Azerbaijan',
+    'MA': 'Morocco',
+    'AT': 'Austria',
+    'CZ': 'Czech Republic',
+    'EG': 'Egypt',
   };
 
   static ClubDisplayInfo resolve(Club club) {
@@ -87,6 +159,42 @@ abstract final class ClubDisplayResolver {
     if (code == null || code.isEmpty) return '';
     return _countryNames[code.toUpperCase()] ?? code;
   }
+
+  /// Builds a [Club] for list UIs when only id + display names are available.
+  static Club standalone({
+    required String id,
+    required String name,
+    String? shortName,
+  }) {
+    final slug = _slugForName(name, shortName) ?? _slugify(name);
+    final known = _bySlug[slug];
+    return Club(
+      id: id,
+      name: name,
+      slug: slug,
+      displayName: name,
+      shortName: shortName,
+      countryCode: known?.countryCode,
+      leagueName: known?.leagueName,
+    );
+  }
+
+  static String? _slugForName(String name, String? shortName) {
+    final nameLower = name.toLowerCase();
+    final shortLower = (shortName ?? '').toLowerCase();
+    for (final entry in _bySlug.entries) {
+      final info = entry.value;
+      if (info.displayName.toLowerCase() == nameLower ||
+          info.shortLabel.toLowerCase() == nameLower ||
+          (shortLower.isNotEmpty && info.shortLabel.toLowerCase() == shortLower)) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
+  static String _slugify(String name) =>
+      name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '-').replaceAll(RegExp(r'^-|-$'), '');
 
   static String _deriveShortLabel(String fullName) {
     var name = fullName.trim();

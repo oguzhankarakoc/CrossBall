@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/club_identity/club_badge_tokens.dart';
 import '../../core/club_identity/club_display_resolver.dart';
 import '../../core/club_identity/club_identity_registry.dart';
 import '../../core/theme/app_colors.dart';
@@ -7,7 +8,7 @@ import '../../core/theme/app_tokens.dart';
 import '../../features/puzzle/domain/puzzle.dart';
 import 'club_badge.dart';
 
-/// Puzzle header cell: premium badge + human-readable short label.
+/// Puzzle header cell: premium badge + human-readable short label (always visible).
 class ClubHeaderCell extends StatelessWidget {
   const ClubHeaderCell({
     super.key,
@@ -15,12 +16,16 @@ class ClubHeaderCell extends StatelessWidget {
     required this.badgeSize,
     required this.maxLabelWidth,
     this.axis = Axis.vertical,
+    this.visualState = ClubBadgeVisualState.normal,
+    this.showCountry = false,
   });
 
   final Club club;
   final double badgeSize;
   final double maxLabelWidth;
   final Axis axis;
+  final ClubBadgeVisualState visualState;
+  final bool showCountry;
 
   void _showClubDetail(BuildContext context) {
     final info = ClubDisplayResolver.resolve(club);
@@ -46,7 +51,12 @@ class ClubHeaderCell extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  ClubBadge(club: club, size: 48, showLabel: false, interactive: false),
+                  ClubBadge(
+                    club: club,
+                    size: 48,
+                    showLabel: false,
+                    interactive: false,
+                  ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
@@ -84,21 +94,40 @@ class ClubHeaderCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final info = ClubDisplayResolver.resolve(club);
+    final labelSize = (badgeSize * 0.26)
+        .clamp(ClubBadgeTokens.labelMinFontSize, ClubBadgeTokens.labelMaxFontSize);
+
     final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-          fontSize: badgeSize < 46 ? 9 : 10,
+          fontSize: labelSize,
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.2,
-          height: 1.0,
+          letterSpacing: ClubBadgeTokens.labelLetterSpacing,
+          height: 1.05,
+          color: visualState == ClubBadgeVisualState.selected
+              ? context.cb.lime
+              : null,
         );
 
     final label = SizedBox(
       width: maxLabelWidth,
-      child: Text(
-        info.shortLabel,
-        style: labelStyle,
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            info.shortLabel,
+            style: labelStyle,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (showCountry && club.countryCode != null && club.countryCode!.isNotEmpty)
+            Text(
+              club.countryCode!.toUpperCase(),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontSize: 9,
+                    color: context.cb.textSecondary,
+                  ),
+            ),
+        ],
       ),
     );
 
@@ -107,6 +136,7 @@ class ClubHeaderCell extends StatelessWidget {
       size: badgeSize,
       showLabel: false,
       interactive: false,
+      visualState: visualState,
     );
 
     final content = axis == Axis.vertical
@@ -127,10 +157,28 @@ class ClubHeaderCell extends StatelessWidget {
             ],
           );
 
-    return GestureDetector(
-      onTap: () => _showClubDetail(context),
-      onLongPress: () => _showClubDetail(context),
-      child: content,
+    return Semantics(
+      button: true,
+      label: info.displayName,
+      child: GestureDetector(
+        onTap: () => _showClubDetail(context),
+        onLongPress: () => _showClubDetail(context),
+        child: AnimatedContainer(
+          duration: ClubBadgeTokens.stateDuration,
+          padding: visualState == ClubBadgeVisualState.selected
+              ? const EdgeInsets.all(2)
+              : EdgeInsets.zero,
+          decoration: visualState == ClubBadgeVisualState.selected
+              ? BoxDecoration(
+                  borderRadius: AppRadius.smBorder,
+                  border: Border.all(
+                    color: context.cb.lime.withValues(alpha: 0.45),
+                  ),
+                )
+              : null,
+          child: content,
+        ),
+      ),
     );
   }
 }

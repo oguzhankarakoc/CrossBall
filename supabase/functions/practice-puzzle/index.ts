@@ -47,17 +47,41 @@ Deno.serve(async (req) => {
     const userUuid = req.headers.get('x-user-uuid') ?? url.searchParams.get('user_uuid') ?? 'anonymous'
     const gridSize = parseInt(url.searchParams.get('grid_size') ?? '3', 10)
     const tier = url.searchParams.get('difficulty_tier') ?? 'medium'
+    const excludeRaw = url.searchParams.get('exclude_puzzle_id')
+    const excludePuzzleId =
+      excludeRaw && /^[0-9a-f-]{36}$/i.test(excludeRaw) ? excludeRaw : null
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
+    if (userUuid !== 'anonymous') {
+      const { error: quotaError } = await supabase.rpc('assert_practice_can_start', {
+        p_user_uuid: userUuid,
+      })
+      if (quotaError) {
+        const msg = quotaError.message ?? String(quotaError)
+        const status = msg.includes('practice_ad_required')
+          ? 403
+          : msg.includes('practice_daily_limit')
+            ? 429
+            : 500
+        return new Response(JSON.stringify({ error: msg }), {
+          status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      await supabase.rpc('consume_practice_ad_unlock', { p_user_uuid: userUuid })
+    }
+
     const { data: puzzleId, error: selectError } = await supabase.rpc('select_practice_puzzle', {
       p_user_uuid: userUuid,
       p_grid_size: gridSize,
       p_difficulty_tier: tier,
       p_lookback_days: 30,
+      p_exclude_puzzle_id: excludePuzzleId,
     })
 
     if (selectError) throw selectError
@@ -74,7 +98,14 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
+    const message =
+      err && typeof err === 'object' && 'message' in err
+        ? String((err as { message: string }).message)
+        : err instanceof Error
+          ? err.message
+          : JSON.stringify(err)
+    console.error('practice-puzzle error:', message)
+    return new Response(JSON.stringify({ error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

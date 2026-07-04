@@ -7,8 +7,11 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../features/ads/ads_service.dart';
 import '../../../features/ads/presentation/banner_ad_widget.dart';
+import '../../../features/economy/domain/player_progression.dart';
+import '../../../features/economy/presentation/club_mastery_section.dart';
 import '../../../features/premium/premium_service.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
@@ -21,6 +24,7 @@ class StatsScreen extends ConsumerWidget {
     final statsAsync = ref.watch(userStatsProvider);
     final progressionAsync = ref.watch(playerProgressionProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    final clubMasteryAsync = ref.watch(clubMasteryProvider);
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.stats),
@@ -30,7 +34,12 @@ class StatsScreen extends ConsumerWidget {
             Expanded(
               child: statsAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(child: Text('$e')),
+                error: (e, _) => Center(
+                  child: CrossBallErrorPanel(
+                    message: localizedErrorMessage(l10n, 'unknown_error'),
+                    onRetry: () => ref.invalidate(userStatsProvider),
+                  ),
+                ),
                 data: (stats) => ListView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   children: [
@@ -59,6 +68,17 @@ class StatsScreen extends ConsumerWidget {
                             value: _formatLeague(progression.currentLeague),
                             icon: Icons.emoji_events,
                           ),
+                          if (progression.achievementPoints > 0)
+                            _StatCard(
+                              label: l10n.achievementPoints,
+                              value: progression.achievementPoints.toString(),
+                              icon: Icons.workspace_premium,
+                            ),
+                          _AchievementsSection(
+                            achievements: progression.achievements,
+                            emptyLabel: l10n.noAchievementsYet,
+                            title: l10n.achievements,
+                          ),
                           const SizedBox(height: AppSpacing.md),
                         ],
                       ),
@@ -83,18 +103,29 @@ class StatsScreen extends ConsumerWidget {
                       value: stats.totalScore.toStringAsFixed(0),
                       icon: Icons.leaderboard,
                     ),
+                    clubMasteryAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (clubs) => ClubMasterySection(
+                        clubs: clubs,
+                        emptyLabel: l10n.clubMasteryEmpty,
+                      ),
+                    ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(l10n.rarityBreakdown, style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: AppSpacing.md),
                     if (!isPremium)
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.lock_outline),
-                          title: Text(l10n.premiumFeatureStats),
-                          trailing: TextButton(
-                            onPressed: () => context.push(AppRoutes.premium),
-                            child: Text(l10n.upgradePremium),
-                          ),
+                      CrossBallGlassPanel(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.lock_outline),
+                            Expanded(child: Text(l10n.premiumFeatureStats)),
+                            TextButton(
+                              onPressed: () => context.push(AppRoutes.premium),
+                              child: Text(l10n.upgradePremium),
+                            ),
+                          ],
                         ),
                       )
                     else
@@ -116,7 +147,10 @@ class StatsScreen extends ConsumerWidget {
                               Expanded(child: Text(tier.label)),
                               Text(
                                 count.toString(),
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.w800,
+                                      color: context.cb.lime,
+                                    ),
                               ),
                             ],
                           ),
@@ -137,6 +171,76 @@ class StatsScreen extends ConsumerWidget {
 String _formatLeague(String slug) =>
     slug.isEmpty ? slug : slug[0].toUpperCase() + slug.substring(1);
 
+class _AchievementsSection extends StatelessWidget {
+  const _AchievementsSection({
+    required this.achievements,
+    required this.title,
+    required this.emptyLabel,
+  });
+
+  final List<PlayerAchievement> achievements;
+  final String title;
+  final String emptyLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.cb;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: CrossBallGlassPanel(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            if (achievements.isEmpty)
+              Text(
+                emptyLabel,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colors.textSecondary,
+                    ),
+              )
+            else
+              ...achievements.map(
+                (a) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.emoji_events, color: colors.lime, size: 22),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              a.title,
+                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                            Text(
+                              a.description,
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: colors.textSecondary,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _StatCard extends StatelessWidget {
   const _StatCard({
     required this.label,
@@ -152,17 +256,30 @@ class _StatCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.cb;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
-      child: ListTile(
-        leading: Icon(icon, color: colors.primary),
-        title: Text(label),
-        trailing: Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colors.accent,
-                fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: CrossBallGlassPanel(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: colors.primary.withValues(alpha: 0.15),
+                borderRadius: AppRadius.lgBorder,
               ),
+              child: Icon(icon, color: colors.lime, size: 24),
+            ),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(child: Text(label, style: Theme.of(context).textTheme.titleMedium)),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: colors.lime,
+                    fontWeight: FontWeight.w800,
+                  ),
+            ),
+          ],
         ),
       ),
     );

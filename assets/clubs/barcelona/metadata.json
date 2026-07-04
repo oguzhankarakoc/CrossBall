@@ -1,0 +1,16 @@
+{
+  "club_id": "barcelona",
+  "display_name": "FC Barcelona",
+  "short_name": "Barcelona",
+  "short_code": "BAR",
+  "country": "ES",
+  "league": "La Liga",
+  "primary_color": "#A50044",
+  "secondary_color": "#004D98",
+  "accent_color": "#FFD700",
+  "symbol_type": "abstract_stripes",
+  "badge_style": "vertical",
+  "shape_type": "rounded_shield",
+  "theme_variant": "mediterranean",
+  "heritage_note": "Mediterranean geometry — original CrossBall illustration"
+}

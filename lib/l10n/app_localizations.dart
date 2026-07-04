@@ -151,7 +151,7 @@ abstract class AppLocalizations {
   /// No description provided for @practiceDesc.
   ///
   /// In en, this message translates to:
-  /// **'Sharpen your skills. Limited free games.'**
+  /// **'5 sessions per day. Watch ads to unlock the next round.'**
   String get practiceDesc;
 
   /// No description provided for @stats.
@@ -261,6 +261,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load today\'s puzzle. Check your connection and try again.'**
   String get puzzleLoadFailed;
+
+  /// No description provided for @practiceLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load a practice puzzle. Check your connection and try again.'**
+  String get practiceLoadFailed;
 
   /// No description provided for @retry.
   ///
@@ -385,7 +391,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumDesc.
   ///
   /// In en, this message translates to:
-  /// **'4×4 grids, unlimited practice, advanced stats, no ads.'**
+  /// **'10 ad-free training sessions per day, advanced stats, no ads.'**
   String get premiumDesc;
 
   /// No description provided for @upgradePremium.
@@ -589,8 +595,104 @@ abstract class AppLocalizations {
   /// No description provided for @practiceLimitReached.
   ///
   /// In en, this message translates to:
-  /// **'Free practice limit reached. Upgrade to Premium for unlimited games.'**
+  /// **'Daily training limit reached. Come back tomorrow or upgrade to Premium.'**
   String get practiceLimitReached;
+
+  /// No description provided for @practiceAdRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next training'**
+  String get practiceAdRequiredTitle;
+
+  /// No description provided for @practiceAdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch a short ad to start your next training session.'**
+  String get practiceAdRequired;
+
+  /// No description provided for @practiceWatchAdForNewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for new training'**
+  String get practiceWatchAdForNewSession;
+
+  /// No description provided for @practiceNewSession.
+  ///
+  /// In en, this message translates to:
+  /// **'New training'**
+  String get practiceNewSession;
+
+  /// No description provided for @practiceCompleteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh club combinations every session.'**
+  String get practiceCompleteDesc;
+
+  /// No description provided for @practiceFinishTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish training'**
+  String get practiceFinishTraining;
+
+  /// No description provided for @practiceFinishConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish training?'**
+  String get practiceFinishConfirmTitle;
+
+  /// No description provided for @practiceFinishConfirmBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This session ends and uses 1 of your daily training credits.'**
+  String get practiceFinishConfirmBody;
+
+  /// No description provided for @practiceResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training complete'**
+  String get practiceResultTitle;
+
+  /// No description provided for @practiceResultEarlyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished early — your score and progress were saved.'**
+  String get practiceResultEarlyDesc;
+
+  /// No description provided for @practiceSessionProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Training {current}/{limit}'**
+  String practiceSessionProgress(int current, int limit);
+
+  /// No description provided for @practiceDailyProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{used}/{limit} training sessions used today'**
+  String practiceDailyProgress(int used, int limit);
+
+  /// No description provided for @practiceAdGateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'On the free plan, watch a short ad before each new training session.'**
+  String get practiceAdGateHint;
+
+  /// No description provided for @practicePremiumSkipAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium: up to 10 training sessions per day, no ads between rounds.'**
+  String get practicePremiumSkipAds;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @practiceSessionsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} training sessions left today'**
+  String practiceSessionsRemaining(int count);
 
   /// No description provided for @premiumFeatureGrid.
   ///
@@ -601,7 +703,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeaturePractice.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited practice'**
+  /// **'10 ad-free training sessions per day'**
   String get premiumFeaturePractice;
 
   /// No description provided for @premiumFeatureStats.
@@ -675,6 +777,342 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You'**
   String get challengeYou;
+
+  /// No description provided for @playerNickname.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname'**
+  String get playerNickname;
+
+  /// No description provided for @playerNicknameDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional name for challenges and future leaderboards.'**
+  String get playerNicknameDesc;
+
+  /// No description provided for @playerNicknameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'3–20 characters'**
+  String get playerNicknameHint;
+
+  /// No description provided for @playerNicknameSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Nickname saved'**
+  String get playerNicknameSaved;
+
+  /// No description provided for @playerNicknameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'This nickname is already taken'**
+  String get playerNicknameTaken;
+
+  /// No description provided for @playerNicknameInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Use 3–20 letters, numbers, dots, dashes or underscores'**
+  String get playerNicknameInvalid;
+
+  /// No description provided for @gridSelectCell.
+  ///
+  /// In en, this message translates to:
+  /// **'SELECT'**
+  String get gridSelectCell;
+
+  /// No description provided for @achievements.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievements'**
+  String get achievements;
+
+  /// No description provided for @achievementPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement Points'**
+  String get achievementPoints;
+
+  /// No description provided for @achievementUnlocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Achievement unlocked!'**
+  String get achievementUnlocked;
+
+  /// No description provided for @noAchievementsYet.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete puzzles to unlock achievements.'**
+  String get noAchievementsYet;
+
+  /// No description provided for @dailyMissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Missions'**
+  String get dailyMissions;
+
+  /// No description provided for @missionsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed}/{total} done'**
+  String missionsProgress(int completed, int total);
+
+  /// No description provided for @shareResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Share result'**
+  String get shareResult;
+
+  /// No description provided for @leaderboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Leaderboard'**
+  String get leaderboard;
+
+  /// No description provided for @leaderboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No ranked players yet. Complete puzzles to appear on the board.'**
+  String get leaderboardEmpty;
+
+  /// No description provided for @pushNotifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get pushNotifications;
+
+  /// No description provided for @pushNotificationsOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak reminders enabled'**
+  String get pushNotificationsOn;
+
+  /// No description provided for @pushNotificationsOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications off'**
+  String get pushNotificationsOff;
+
+  /// No description provided for @hintAdRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch an ad to unlock this hint.'**
+  String get hintAdRequired;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errorGeneric;
+
+  /// No description provided for @errorNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Network error. Check your connection.'**
+  String get errorNetwork;
+
+  /// No description provided for @themeDarkGold.
+  ///
+  /// In en, this message translates to:
+  /// **'Gold Stadium'**
+  String get themeDarkGold;
+
+  /// No description provided for @themeLightClassic.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic Pitch'**
+  String get themeLightClassic;
+
+  /// No description provided for @themeDarkGoldDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium: black pitch with gold accents'**
+  String get themeDarkGoldDesc;
+
+  /// No description provided for @themeLightClassicDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium: warm white pitch with gold accents'**
+  String get themeLightClassicDesc;
+
+  /// No description provided for @mythicCelebration.
+  ///
+  /// In en, this message translates to:
+  /// **'MYTHIC!'**
+  String get mythicCelebration;
+
+  /// No description provided for @mythicCelebrationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Ultra-rare pick — elite football IQ.'**
+  String get mythicCelebrationBody;
+
+  /// No description provided for @challengeFromAnySession.
+  ///
+  /// In en, this message translates to:
+  /// **'Share your last completed puzzle with a friend.'**
+  String get challengeFromAnySession;
+
+  /// No description provided for @challengeNeedSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete any puzzle first to create a challenge.'**
+  String get challengeNeedSession;
+
+  /// No description provided for @challengeRematch.
+  ///
+  /// In en, this message translates to:
+  /// **'Rematch — share new link'**
+  String get challengeRematch;
+
+  /// No description provided for @dailyChallengeEasyDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Easier puzzle while you learn — build your streak.'**
+  String get dailyChallengeEasyDesc;
+
+  /// No description provided for @seasonPoints.
+  ///
+  /// In en, this message translates to:
+  /// **'{points} SP'**
+  String seasonPoints(int points);
+
+  /// No description provided for @seasonNextReward.
+  ///
+  /// In en, this message translates to:
+  /// **'Next reward at {points} SP: {reward}'**
+  String seasonNextReward(int points, String reward);
+
+  /// No description provided for @clubMastery.
+  ///
+  /// In en, this message translates to:
+  /// **'Club Mastery'**
+  String get clubMastery;
+
+  /// No description provided for @clubMasteryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Solve intersections to build club mastery.'**
+  String get clubMasteryEmpty;
+
+  /// No description provided for @hintCareerClubTaste.
+  ///
+  /// In en, this message translates to:
+  /// **'Free weekly taste: reveal another career club'**
+  String get hintCareerClubTaste;
+
+  /// No description provided for @practiceGrid4Title.
+  ///
+  /// In en, this message translates to:
+  /// **'4×4 Premium Grid'**
+  String get practiceGrid4Title;
+
+  /// No description provided for @practiceGrid4Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Larger grid with more club combinations.'**
+  String get practiceGrid4Desc;
+
+  /// No description provided for @premiumGridRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'4×4 grids are a Premium feature.'**
+  String get premiumGridRequired;
+
+  /// No description provided for @timelineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Timeline Training'**
+  String get timelineMode;
+
+  /// No description provided for @timelineModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'See career years after each correct answer.'**
+  String get timelineModeDesc;
+
+  /// No description provided for @timelineSheetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} — career timeline'**
+  String timelineSheetTitle(String name);
+
+  /// No description provided for @timelineEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No senior career data available for this player.'**
+  String get timelineEmpty;
+
+  /// No description provided for @present.
+  ///
+  /// In en, this message translates to:
+  /// **'Present'**
+  String get present;
+
+  /// No description provided for @activityFeed.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Activity'**
+  String get activityFeed;
+
+  /// No description provided for @activityDailyCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} completed the daily puzzle ({score} pts)'**
+  String activityDailyCompleted(String name, String score);
+
+  /// No description provided for @activityChallengeCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} finished a friend challenge'**
+  String activityChallengeCompleted(String name);
+
+  /// No description provided for @activityTimelineCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} finished timeline training ({score} pts)'**
+  String activityTimelineCompleted(String name, String score);
+
+  /// No description provided for @activityGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}: {action}'**
+  String activityGeneric(String name, String action);
+
+  /// No description provided for @footballFactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know?'**
+  String get footballFactTitle;
+
+  /// No description provided for @tournament.
+  ///
+  /// In en, this message translates to:
+  /// **'Tournament'**
+  String get tournament;
+
+  /// No description provided for @tournamentDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly high-score competition'**
+  String get tournamentDesc;
+
+  /// No description provided for @tournamentInactive.
+  ///
+  /// In en, this message translates to:
+  /// **'No active tournament right now. Check back soon.'**
+  String get tournamentInactive;
+
+  /// No description provided for @tournamentEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No scores yet — be the first to play!'**
+  String get tournamentEmpty;
+
+  /// No description provided for @tournamentYourRank.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rank: #{rank}'**
+  String tournamentYourRank(int rank);
 }
 
 class _AppLocalizationsDelegate

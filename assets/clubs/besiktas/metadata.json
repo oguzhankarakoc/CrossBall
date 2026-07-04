@@ -1,0 +1,16 @@
+{
+  "club_id": "besiktas",
+  "display_name": "Beşiktaş",
+  "short_name": "Beşiktaş",
+  "short_code": "BJK",
+  "country": "TR",
+  "league": "Süper Lig",
+  "primary_color": "#000000",
+  "secondary_color": "#FFFFFF",
+  "accent_color": "#FFD700",
+  "symbol_type": "abstract_eagle",
+  "badge_style": "vertical",
+  "shape_type": "rounded_shield",
+  "theme_variant": "heritage",
+  "heritage_note": "Minimal eagle silhouette — no official initials"
+}

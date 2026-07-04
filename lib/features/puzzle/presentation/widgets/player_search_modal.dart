@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/game_constants.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/rarity.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../search/domain/search.dart';
 import '../../../../shared/providers/app_providers.dart';
-import '../../../../shared/widgets/club_header_cell.dart';
+import '../../../../shared/widgets/crossball_ui.dart';
+import '../../../../shared/widgets/club_identity/club_identity_widgets.dart';
 import '../../../../shared/widgets/player_search_card.dart';
 import '../../domain/puzzle.dart';
 import '../puzzle_providers.dart';
@@ -40,7 +40,10 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   final _focusNode = FocusNode();
   Timer? _debounce;
   List<Player> _results = [];
+  List<Player> _recentPicks = [];
+  List<Player> _suggested = [];
   bool _loading = false;
+  bool _browseLoading = true;
   bool _hintLoading = false;
   late List<String> _hints;
 
@@ -75,6 +78,20 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     _hints = List<String>.from(widget.revealedHints);
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
+    _loadBrowseData();
+  }
+
+  Future<void> _loadBrowseData() async {
+    final repo = ref.read(searchRepositoryProvider);
+    final recent = await repo.getRecentPicks();
+    final suggested = await repo.getSuggestedForCell(_searchContext);
+    if (mounted) {
+      setState(() {
+        _recentPicks = recent;
+        _suggested = suggested;
+        _browseLoading = false;
+      });
+    }
   }
 
   void _onQueryChanged() {
@@ -119,7 +136,11 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   HintType? get _nextHintType {
     if (_hints.length >= _hintSequence.length) return null;
     final next = _hintSequence[_hints.length];
-    if (next == HintType.careerClub && !widget.isPremium) return null;
+    if (next == HintType.careerClub && !widget.isPremium) {
+      final tasteAvailable =
+          ref.watch(careerHintTasteAvailableProvider).valueOrNull ?? false;
+      if (!tasteAvailable) return null;
+    }
     return next;
   }
 
@@ -161,161 +182,278 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
       expand: false,
       builder: (context, scrollController) {
         return Material(
-          color: colors.surface,
-          elevation: 16,
-          shadowColor: Colors.black.withValues(alpha: 0.35),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-          clipBehavior: Clip.antiAlias,
-          child: Column(
-            children: [
-              const SizedBox(height: AppSpacing.sm),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colors.textSecondary.withValues(alpha: 0.45),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClubHeaderCell(
-                      club: widget.rowClub,
-                      badgeSize: 40,
-                      maxLabelWidth: 72,
+          color: Colors.transparent,
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+            child: CrossBallGlassPanel(
+              padding: EdgeInsets.zero,
+              borderRadius: AppRadius.xxl,
+              child: Column(
+                children: [
+                  const SizedBox(height: AppSpacing.sm),
+                  Container(
+                    width: 48,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: colors.textSecondary.withValues(alpha: 0.35),
+                      borderRadius: AppRadius.pillBorder,
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.lg,
+                      AppSpacing.md,
+                      AppSpacing.lg,
+                      AppSpacing.sm,
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ClubHeaderCell(
+                            club: widget.rowClub,
+                            badgeSize: 44,
+                            maxLabelWidth: 88,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                          child: IconButton(
+                            icon: Icon(Icons.close_rounded, size: 20, color: colors.textSecondary),
+                            onPressed: () => Navigator.pop(context),
+                            tooltip: l10n.cancel,
+                          ),
+                        ),
+                        Expanded(
+                          child: ClubHeaderCell(
+                            club: widget.colClub,
+                            badgeSize: 44,
+                            maxLabelWidth: 88,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (_hints.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                      child: Icon(Icons.close, size: 14, color: colors.textSecondary),
-                    ),
-                    ClubHeaderCell(
-                      club: widget.colClub,
-                      badgeSize: 40,
-                      maxLabelWidth: 72,
-                    ),
-                  ],
-                ),
-              ),
-              if (_hints.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                  child: Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
-                    children: _hints
-                        .map(
-                          (h) => Chip(
-                            label: Text(h),
-                            backgroundColor: colors.surfaceElevated,
-                            side: BorderSide(color: colors.cardBorder),
-                          ),
-                        )
-                        .toList(),
-                  ),
-                ),
-              if (nextHint != null)
-                Padding(
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: _hintLoading ? null : _requestHint,
-                      icon: _hintLoading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: colors.accent),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                      child: Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: _hints
+                            .map(
+                              (h) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.sm + 2,
+                                  vertical: AppSpacing.xs,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colors.primary.withValues(alpha: 0.15),
+                                  borderRadius: AppRadius.pillBorder,
+                                  border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
+                                ),
+                                child: Text(
+                                  h,
+                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                        color: colors.primary,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                              ),
                             )
-                          : Icon(Icons.lightbulb_outline, color: colors.accent),
-                      label: Text(_hintLabel(nextHint, l10n)),
+                            .toList(),
+                      ),
                     ),
-                  ),
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                child: TextField(
-                  controller: _controller,
-                  focusNode: _focusNode,
-                  style: TextStyle(color: colors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: l10n.searchPlayer,
-                    prefixIcon: Icon(Icons.search, color: colors.iconTint),
-                    suffixIcon: _loading
-                        ? Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: colors.accent),
-                            ),
-                          )
-                        : _controller.text.isNotEmpty
-                            ? IconButton(
-                                icon: const Icon(Icons.clear),
-                                onPressed: () => _controller.clear(),
+                  if (nextHint != null)
+                    Padding(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _hintLoading ? null : _requestHint,
+                          icon: _hintLoading
+                              ? SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.lime),
+                                )
+                              : Icon(Icons.lightbulb_outline_rounded, color: colors.lime),
+                          label: Text(_hintLabel(nextHint, l10n)),
+                        ),
+                      ),
+                    ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: colors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                      decoration: InputDecoration(
+                        hintText: l10n.searchPlayer,
+                        hintStyle: TextStyle(color: colors.textSecondary),
+                        prefixIcon: Icon(Icons.search_rounded, color: colors.lime),
+                        suffixIcon: _loading
+                            ? Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.lime),
+                                ),
                               )
-                            : null,
-                    filled: true,
-                    fillColor: colors.surfaceElevated,
-                    border: OutlineInputBorder(
-                      borderRadius: AppRadius.mdBorder,
-                      borderSide: BorderSide(color: colors.cardBorder),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.mdBorder,
-                      borderSide: BorderSide(color: colors.cardBorder.withValues(alpha: 0.6)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.mdBorder,
-                      borderSide: BorderSide(color: colors.accent.withValues(alpha: 0.65)),
+                            : _controller.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear_rounded),
+                                    onPressed: () => _controller.clear(),
+                                  )
+                                : null,
+                        filled: true,
+                        fillColor: colors.surfaceElevated.withValues(alpha: 0.65),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.md,
+                          vertical: AppSpacing.md,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: AppRadius.xlBorder,
+                          borderSide: BorderSide(color: colors.glassBorder),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.xlBorder,
+                          borderSide: BorderSide(color: colors.glassBorder),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: AppRadius.xlBorder,
+                          borderSide: BorderSide(color: colors.lime.withValues(alpha: 0.75), width: 2),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-                  children: [
-                    if (!hasQuery)
-                      Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xl),
-                        child: Center(
-                          child: Text(
-                            l10n.searchPlayer,
-                            style: TextStyle(color: colors.textSecondary),
-                          ),
-                        ),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.only(
+                        top: AppSpacing.md,
+                        bottom: AppSpacing.xl,
                       ),
-                    if (hasQuery)
-                      ..._results.map((p) => PlayerSearchCard(
-                            player: p,
-                            highlightClubs: _highlightClubs,
-                            showRelevanceBadge: false,
-                            onTap: () => Navigator.pop(context, p),
-                          )),
-                    if (hasQuery && _results.isEmpty && !_loading)
-                      Padding(
-                        padding: const EdgeInsets.all(AppSpacing.xl),
-                        child: Center(
-                          child: Text(
-                            l10n.noPlayersFound,
-                            style: TextStyle(color: colors.textSecondary),
+                      children: [
+                        if (!hasQuery) ...[
+                          if (_browseLoading)
+                            const Padding(
+                              padding: EdgeInsets.all(AppSpacing.xl),
+                              child: Center(child: CircularProgressIndicator()),
+                            )
+                          else ...[
+                            if (_recentPicks.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.lg,
+                                  AppSpacing.sm,
+                                  AppSpacing.lg,
+                                  AppSpacing.xs,
+                                ),
+                                child: Text(
+                                  l10n.recentPicks,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                              ..._recentPicks.map(
+                                (player) => PlayerSearchCard(
+                                  player: player,
+                                  highlightClubs: _highlightClubs,
+                                  onTap: () => Navigator.pop(context, player),
+                                ),
+                              ),
+                            ],
+                            if (_suggested.isNotEmpty) ...[
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  AppSpacing.lg,
+                                  AppSpacing.md,
+                                  AppSpacing.lg,
+                                  AppSpacing.xs,
+                                ),
+                                child: Text(
+                                  l10n.suggestedForCell,
+                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ),
+                              ..._suggested.map(
+                                (player) => PlayerSearchCard(
+                                  player: player,
+                                  highlightClubs: _highlightClubs,
+                                  showRelevanceBadge: true,
+                                  onTap: () => Navigator.pop(context, player),
+                                ),
+                              ),
+                            ],
+                            if (_recentPicks.isEmpty && _suggested.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xl,
+                                  vertical: AppSpacing.xxl,
+                                ),
+                                child: Column(
+                                  children: [
+                                    Icon(
+                                      Icons.sports_soccer_rounded,
+                                      size: 56,
+                                      color: colors.textSecondary.withValues(alpha: 0.35),
+                                    ),
+                                    const SizedBox(height: AppSpacing.lg),
+                                    Text(
+                                      l10n.searchPlayer,
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                            color: colors.textSecondary,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    const SizedBox(height: AppSpacing.sm),
+                                    Text(
+                                      '${widget.rowClub.shortLabel} × ${widget.colClub.shortLabel}',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: colors.lime,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.5,
+                                          ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ],
+                        if (hasQuery)
+                          ..._results.asMap().entries.map(
+                                (entry) => PlayerSearchCard(
+                                  player: entry.value,
+                                  highlightClubs: _highlightClubs,
+                                  showRelevanceBadge: false,
+                                  animationDelay: entry.key * 40,
+                                  onTap: () => Navigator.pop(context, entry.value),
+                                ),
+                              ),
+                        if (hasQuery && _results.isEmpty && !_loading)
+                          Padding(
+                            padding: const EdgeInsets.all(AppSpacing.xl),
+                            child: Center(
+                              child: Text(
+                                l10n.noPlayersFound,
+                                style: TextStyle(color: colors.textSecondary),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                  ],
-                ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         );
       },
@@ -328,7 +466,8 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         HintType.firstLetter => l10n.hintFirstLetter,
         HintType.careerLeague => l10n.hintCareerLeague,
         HintType.retiredStatus => l10n.hintRetiredStatus,
-        HintType.careerClub => l10n.hintCareerClub,
+        HintType.careerClub =>
+          widget.isPremium ? l10n.hintCareerClub : l10n.hintCareerClubTaste,
       };
 }
 
@@ -347,27 +486,44 @@ class AnswerResultSheet extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: colors.surfaceElevated,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
-        border: Border(top: BorderSide(color: colors.cardBorder)),
+        color: colors.surface.withValues(alpha: 0.95),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.xxl)),
+        border: Border(top: BorderSide(color: colors.glassBorder)),
+        boxShadow: AppElevation.limeGlow(correct ? colors.success : colors.error),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Container(
+            width: 48,
+            height: 5,
+            margin: const EdgeInsets.only(bottom: AppSpacing.md),
+            decoration: BoxDecoration(
+              color: colors.textSecondary.withValues(alpha: 0.3),
+              borderRadius: AppRadius.pillBorder,
+            ),
+          ),
           Text(
             result.playerName,
-            style: Theme.of(context).textTheme.titleLarge,
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+            textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppSpacing.sm),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                correct ? Icons.check_circle : Icons.cancel,
-                color: correct ? colors.primary : AppColors.error,
+                correct ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                color: correct ? colors.success : colors.error,
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(correct ? l10n.correct : l10n.incorrect),
+              Text(
+                correct ? l10n.correct : l10n.incorrect,
+                style: TextStyle(
+                  color: correct ? colors.success : colors.error,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
           if (correct) ...[
@@ -376,27 +532,31 @@ class AnswerResultSheet extends StatelessWidget {
               l10n.usedBy(result.usagePercentage.toStringAsFixed(0)),
               style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: AppSpacing.xs),
+            const SizedBox(height: AppSpacing.sm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
               decoration: BoxDecoration(
-                color: tier.color.withValues(alpha: 0.2),
-                borderRadius: AppRadius.smBorder,
-                border: Border.all(color: tier.color),
+                color: tier.color.withValues(alpha: 0.18),
+                borderRadius: AppRadius.pillBorder,
+                border: Border.all(color: tier.color.withValues(alpha: 0.65)),
               ),
               child: Text(
                 '${l10n.tier}: ${tier.label}',
                 style: TextStyle(
                   color: tier.color,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.4,
                 ),
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.md),
-          FilledButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.continueButton),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(l10n.continueButton.toUpperCase()),
+            ),
           ),
         ],
       ),

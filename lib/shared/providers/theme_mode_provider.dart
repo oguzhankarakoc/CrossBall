@@ -5,14 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../features/auth/data/auth_remote_data_source.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 
-enum AppThemeMode { system, dark, light }
+enum AppThemeMode { system, dark, light, darkGold, lightClassic }
 
 extension AppThemeModeX on AppThemeMode {
   ThemeMode get flutterThemeMode => switch (this) {
         AppThemeMode.system => ThemeMode.system,
-        AppThemeMode.dark => ThemeMode.dark,
-        AppThemeMode.light => ThemeMode.light,
+        AppThemeMode.light || AppThemeMode.lightClassic => ThemeMode.light,
+        AppThemeMode.dark || AppThemeMode.darkGold => ThemeMode.dark,
       };
+
+  bool get isPremiumOnly => this == AppThemeMode.darkGold || this == AppThemeMode.lightClassic;
 
   String get storageValue => name;
 
@@ -46,7 +48,8 @@ class ThemeModeNotifier extends StateNotifier<AppThemeMode> {
     }
   }
 
-  Future<void> setMode(AppThemeMode mode) async {
+  Future<void> setMode(AppThemeMode mode, {bool isPremium = false}) async {
+    if (mode.isPremiumOnly && !isPremium) return;
     state = mode;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_keyThemeMode, mode.storageValue);

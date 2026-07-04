@@ -43,4 +43,14 @@ void main() {
     );
     expect(club.code, 'RMA');
   });
+
+  test('standalone club resolves slug from display name', () {
+    final club = ClubDisplayResolver.standalone(
+      id: 'uuid-1',
+      name: 'Liverpool FC',
+      shortName: 'Liverpool',
+    );
+    expect(club.slug, 'liverpool-fc');
+    expect(club.shortLabel, 'Liverpool');
+  });
 }

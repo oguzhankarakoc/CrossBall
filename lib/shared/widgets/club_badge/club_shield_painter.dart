@@ -21,12 +21,13 @@ class ClubShieldPainter extends CustomPainter {
   static Path shieldPath(Size size) {
     final w = size.width;
     final h = size.height;
+    // Soft rounded shield — unified CrossBall silhouette (not official crest shapes).
     final path = Path()
-      ..moveTo(w * 0.5, h * 0.02)
-      ..lineTo(w * 0.92, h * 0.14)
-      ..lineTo(w * 0.88, h * 0.58)
-      ..quadraticBezierTo(w * 0.5, h * 0.98, w * 0.12, h * 0.58)
-      ..lineTo(w * 0.08, h * 0.14)
+      ..moveTo(w * 0.5, h * 0.03)
+      ..lineTo(w * 0.9, h * 0.16)
+      ..quadraticBezierTo(w * 0.94, h * 0.2, w * 0.88, h * 0.55)
+      ..quadraticBezierTo(w * 0.5, h * 0.97, w * 0.12, h * 0.55)
+      ..quadraticBezierTo(w * 0.06, h * 0.2, w * 0.1, h * 0.16)
       ..close();
     return path;
   }

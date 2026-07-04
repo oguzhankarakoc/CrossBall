@@ -8,7 +8,7 @@
   "friendChallenge": "Friend Challenge",
   "friendChallengeDesc": "Share a link and compete async.",
   "practice": "Practice",
-  "practiceDesc": "Sharpen your skills. Limited free games.",
+  "practiceDesc": "5 sessions per day. Watch ads to unlock the next round.",
   "stats": "Stats",
   "activeEvents": "Active Events",
   "communityGoals": "Community Goals",
@@ -27,6 +27,7 @@
   "onboarding3Body": "Less common players give more points.",
   "comingSoon": "Loading...",
   "puzzleLoadFailed": "Could not load today's puzzle. Check your connection and try again.",
+  "practiceLoadFailed": "Could not load a practice puzzle. Check your connection and try again.",
   "retry": "Retry",
   "gamesPlayed": "Games Played",
   "level": "Level",
@@ -47,7 +48,7 @@
   "copied": "Link copied!",
   "language": "Language",
   "premiumTitle": "CrossBall Premium",
-  "premiumDesc": "4×4 grids, unlimited practice, advanced stats, no ads.",
+  "premiumDesc": "10 ad-free training sessions per day, advanced stats, no ads.",
   "upgradePremium": "Upgrade to Premium",
   "searchPlayer": "Search player...",
   "recentPicks": "Recent picks",
@@ -86,9 +87,42 @@
   "hintCareerLeague": "Watch ad for career league hint",
   "hintRetiredStatus": "Watch ad for active/retired hint",
   "hintCareerClub": "Premium: reveal another career club",
-  "practiceLimitReached": "Free practice limit reached. Upgrade to Premium for unlimited games.",
+  "practiceLimitReached": "Daily training limit reached. Come back tomorrow or upgrade to Premium.",
+  "practiceAdRequiredTitle": "Next training",
+  "practiceAdRequired": "Watch a short ad to start your next training session.",
+  "practiceWatchAdForNewSession": "Watch ad for new training",
+  "practiceNewSession": "New training",
+  "practiceCompleteDesc": "Fresh club combinations every session.",
+  "practiceFinishTraining": "Finish training",
+  "practiceFinishConfirmTitle": "Finish training?",
+  "practiceFinishConfirmBody": "This session ends and uses 1 of your daily training credits.",
+  "practiceResultTitle": "Training complete",
+  "practiceResultEarlyDesc": "You finished early — your score and progress were saved.",
+  "practiceSessionProgress": "Training {current}/{limit}",
+  "@practiceSessionProgress": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceDailyProgress": "{used}/{limit} training sessions used today",
+  "@practiceDailyProgress": {
+    "placeholders": {
+      "used": {"type": "int"},
+      "limit": {"type": "int"}
+    }
+  },
+  "practiceAdGateHint": "On the free plan, watch a short ad before each new training session.",
+  "practicePremiumSkipAds": "Premium: up to 10 training sessions per day, no ads between rounds.",
+  "cancel": "Cancel",
+  "practiceSessionsRemaining": "{count} training sessions left today",
+  "@practiceSessionsRemaining": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
   "premiumFeatureGrid": "4×4 premium grids",
-  "premiumFeaturePractice": "Unlimited practice",
+  "premiumFeaturePractice": "10 ad-free training sessions per day",
   "premiumFeatureStats": "Advanced stats",
   "premiumFeatureThemes": "Exclusive themes",
   "premiumFeatureNoAds": "No ads",
@@ -100,5 +134,111 @@
   "challengeYouLost": "You lost this round.",
   "challengeTie": "It's a tie!",
   "challengeCreator": "Creator",
-  "challengeYou": "You"
+  "challengeYou": "You",
+  "playerNickname": "Nickname",
+  "playerNicknameDesc": "Optional name for challenges and future leaderboards.",
+  "playerNicknameHint": "3–20 characters",
+  "playerNicknameSaved": "Nickname saved",
+  "playerNicknameTaken": "This nickname is already taken",
+  "playerNicknameInvalid": "Use 3–20 letters, numbers, dots, dashes or underscores",
+  "gridSelectCell": "SELECT",
+  "achievements": "Achievements",
+  "achievementPoints": "Achievement Points",
+  "achievementUnlocked": "Achievement unlocked!",
+  "noAchievementsYet": "Complete puzzles to unlock achievements.",
+  "dailyMissions": "Daily Missions",
+  "missionsProgress": "{completed}/{total} done",
+  "@missionsProgress": {
+    "placeholders": {
+      "completed": {"type": "int"},
+      "total": {"type": "int"}
+    }
+  },
+  "shareResult": "Share result",
+  "leaderboard": "Leaderboard",
+  "leaderboardEmpty": "No ranked players yet. Complete puzzles to appear on the board.",
+  "pushNotifications": "Notifications",
+  "pushNotificationsOn": "Streak reminders enabled",
+  "pushNotificationsOff": "Notifications off",
+  "hintAdRequired": "Watch an ad to unlock this hint.",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "errorNetwork": "Network error. Check your connection.",
+  "themeDarkGold": "Gold Stadium",
+  "themeLightClassic": "Classic Pitch",
+  "themeDarkGoldDesc": "Premium: black pitch with gold accents",
+  "themeLightClassicDesc": "Premium: warm white pitch with gold accents",
+  "mythicCelebration": "MYTHIC!",
+  "mythicCelebrationBody": "Ultra-rare pick — elite football IQ.",
+  "challengeFromAnySession": "Share your last completed puzzle with a friend.",
+  "challengeNeedSession": "Complete any puzzle first to create a challenge.",
+  "challengeRematch": "Rematch — share new link",
+  "dailyChallengeEasyDesc": "Easier puzzle while you learn — build your streak.",
+  "seasonPoints": "{points} SP",
+  "@seasonPoints": {
+    "placeholders": {
+      "points": {"type": "int"}
+    }
+  },
+  "seasonNextReward": "Next reward at {points} SP: {reward}",
+  "@seasonNextReward": {
+    "placeholders": {
+      "points": {"type": "int"},
+      "reward": {"type": "String"}
+    }
+  },
+  "clubMastery": "Club Mastery",
+  "clubMasteryEmpty": "Solve intersections to build club mastery.",
+  "hintCareerClubTaste": "Free weekly taste: reveal another career club",
+  "practiceGrid4Title": "4×4 Premium Grid",
+  "practiceGrid4Desc": "Larger grid with more club combinations.",
+  "premiumGridRequired": "4×4 grids are a Premium feature.",
+  "timelineMode": "Timeline Training",
+  "timelineModeDesc": "See career years after each correct answer.",
+  "timelineSheetTitle": "{name} — career timeline",
+  "@timelineSheetTitle": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "timelineEmpty": "No senior career data available for this player.",
+  "present": "Present",
+  "activityFeed": "Community Activity",
+  "activityDailyCompleted": "{name} completed the daily puzzle ({score} pts)",
+  "@activityDailyCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityChallengeCompleted": "{name} finished a friend challenge",
+  "@activityChallengeCompleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "activityTimelineCompleted": "{name} finished timeline training ({score} pts)",
+  "@activityTimelineCompleted": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "score": {"type": "String"}
+    }
+  },
+  "activityGeneric": "{name}: {action}",
+  "@activityGeneric": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "action": {"type": "String"}
+    }
+  },
+  "footballFactTitle": "Did you know?",
+  "tournament": "Tournament",
+  "tournamentDesc": "Weekly high-score competition",
+  "tournamentInactive": "No active tournament right now. Check back soon.",
+  "tournamentEmpty": "No scores yet — be the first to play!",
+  "tournamentYourRank": "Your rank: #{rank}",
+  "@tournamentYourRank": {
+    "placeholders": {
+      "rank": {"type": "int"}
+    }
+  }
 }

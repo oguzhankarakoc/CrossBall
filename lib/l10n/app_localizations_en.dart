@@ -33,7 +33,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get practice => 'Practice';
 
   @override
-  String get practiceDesc => 'Sharpen your skills. Limited free games.';
+  String get practiceDesc =>
+      '5 sessions per day. Watch ads to unlock the next round.';
 
   @override
   String get stats => 'Stats';
@@ -90,6 +91,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get puzzleLoadFailed =>
       'Could not load today\'s puzzle. Check your connection and try again.';
+
+  @override
+  String get practiceLoadFailed =>
+      'Could not load a practice puzzle. Check your connection and try again.';
 
   @override
   String get retry => 'Retry';
@@ -155,7 +160,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get premiumDesc =>
-      '4×4 grids, unlimited practice, advanced stats, no ads.';
+      '10 ad-free training sessions per day, advanced stats, no ads.';
 
   @override
   String get upgradePremium => 'Upgrade to Premium';
@@ -261,13 +266,72 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceLimitReached =>
-      'Free practice limit reached. Upgrade to Premium for unlimited games.';
+      'Daily training limit reached. Come back tomorrow or upgrade to Premium.';
+
+  @override
+  String get practiceAdRequiredTitle => 'Next training';
+
+  @override
+  String get practiceAdRequired =>
+      'Watch a short ad to start your next training session.';
+
+  @override
+  String get practiceWatchAdForNewSession => 'Watch ad for new training';
+
+  @override
+  String get practiceNewSession => 'New training';
+
+  @override
+  String get practiceCompleteDesc => 'Fresh club combinations every session.';
+
+  @override
+  String get practiceFinishTraining => 'Finish training';
+
+  @override
+  String get practiceFinishConfirmTitle => 'Finish training?';
+
+  @override
+  String get practiceFinishConfirmBody =>
+      'This session ends and uses 1 of your daily training credits.';
+
+  @override
+  String get practiceResultTitle => 'Training complete';
+
+  @override
+  String get practiceResultEarlyDesc =>
+      'You finished early — your score and progress were saved.';
+
+  @override
+  String practiceSessionProgress(int current, int limit) {
+    return 'Training $current/$limit';
+  }
+
+  @override
+  String practiceDailyProgress(int used, int limit) {
+    return '$used/$limit training sessions used today';
+  }
+
+  @override
+  String get practiceAdGateHint =>
+      'On the free plan, watch a short ad before each new training session.';
+
+  @override
+  String get practicePremiumSkipAds =>
+      'Premium: up to 10 training sessions per day, no ads between rounds.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String practiceSessionsRemaining(int count) {
+    return '$count training sessions left today';
+  }
 
   @override
   String get premiumFeatureGrid => '4×4 premium grids';
 
   @override
-  String get premiumFeaturePractice => 'Unlimited practice';
+  String get premiumFeaturePractice => '10 ad-free training sessions per day';
 
   @override
   String get premiumFeatureStats => 'Advanced stats';
@@ -305,4 +369,200 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get challengeYou => 'You';
+
+  @override
+  String get playerNickname => 'Nickname';
+
+  @override
+  String get playerNicknameDesc =>
+      'Optional name for challenges and future leaderboards.';
+
+  @override
+  String get playerNicknameHint => '3–20 characters';
+
+  @override
+  String get playerNicknameSaved => 'Nickname saved';
+
+  @override
+  String get playerNicknameTaken => 'This nickname is already taken';
+
+  @override
+  String get playerNicknameInvalid =>
+      'Use 3–20 letters, numbers, dots, dashes or underscores';
+
+  @override
+  String get gridSelectCell => 'SELECT';
+
+  @override
+  String get achievements => 'Achievements';
+
+  @override
+  String get achievementPoints => 'Achievement Points';
+
+  @override
+  String get achievementUnlocked => 'Achievement unlocked!';
+
+  @override
+  String get noAchievementsYet => 'Complete puzzles to unlock achievements.';
+
+  @override
+  String get dailyMissions => 'Daily Missions';
+
+  @override
+  String missionsProgress(int completed, int total) {
+    return '$completed/$total done';
+  }
+
+  @override
+  String get shareResult => 'Share result';
+
+  @override
+  String get leaderboard => 'Leaderboard';
+
+  @override
+  String get leaderboardEmpty =>
+      'No ranked players yet. Complete puzzles to appear on the board.';
+
+  @override
+  String get pushNotifications => 'Notifications';
+
+  @override
+  String get pushNotificationsOn => 'Streak reminders enabled';
+
+  @override
+  String get pushNotificationsOff => 'Notifications off';
+
+  @override
+  String get hintAdRequired => 'Watch an ad to unlock this hint.';
+
+  @override
+  String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get errorNetwork => 'Network error. Check your connection.';
+
+  @override
+  String get themeDarkGold => 'Gold Stadium';
+
+  @override
+  String get themeLightClassic => 'Classic Pitch';
+
+  @override
+  String get themeDarkGoldDesc => 'Premium: black pitch with gold accents';
+
+  @override
+  String get themeLightClassicDesc =>
+      'Premium: warm white pitch with gold accents';
+
+  @override
+  String get mythicCelebration => 'MYTHIC!';
+
+  @override
+  String get mythicCelebrationBody => 'Ultra-rare pick — elite football IQ.';
+
+  @override
+  String get challengeFromAnySession =>
+      'Share your last completed puzzle with a friend.';
+
+  @override
+  String get challengeNeedSession =>
+      'Complete any puzzle first to create a challenge.';
+
+  @override
+  String get challengeRematch => 'Rematch — share new link';
+
+  @override
+  String get dailyChallengeEasyDesc =>
+      'Easier puzzle while you learn — build your streak.';
+
+  @override
+  String seasonPoints(int points) {
+    return '$points SP';
+  }
+
+  @override
+  String seasonNextReward(int points, String reward) {
+    return 'Next reward at $points SP: $reward';
+  }
+
+  @override
+  String get clubMastery => 'Club Mastery';
+
+  @override
+  String get clubMasteryEmpty => 'Solve intersections to build club mastery.';
+
+  @override
+  String get hintCareerClubTaste =>
+      'Free weekly taste: reveal another career club';
+
+  @override
+  String get practiceGrid4Title => '4×4 Premium Grid';
+
+  @override
+  String get practiceGrid4Desc => 'Larger grid with more club combinations.';
+
+  @override
+  String get premiumGridRequired => '4×4 grids are a Premium feature.';
+
+  @override
+  String get timelineMode => 'Timeline Training';
+
+  @override
+  String get timelineModeDesc => 'See career years after each correct answer.';
+
+  @override
+  String timelineSheetTitle(String name) {
+    return '$name — career timeline';
+  }
+
+  @override
+  String get timelineEmpty =>
+      'No senior career data available for this player.';
+
+  @override
+  String get present => 'Present';
+
+  @override
+  String get activityFeed => 'Community Activity';
+
+  @override
+  String activityDailyCompleted(String name, String score) {
+    return '$name completed the daily puzzle ($score pts)';
+  }
+
+  @override
+  String activityChallengeCompleted(String name) {
+    return '$name finished a friend challenge';
+  }
+
+  @override
+  String activityTimelineCompleted(String name, String score) {
+    return '$name finished timeline training ($score pts)';
+  }
+
+  @override
+  String activityGeneric(String name, String action) {
+    return '$name: $action';
+  }
+
+  @override
+  String get footballFactTitle => 'Did you know?';
+
+  @override
+  String get tournament => 'Tournament';
+
+  @override
+  String get tournamentDesc => 'Weekly high-score competition';
+
+  @override
+  String get tournamentInactive =>
+      'No active tournament right now. Check back soon.';
+
+  @override
+  String get tournamentEmpty => 'No scores yet — be the first to play!';
+
+  @override
+  String tournamentYourRank(int rank) {
+    return 'Your rank: #$rank';
+  }
 }

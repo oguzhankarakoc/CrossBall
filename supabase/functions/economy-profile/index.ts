@@ -39,6 +39,10 @@ Deno.serve(async (req) => {
       })
     }
 
+    const { data: missionsPayload } = await supabase.rpc('gee_get_missions', {
+      p_user_uuid: userUuid,
+    })
+
     const { data: leagues } = await supabase
       .from('economy_leagues')
       .select('slug, label, min_rating, max_rating, badge_color, sort_order')
@@ -50,11 +54,20 @@ Deno.serve(async (req) => {
       .select('level, xp_required_total, title')
       .order('level')
 
+    const { data: season } = await supabase.rpc('get_active_season')
+    const { data: careerHintTasteAvailable } = await supabase.rpc(
+      'career_hint_taste_available',
+      { p_user_uuid: userUuid },
+    )
+
     return new Response(
       JSON.stringify({
         ...(profile as Record<string, unknown>),
+        missions: (missionsPayload as { missions?: unknown })?.missions ?? [],
         leagues: leagues ?? [],
         level_curve: levelInfo ?? [],
+        season: season ?? { ok: false },
+        career_hint_taste_available: careerHintTasteAvailable === true,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )

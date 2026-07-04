@@ -31,7 +31,13 @@ supabase functions deploy challenge-create
 supabase functions deploy challenge-get
 supabase functions deploy challenge-complete
 supabase functions deploy sync-user
-supabase functions deploy stats
+supabase functions deploy practice-puzzle
+supabase functions deploy practice-quota
+supabase functions deploy register-push-token
+supabase functions deploy start-session verify-premium
+supabase functions deploy stats grant-hint-ad send-streak-reminder
+supabase functions deploy club-mastery season consume-hint-taste
+supabase functions deploy activity-feed player-fact tournament career-timeline
 ```
 
 Edge functions use `npm:@supabase/supabase-js@2` imports (see `supabase/functions/deno.json`). Do **not** use bare `deno.land` imports — deploy will fail.
@@ -70,8 +76,28 @@ SUPABASE_ANON_KEY=<from supabase status>
 | `013_club_slug_aliases.sql` | Extended slug aliases (bayern-munich, manchester-united, …) |
 | `014_puzzle_generation_relationship_aware.sql` | Graph-aware club picking + daily tier fallback |
 | `015_puzzle_pick_coordinated.sql` | Optimized pick + relaxed daily quality fallback |
+| `016_player_identity_key.sql` | Player dedup identity key |
+| `017`–`019` | Practice puzzle selection + fast generation |
+| `020_user_identity_practice_quota_push.sql` | Nickname, server practice quota, push token registry |
+| `021_security_hardening.sql` | Phase 0: RPC lockdown, server sessions, authoritative scoring |
+| `022_phase1_features.sql` | Leaderboard, missions, hint ad tokens, progression RLS |
+| `023_phase3_features.sql` | Club mastery, season, career hint taste |
+| `024_phase4_features.sql` | Timeline mode, activity feed, facts, tournament |
+| `025_club_identity_full_coverage.sql` | Full curated badge symbols for all 105 seed clubs |
 
-Apply through `015` for production daily puzzle generation.
+Apply through `025` for full feature set + club identity sync.
+
+### Phase deploy (021 → 025)
+
+```bash
+./scripts/run_migrations.sh 021
+./scripts/run_migrations.sh 022
+./scripts/run_migrations.sh 023
+./scripts/run_migrations.sh 024
+./scripts/run_migrations.sh 025
+```
+
+Or all at once: `./scripts/run_migrations.sh`
 
 ### Apply migrations manually
 
@@ -90,7 +116,9 @@ Uses `DATABASE_URL` from `data_pipeline/.env`.
 | Function | Method | Purpose |
 |----------|--------|---------|
 | `daily-puzzle` | GET | Today's puzzle (auto-generates via engine if missing) |
-| `practice-puzzle` | GET | Weighted practice puzzle (no recent repeats) |
+| `practice-puzzle` | GET | Weighted practice puzzle (quota + ad gate enforced server-side) |
+| `practice-quota` | GET/POST | Daily practice quota; POST `grant_ad_unlock` after rewarded ad |
+| `register-push-token` | POST | Register FCM/APNs device token (push integration hook) |
 | `generate-puzzle` | POST | Manual/cron puzzle generation |
 | `puzzle-by-id` | GET | Fetch puzzle by UUID |
 | `validate-answer` | POST | Server-side answer validation + rarity |
@@ -103,7 +131,18 @@ Uses `DATABASE_URL` from `data_pipeline/.env`.
 | `challenge-get` | GET | Fetch challenge puzzle by code |
 | `challenge-complete` | POST | Submit challenge result |
 | `stats` | GET | User stats aggregate |
-| `sync-user` | POST | Upsert anonymous user profile |
+| `sync-user` | POST | Upsert anonymous user (nickname, timezone, push opt-in; **not** premium) |
+| `verify-premium` | POST | IAP receipt verification → sets premium server-side |
+| `start-session` | POST | Create server-authoritative puzzle session |
+| `grant-hint-ad` | POST | Consume rewarded-ad token for hint unlock |
+| `club-mastery` | GET | Club mastery stats per user |
+| `season` | GET | Active season + player season points |
+| `consume-hint-taste` | POST | Weekly free career-club hint taste |
+| `activity-feed` | GET | Community activity feed |
+| `player-fact` | GET | Localized football trivia fact |
+| `tournament` | GET | Active tournament leaderboard |
+| `career-timeline` | GET | Player career years for timeline mode |
+| `send-streak-reminder` | POST | Streak reminder push stub (cron) |
 
 See `docs/ARCHITECTURE.md` for request/response contracts.
 

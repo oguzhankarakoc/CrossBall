@@ -1,0 +1,16 @@
+{
+  "club_id": "juventus",
+  "display_name": "Juventus",
+  "short_name": "Juventus",
+  "short_code": "JUV",
+  "country": "IT",
+  "league": "Serie A",
+  "primary_color": "#000000",
+  "secondary_color": "#FFFFFF",
+  "accent_color": "#C0C0C0",
+  "symbol_type": "abstract_chevron",
+  "badge_style": "metallic",
+  "shape_type": "rounded_shield",
+  "theme_variant": "minimal",
+  "heritage_note": "Geometric J-feeling chevrons — not the official logo"
+}

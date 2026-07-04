@@ -46,9 +46,8 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
     if (lastSession == null) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.createChallengeDesc)),
+        SnackBar(content: Text(AppLocalizations.of(context)!.challengeNeedSession)),
       );
-      context.push('${AppRoutes.puzzle}?mode=daily');
       return;
     }
 
@@ -94,82 +93,86 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
               children: [
                 Text(l10n.challengeDesc, style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(height: AppSpacing.xl),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(l10n.createChallenge, style: Theme.of(context).textTheme.titleLarge),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(l10n.createChallengeDesc, style: Theme.of(context).textTheme.bodySmall),
-                        if (!hasSession) ...[
-                          const SizedBox(height: AppSpacing.sm),
-                          Text(
-                            l10n.completeDailyFirst,
-                            style: TextStyle(color: colors.accent, fontSize: 12),
-                          ),
-                        ],
-                        const SizedBox(height: AppSpacing.md),
-                        FilledButton(
-                          onPressed: _loading ? null : _createChallenge,
-                          child: _loading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : Text(l10n.createChallenge),
+                CrossBallGlassPanel(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(l10n.createChallenge, style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(l10n.createChallengeDesc, style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        hasSession ? l10n.challengeFromAnySession : l10n.challengeNeedSession,
+                        style: TextStyle(
+                          color: hasSession ? colors.textSecondary : colors.accent,
+                          fontSize: 12,
                         ),
-                        if (_createdLink != null) ...[
-                          const SizedBox(height: AppSpacing.md),
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.md),
-                            decoration: BoxDecoration(
-                              color: colors.surfaceElevated,
-                              borderRadius: AppRadius.smBorder,
-                              border: Border.all(color: colors.cardBorder),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      FilledButton(
+                        onPressed: hasSession && !_loading ? _createChallenge : null,
+                        child: _loading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : Text(l10n.createChallenge),
+                      ),
+                      if (_createdLink != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        Container(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          decoration: BoxDecoration(
+                            color: colors.surfaceElevated,
+                            borderRadius: AppRadius.smBorder,
+                            border: Border.all(color: colors.cardBorder),
+                          ),
+                          child: Text(
+                            _createdLink!,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  fontFamily: 'monospace',
+                                  color: context.cb.textPrimary,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.sm),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Clipboard.setData(ClipboardData(text: _createdLink!));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(l10n.copied)),
+                                  );
+                                },
+                                child: Text(l10n.copyLink),
+                              ),
                             ),
-                            child: Text(_createdLink!, style: const TextStyle(fontFamily: 'monospace')),
-                          ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Clipboard.setData(ClipboardData(text: _createdLink!));
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(l10n.copied)),
-                                    );
-                                  },
-                                  child: Text(l10n.copyLink),
+                            const SizedBox(width: AppSpacing.sm),
+                            Expanded(
+                              child: FilledButton(
+                                onPressed: () => SharePlus.instance.share(
+                                  ShareParams(text: _createdLink!),
                                 ),
+                                child: Text(l10n.share),
                               ),
-                              const SizedBox(width: AppSpacing.sm),
-                              Expanded(
-                                child: FilledButton(
-                                  onPressed: () => SharePlus.instance.share(
-                                    ShareParams(text: _createdLink!),
-                                  ),
-                                  child: Text(l10n.share),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSpacing.lg),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(l10n.joinChallenge, style: Theme.of(context).textTheme.titleLarge),
+                CrossBallGlassPanel(
+                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(l10n.joinChallenge, style: Theme.of(context).textTheme.titleLarge),
                         const SizedBox(height: AppSpacing.md),
                         TextField(
                           controller: _codeController,
@@ -188,7 +191,6 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                       ],
                     ),
                   ),
-                ),
               ],
             ),
           ),

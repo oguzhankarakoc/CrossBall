@@ -1,0 +1,16 @@
+{
+  "club_id": "galatasaray",
+  "display_name": "Galatasaray",
+  "short_name": "Galatasaray",
+  "short_code": "GAL",
+  "country": "TR",
+  "league": "Süper Lig",
+  "primary_color": "#FDB912",
+  "secondary_color": "#A90432",
+  "accent_color": "#FFD700",
+  "symbol_type": "abstract_lion",
+  "badge_style": "vertical",
+  "shape_type": "rounded_shield",
+  "theme_variant": "istanbul",
+  "heritage_note": "Modern lion silhouette — no GS monogram"
+}

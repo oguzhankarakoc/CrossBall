@@ -11,8 +11,8 @@ import '../auth/presentation/auth_providers.dart';
 
 abstract interface class PremiumService {
   Future<void> initialize();
-  Future<bool> purchasePremium();
-  Future<bool> restorePurchases();
+  Future<bool> purchasePremium(String userUuid);
+  Future<bool> restorePurchases(String userUuid);
   bool get isPremiumActive;
   Stream<bool> get premiumStatusStream;
 }
@@ -29,6 +29,7 @@ class PremiumServiceImpl implements PremiumService {
   final _statusController = StreamController<bool>.broadcast();
 
   bool _isPremium = false;
+  String? _pendingUserUuid;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   @override
@@ -61,7 +62,14 @@ class PremiumServiceImpl implements PremiumService {
 
       if (purchase.status == PurchaseStatus.purchased ||
           purchase.status == PurchaseStatus.restored) {
-        await _activatePremium();
+        final userUuid = _pendingUserUuid;
+        if (userUuid != null) {
+          await _verifyWithBackend(
+            userUuid: userUuid,
+            verificationData: purchase.verificationData.serverVerificationData,
+            source: purchase.verificationData.source,
+          );
+        }
         if (purchase.pendingCompletePurchase) {
           await _iap.completePurchase(purchase);
         }
@@ -71,16 +79,41 @@ class PremiumServiceImpl implements PremiumService {
     }
   }
 
-  Future<void> _activatePremium() async {
-    _isPremium = true;
-    _statusController.add(true);
+  Future<void> _verifyWithBackend({
+    required String userUuid,
+    String? verificationData,
+    String? source,
+  }) async {
+    if (AppConfig.forceFreeTier) return;
+
+    try {
+      await _remote.verifyPremium(
+        userUuid: userUuid,
+        platform: Platform.isIOS ? 'ios' : 'android',
+        productId: _productId,
+        verificationData: verificationData,
+        source: source,
+      );
+      _isPremium = true;
+      _statusController.add(true);
+    } on SyncUserException catch (e) {
+      debugPrint('verify-premium failed: $e');
+    }
   }
 
   @override
-  Future<bool> purchasePremium() async {
+  Future<bool> purchasePremium(String userUuid) async {
+    _pendingUserUuid = userUuid;
+
     if (!AppConfig.isIapEnabled) {
-      // Dev/demo: allow toggling premium without store setup
-      await _activatePremium();
+      if (AppConfig.forceFreeTier) return false;
+      await _remote.verifyPremium(
+        userUuid: userUuid,
+        platform: 'dev',
+        productId: _productId,
+      );
+      _isPremium = true;
+      _statusController.add(true);
       return true;
     }
 
@@ -98,15 +131,11 @@ class PremiumServiceImpl implements PremiumService {
   }
 
   @override
-  Future<bool> restorePurchases() async {
+  Future<bool> restorePurchases(String userUuid) async {
+    _pendingUserUuid = userUuid;
     if (!AppConfig.isIapEnabled) return _isPremium;
     await _iap.restorePurchases();
     return _isPremium;
-  }
-
-  Future<void> syncPremiumToBackend(String userUuid) async {
-    if (!_isPremium) return;
-    await _remote.syncUser(userUuid: userUuid, isPremium: true);
   }
 
   void dispose() {
@@ -122,6 +151,7 @@ final premiumServiceProvider = Provider<PremiumService>((ref) {
 });
 
 final isPremiumProvider = Provider<bool>((ref) {
+  if (AppConfig.forceFreeTier) return false;
   final profile = ref.watch(userProfileProvider).valueOrNull;
   final iapPremium = ref.watch(_iapPremiumActiveProvider).valueOrNull ?? false;
   return profile?.isPremium == true || iapPremium;

@@ -33,7 +33,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get practice => 'Antrenman';
 
   @override
-  String get practiceDesc => 'Becerilerini geliştir. Sınırlı ücretsiz oyun.';
+  String get practiceDesc =>
+      'Günde 5 antrenman. Sonraki oturumlar için reklam izle.';
 
   @override
   String get stats => 'İstatistikler';
@@ -91,6 +92,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get puzzleLoadFailed =>
       'Günün bulmacası yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get practiceLoadFailed =>
+      'Antrenman bulmacası yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.';
 
   @override
   String get retry => 'Tekrar dene';
@@ -156,7 +161,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get premiumDesc =>
-      '4×4 ızgaralar, sınırsız antrenman, gelişmiş istatistikler, reklamsız.';
+      'Günde 10 reklamsız antrenman, gelişmiş istatistikler, reklamsız.';
 
   @override
   String get upgradePremium => 'Premium\'a Yükselt';
@@ -262,13 +267,73 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceLimitReached =>
-      'Ücretsiz antrenman limitine ulaştın. Sınırsız oyun için Premium\'a yükselt.';
+      'Bugünkü antrenman hakkın bitti. Yarın tekrar dene veya Premium\'a yükselt.';
+
+  @override
+  String get practiceAdRequiredTitle => 'Sonraki antrenman';
+
+  @override
+  String get practiceAdRequired =>
+      'Yeni bir antrenman için kısa bir reklam izlemen gerekiyor.';
+
+  @override
+  String get practiceWatchAdForNewSession => 'Reklam izle — yeni antrenman';
+
+  @override
+  String get practiceNewSession => 'Yeni antrenman';
+
+  @override
+  String get practiceCompleteDesc =>
+      'Her antrenmanda farklı takım kombinasyonları.';
+
+  @override
+  String get practiceFinishTraining => 'Antrenmanı bitir';
+
+  @override
+  String get practiceFinishConfirmTitle => 'Antrenmanı bitir?';
+
+  @override
+  String get practiceFinishConfirmBody =>
+      'Bu oturum sona erer ve günlük antrenman hakkından 1 düşer.';
+
+  @override
+  String get practiceResultTitle => 'Antrenman tamamlandı';
+
+  @override
+  String get practiceResultEarlyDesc =>
+      'Erken bitirdin — skorun ve ilerlemen kaydedildi.';
+
+  @override
+  String practiceSessionProgress(int current, int limit) {
+    return 'Antrenman $current/$limit';
+  }
+
+  @override
+  String practiceDailyProgress(int used, int limit) {
+    return 'Bugün $used/$limit antrenman kullanıldı';
+  }
+
+  @override
+  String get practiceAdGateHint =>
+      'Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.';
+
+  @override
+  String get practicePremiumSkipAds =>
+      'Premium ile reklam beklemeden günde 10 antrenman.';
+
+  @override
+  String get cancel => 'Vazgeç';
+
+  @override
+  String practiceSessionsRemaining(int count) {
+    return 'Bugün $count antrenman hakkın kaldı';
+  }
 
   @override
   String get premiumFeatureGrid => '4×4 premium ızgaralar';
 
   @override
-  String get premiumFeaturePractice => 'Sınırsız antrenman';
+  String get premiumFeaturePractice => 'Günde 10 reklamsız antrenman';
 
   @override
   String get premiumFeatureStats => 'Gelişmiş istatistikler';
@@ -306,4 +371,200 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get challengeYou => 'Sen';
+
+  @override
+  String get playerNickname => 'Takma ad';
+
+  @override
+  String get playerNicknameDesc =>
+      'Mücadeleler ve sıralamalarda görünecek isteğe bağlı isim.';
+
+  @override
+  String get playerNicknameHint => '3–20 karakter';
+
+  @override
+  String get playerNicknameSaved => 'Takma ad kaydedildi';
+
+  @override
+  String get playerNicknameTaken => 'Bu takma ad zaten kullanılıyor';
+
+  @override
+  String get playerNicknameInvalid =>
+      '3–20 harf, rakam, nokta, tire veya alt çizgi kullanın';
+
+  @override
+  String get gridSelectCell => 'SEÇ';
+
+  @override
+  String get achievements => 'Başarımlar';
+
+  @override
+  String get achievementPoints => 'Başarım Puanı';
+
+  @override
+  String get achievementUnlocked => 'Başarım açıldı!';
+
+  @override
+  String get noAchievementsYet => 'Başarımları açmak için bulmacaları tamamla.';
+
+  @override
+  String get dailyMissions => 'Günlük Görevler';
+
+  @override
+  String missionsProgress(int completed, int total) {
+    return '$completed/$total tamamlandı';
+  }
+
+  @override
+  String get shareResult => 'Sonucu paylaş';
+
+  @override
+  String get leaderboard => 'Sıralama';
+
+  @override
+  String get leaderboardEmpty =>
+      'Henüz sıralama yok. Listeye girmek için bulmaca tamamla.';
+
+  @override
+  String get pushNotifications => 'Bildirimler';
+
+  @override
+  String get pushNotificationsOn => 'Seri hatırlatıcıları açık';
+
+  @override
+  String get pushNotificationsOff => 'Bildirimler kapalı';
+
+  @override
+  String get hintAdRequired => 'Bu ipucu için reklam izlemen gerekiyor.';
+
+  @override
+  String get errorGeneric => 'Bir şeyler ters gitti. Lütfen tekrar dene.';
+
+  @override
+  String get errorNetwork => 'Ağ hatası. Bağlantını kontrol et.';
+
+  @override
+  String get themeDarkGold => 'Altın Stadyum';
+
+  @override
+  String get themeLightClassic => 'Klasik Saha';
+
+  @override
+  String get themeDarkGoldDesc => 'Premium: altın vurgulu karanlık stadyum';
+
+  @override
+  String get themeLightClassicDesc => 'Premium: altın vurgulu klasik açık saha';
+
+  @override
+  String get mythicCelebration => 'MİTİK!';
+
+  @override
+  String get mythicCelebrationBody => 'Ultra nadir seçim — elit futbol zekası.';
+
+  @override
+  String get challengeFromAnySession =>
+      'Son tamamladığın bulmacayı arkadaşınla paylaş.';
+
+  @override
+  String get challengeNeedSession =>
+      'Mücadele için önce herhangi bir bulmacayı tamamla.';
+
+  @override
+  String get challengeRematch => 'Rövanş — yeni link paylaş';
+
+  @override
+  String get dailyChallengeEasyDesc =>
+      'Öğrenirken daha kolay bulmaca — serini koru.';
+
+  @override
+  String seasonPoints(int points) {
+    return '$points SP';
+  }
+
+  @override
+  String seasonNextReward(int points, String reward) {
+    return 'Sonraki ödül $points SP: $reward';
+  }
+
+  @override
+  String get clubMastery => 'Kulüp Ustalığı';
+
+  @override
+  String get clubMasteryEmpty => 'Kesişim çözerek kulüp ustalığını artır.';
+
+  @override
+  String get hintCareerClubTaste =>
+      'Haftalık ücretsiz deneme: başka bir kulüp ipucu';
+
+  @override
+  String get practiceGrid4Title => '4×4 Premium Izgara';
+
+  @override
+  String get practiceGrid4Desc =>
+      'Daha fazla kulüp kombinasyonu ile büyük ızgara.';
+
+  @override
+  String get premiumGridRequired => '4×4 ızgaralar Premium özelliğidir.';
+
+  @override
+  String get timelineMode => 'Zaman Çizelgesi Antrenmanı';
+
+  @override
+  String get timelineModeDesc =>
+      'Her doğru cevaptan sonra kariyer yıllarını gör.';
+
+  @override
+  String timelineSheetTitle(String name) {
+    return '$name — kariyer zaman çizelgesi';
+  }
+
+  @override
+  String get timelineEmpty => 'Bu oyuncu için kariyer verisi yok.';
+
+  @override
+  String get present => 'Günümüz';
+
+  @override
+  String get activityFeed => 'Topluluk Aktivitesi';
+
+  @override
+  String activityDailyCompleted(String name, String score) {
+    return '$name günlük bulmacayı tamamladı ($score puan)';
+  }
+
+  @override
+  String activityChallengeCompleted(String name) {
+    return '$name bir arkadaş mücadelesi bitirdi';
+  }
+
+  @override
+  String activityTimelineCompleted(String name, String score) {
+    return '$name zaman çizelgesi antrenmanını bitirdi ($score puan)';
+  }
+
+  @override
+  String activityGeneric(String name, String action) {
+    return '$name: $action';
+  }
+
+  @override
+  String get footballFactTitle => 'Biliyor muydun?';
+
+  @override
+  String get tournament => 'Turnuva';
+
+  @override
+  String get tournamentDesc => 'Haftalık yüksek skor yarışması';
+
+  @override
+  String get tournamentInactive =>
+      'Şu an aktif turnuva yok. Yakında tekrar bak.';
+
+  @override
+  String get tournamentEmpty => 'Henüz skor yok — ilk sen oyna!';
+
+  @override
+  String tournamentYourRank(int rank) {
+    return 'Sıralaman: #$rank';
+  }
 }

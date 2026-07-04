@@ -1,11 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/constants/game_constants.dart';
+import '../../../core/debug/practice_debug_log.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../core/utils/scoring.dart';
 import '../../../features/ads/ads_service.dart';
+import '../../../features/auth/domain/user_profile.dart';
 import '../../../features/auth/presentation/auth_providers.dart';
 import '../../../features/challenge/domain/challenge.dart';
 import '../../search/domain/search.dart';
@@ -14,19 +18,22 @@ import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
 import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/providers/session_providers.dart';
+import '../../../features/economy/presentation/achievement_providers.dart';
 
 class PuzzleGameParams extends Equatable {
-  const PuzzleGameParams({required this.mode, this.challengeId});
+  const PuzzleGameParams({required this.mode, this.challengeId, this.gridSize});
 
   final PuzzleMode mode;
   final String? challengeId;
+  final int? gridSize;
 
   @override
-  List<Object?> get props => [mode, challengeId];
+  List<Object?> get props => [mode, challengeId, gridSize];
 }
 
-class PuzzleGameState {
+class PuzzleGameState extends Equatable {
   const PuzzleGameState({
     this.puzzle,
     this.cells = const {},
@@ -37,6 +44,7 @@ class PuzzleGameState {
     this.hintsUsed = 0,
     this.totalScore = 0,
     this.isComplete = false,
+    this.finishedEarly = false,
     this.isLoading = true,
     this.error,
     this.cellStartTime,
@@ -56,6 +64,7 @@ class PuzzleGameState {
   final int hintsUsed;
   final double totalScore;
   final bool isComplete;
+  final bool finishedEarly;
   final bool isLoading;
   final String? error;
   final DateTime? cellStartTime;
@@ -83,6 +92,7 @@ class PuzzleGameState {
     int? hintsUsed,
     double? totalScore,
     bool? isComplete,
+    bool? finishedEarly,
     bool? isLoading,
     String? error,
     DateTime? cellStartTime,
@@ -103,6 +113,7 @@ class PuzzleGameState {
         hintsUsed: hintsUsed ?? this.hintsUsed,
         totalScore: totalScore ?? this.totalScore,
         isComplete: isComplete ?? this.isComplete,
+        finishedEarly: finishedEarly ?? this.finishedEarly,
         isLoading: isLoading ?? this.isLoading,
         error: error,
         cellStartTime: cellStartTime ?? this.cellStartTime,
@@ -112,6 +123,24 @@ class PuzzleGameState {
         challengeResult: challengeResult ?? this.challengeResult,
         startedAt: startedAt ?? this.startedAt,
       );
+
+  @override
+  List<Object?> get props => [
+        puzzle?.id,
+        cells,
+        sessionId,
+        selectedRow,
+        selectedCol,
+        mistakes,
+        hintsUsed,
+        totalScore,
+        isComplete,
+        finishedEarly,
+        isLoading,
+        error,
+        hintsRevealed,
+        challengeResult,
+      ];
 }
 
 class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
@@ -120,23 +149,68 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
   final Ref _ref;
   final PuzzleGameParams params;
+  final _uuid = const Uuid();
   AntiCheatTracker? _antiCheat;
+  bool _sessionFinalized = false;
 
   PuzzleRepository get _repo => _ref.read(puzzleRepositoryProvider);
 
-  Future<void> loadPuzzle({int? gridSize, bool forceRefresh = false}) async {
-    state = state.copyWith(isLoading: true, error: null);
-    try {
-      final isPremium = _ref.read(isPremiumProvider);
-      final size = gridSize ??
-          (isPremium ? GameConstants.premiumGridSize : GameConstants.freeGridSize);
+  bool get _isTrainingMode =>
+      params.mode == PuzzleMode.practice || params.mode == PuzzleMode.timeline;
 
-      if (params.mode == PuzzleMode.practice && !isPremium) {
-        final played = _ref.read(practiceGamesPlayedProvider);
-        if (played >= GameConstants.freePracticeLimit) {
+  Future<void> loadPuzzle({
+    int? gridSize,
+    bool forceRefresh = false,
+    String? excludePuzzleId,
+  }) async {
+    state = state.copyWith(isLoading: true, error: null);
+    final loadStarted = Stopwatch()..start();
+    try {
+      final size = gridSize ?? params.gridSize ?? GameConstants.gridSize;
+      UserProfile? profile;
+      if (AppConfig.isSupabaseConfigured) {
+        profile = await _ref.read(userProfileProvider.future);
+      }
+
+      if (_isTrainingMode) {
+        if (profile == null) {
+          state = state.copyWith(isLoading: false, error: 'practice_load_failed');
+          return;
+        }
+        await _ref.read(practiceSessionProvider.notifier).syncFromServer(profile.userUuid);
+        final session = _ref.read(practiceSessionProvider);
+        practiceDebug('loadPuzzle practice gate', {
+          'isPremium': session.isPremium,
+          'gridSize': size,
+          'completedToday': session.completedToday,
+          'remaining': session.remaining,
+          'dailyLimit': session.dailyLimit,
+          'adUnlockGranted': session.adUnlockGranted,
+          'forceRefresh': forceRefresh,
+          'excludePuzzleId': excludePuzzleId,
+        });
+
+        if (session.hasReachedLimit) {
+          practiceDebug('blocked: daily limit reached');
           state = state.copyWith(
             isLoading: false,
             error: 'practice_limit_reached',
+          );
+          return;
+        }
+        if (size > GameConstants.freeGridSize && !session.isPremium) {
+          practiceDebug('blocked: premium grid required');
+          state = state.copyWith(
+            isLoading: false,
+            error: 'premium_grid_required',
+          );
+          return;
+        }
+        if (session.needsRewardedAdForNextSession) {
+          practiceDebug('blocked: rewarded ad required');
+          state = state.copyWith(
+            isLoading: false,
+            error: 'practice_ad_required',
           );
           return;
         }
@@ -144,19 +218,30 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
       Puzzle puzzle;
       double? creatorScore;
+
       if (params.mode == PuzzleMode.challenge && params.challengeId != null) {
         final challenge =
             await _ref.read(challengeRepositoryProvider).getChallenge(params.challengeId!);
         puzzle = await _repo.getChallengePuzzle(params.challengeId!);
         creatorScore = challenge.creatorScore;
-      } else if (params.mode == PuzzleMode.practice) {
-        final profile = await _ref.read(userProfileProvider.future);
+      } else if (_isTrainingMode) {
+        final excludeId = excludePuzzleId ?? (forceRefresh ? state.puzzle?.id : null);
         puzzle = await _repo.getPracticePuzzle(
           gridSize: size,
-          userUuid: profile.userUuid,
+          userUuid: profile!.userUuid,
+          excludePuzzleId: excludeId,
         );
+        practiceDebug('practice puzzle loaded', {
+          'puzzleId': puzzle.id,
+          'gridSize': puzzle.gridSize,
+          'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+          'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
+        });
       } else {
-        puzzle = await _repo.getDailyPuzzle(forceRefresh: forceRefresh);
+        puzzle = await _repo.getDailyPuzzle(
+          forceRefresh: forceRefresh,
+          userUuid: profile?.userUuid,
+        );
       }
 
       final cells = <String, PuzzleCell>{};
@@ -168,6 +253,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         puzzleId: puzzle.id,
         mode: params.mode,
         gridSize: puzzle.gridSize,
+        userUuid: profile?.userUuid,
       );
 
       _antiCheat = AntiCheatTracker(gridSize: puzzle.gridSize);
@@ -188,12 +274,55 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         challengeCreatorScore: creatorScore,
         startedAt: startedAt,
       );
-    } catch (e) {
+      if (_isTrainingMode) {
+        practiceDebug('loadPuzzle success', {
+          'elapsedMs': loadStarted.elapsedMilliseconds,
+          'sessionId': sessionId,
+        });
+      }
+    } catch (e, st) {
+      if (_isTrainingMode) {
+        practiceDebugError(
+          'loadPuzzle failed after ${loadStarted.elapsedMilliseconds}ms',
+          e,
+          st,
+        );
+        if (e is PuzzleFetchException) {
+          practiceDebug('PuzzleFetchException detail', {
+            'message': e.message,
+            'statusCode': e.statusCode,
+          });
+        }
+      }
       final message = e is PuzzleFetchException
-          ? 'puzzle_load_failed'
+          ? (_isTrainingMode
+              ? 'practice_load_failed'
+              : 'puzzle_load_failed')
           : e.toString();
       state = state.copyWith(isLoading: false, error: message);
     }
+  }
+
+  Future<void> startNewPracticeSession() async {
+    _sessionFinalized = false;
+    final previousId = state.puzzle?.id;
+    state = const PuzzleGameState(isLoading: true);
+    await loadPuzzle(forceRefresh: true, excludePuzzleId: previousId);
+  }
+
+  Future<void> finishPractice() async {
+    if (!_isTrainingMode) return;
+    if (state.isComplete || _sessionFinalized) return;
+    if (state.puzzle == null || state.sessionId == null) return;
+
+    practiceDebug('finishPractice early', {
+      'solved': state.solvedCount,
+      'total': state.totalCells,
+      'score': state.totalScore,
+    });
+
+    state = state.copyWith(isComplete: true, finishedEarly: true);
+    await _completeSession();
   }
 
   void selectCell(int row, int col) {
@@ -223,6 +352,10 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final rowClub = puzzle.rowClubAt(row);
     final colClub = puzzle.colClubAt(col);
     final submitStart = DateTime.now();
+    final profile = await _ref.read(userProfileProvider.future);
+    final responseMs = state.cellStartTime != null
+        ? DateTime.now().difference(state.cellStartTime!).inMilliseconds
+        : 60000;
 
     final result = await _repo.validateAnswer(
       puzzleId: puzzle.id,
@@ -231,16 +364,14 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       colClubId: colClub.id,
       playerId: player.id,
       sessionId: state.sessionId!,
+      userUuid: profile.userUuid,
+      responseTimeMs: responseMs,
     );
 
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
     await _ref.read(searchRepositoryProvider).recordPick(player);
 
     if (result.correct) {
-      final responseMs = state.cellStartTime != null
-          ? DateTime.now().difference(state.cellStartTime!).inMilliseconds
-          : 60000;
-
       final cellScore = ScoringEngine.calculateCellScore(
         usagePercentage: result.usagePercentage,
         responseTimeMs: responseMs,
@@ -316,12 +447,27 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
 
     final isPremium = _ref.read(isPremiumProvider);
+    final profile = await _ref.read(userProfileProvider.future);
 
+    String? adToken;
     if (hintType == HintType.careerClub) {
-      if (!isPremium) return null;
+      if (!isPremium) {
+        final tasteAvailable =
+            await _ref.read(careerHintTasteAvailableProvider.future);
+        if (!tasteAvailable) return null;
+      }
     } else if (!isPremium) {
       final rewarded = await _ref.read(adsServiceProvider).showRewarded();
       if (!rewarded) return null;
+      adToken = _uuid.v4();
+      if (AppConfig.isSupabaseConfigured) {
+        final granted = await _repo.grantHintAdToken(
+          userUuid: profile.userUuid,
+          adToken: adToken,
+          sessionId: sessionId,
+        );
+        if (!granted) return null;
+      }
     }
 
     final key = '${row}_$col';
@@ -335,9 +481,14 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       colClubId: puzzle.colClubAt(col).id,
       sessionId: sessionId,
       hintType: hintType,
+      userUuid: profile.userUuid,
+      adToken: adToken,
     );
 
     addHint(key, result.hintValue);
+    if (hintType == HintType.careerClub && !isPremium) {
+      _ref.invalidate(careerHintTasteAvailableProvider);
+    }
     _ref.read(analyticsProvider).track('hint_used', properties: {
       'hint_type': hintType.name,
       'ad_watched': !isPremium,
@@ -347,6 +498,9 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   }
 
   Future<void> _completeSession() async {
+    if (_sessionFinalized) return;
+    _sessionFinalized = true;
+
     _antiCheat?.evaluate();
     final metadata = _antiCheat?.toMetadata() ?? {};
     final durationMs = state.startedAt != null
@@ -355,6 +509,12 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
     final profile = await _ref.read(userProfileProvider.future);
     final puzzle = state.puzzle!;
+
+    Set<String> priorAchievementSlugs = {};
+    try {
+      final prior = await _ref.read(playerProgressionProvider.future);
+      priorAchievementSlugs = prior.achievements.map((a) => a.slug).toSet();
+    } catch (_) {}
 
     var rareCount = 0;
     var legendaryCount = 0;
@@ -419,7 +579,18 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     );
 
     _ref.invalidate(playerProgressionProvider);
+    _ref.invalidate(playerMissionsProvider);
     _ref.invalidate(userStatsProvider);
+
+    try {
+      final updated = await _ref.read(playerProgressionProvider.future);
+      final unlocked = updated.achievements
+          .where((a) => !priorAchievementSlugs.contains(a.slug))
+          .toList();
+      if (unlocked.isNotEmpty) {
+        _ref.read(newlyUnlockedAchievementsProvider.notifier).state = unlocked;
+      }
+    } catch (_) {}
 
     _ref.read(lastCompletedSessionProvider.notifier).state = CompletedSessionInfo(
       puzzleId: puzzle.id,
@@ -428,17 +599,17 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       mistakes: state.mistakes,
       hintsUsed: state.hintsUsed,
       durationMs: durationMs,
+      mode: params.mode.name,
     );
 
-    if (params.mode == PuzzleMode.practice) {
-      _ref.read(practiceGamesPlayedProvider.notifier).increment();
-      final count = _ref.read(practiceGamesPlayedProvider);
-      if (count % GameConstants.interstitialEveryNPractice == 0) {
-        await _ref.read(adsServiceProvider).showInterstitial();
-        _ref.read(analyticsProvider).track('ad_impression', properties: {
-          'placement': 'interstitial_practice',
-        });
-      }
+    if (_isTrainingMode) {
+      await _ref.read(practiceSessionProvider.notifier).onPracticeSessionCompleted(profile.userUuid);
+      _ref.read(analyticsProvider).track('practice_session_completed', properties: {
+        'completed_today': _ref.read(practiceSessionProvider).completedToday,
+        'finished_early': state.finishedEarly,
+        'cells_solved': state.solvedCount,
+        'mode': params.mode.name,
+      });
     } else {
       await _ref.read(adsServiceProvider).showInterstitial();
       _ref.read(analyticsProvider).track('ad_impression', properties: {
@@ -461,11 +632,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   }
 }
 
-final puzzleGameProvider = StateNotifierProvider.family<
+final puzzleGameProvider = StateNotifierProvider.autoDispose.family<
     PuzzleGameNotifier, PuzzleGameState, PuzzleGameParams>(
   (ref, params) {
     final notifier = PuzzleGameNotifier(ref, params: params);
-    notifier.loadPuzzle();
+    notifier.loadPuzzle(gridSize: params.gridSize);
     return notifier;
   },
 );

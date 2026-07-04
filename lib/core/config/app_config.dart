@@ -57,6 +57,10 @@ abstract final class AppConfig {
   static bool get isIapEnabled =>
       dotenv.env['IAP_ENABLED']?.trim().toLowerCase() == 'true';
 
+  /// When true, forces free tier on this build/device (overrides IAP + remote premium).
+  static bool get forceFreeTier =>
+      dotenv.env['FORCE_FREE_TIER']?.trim().toLowerCase() == 'true';
+
   static String get iapPremiumProductIdIos =>
       dotenv.env['IAP_PREMIUM_PRODUCT_ID_IOS']?.trim() ?? 'crossball_premium';
 

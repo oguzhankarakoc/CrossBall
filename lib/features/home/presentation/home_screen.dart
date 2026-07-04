@@ -3,13 +3,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/routing/app_routes.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_tokens.dart';
-import '../../../features/ads/presentation/banner_ad_widget.dart';
-import '../../../features/ads/ads_service.dart';
+import '../../../features/economy/domain/player_progression.dart';
+import '../../../features/economy/presentation/daily_missions_card.dart';
+import '../../../features/economy/presentation/season_card.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
+import '../../../features/social/presentation/activity_feed_card.dart';
+import '../../../features/social/presentation/football_fact_banner.dart';
 import '../../../features/liveops/presentation/widgets/liveops_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -24,70 +27,138 @@ class HomeScreen extends ConsumerWidget {
     final showFriendChallenge = ref.watch(featureFlagProvider('friend_challenges'));
     final showStats = ref.watch(featureFlagProvider('statistics'));
     final showEvents = ref.watch(featureFlagProvider('special_events'));
+    final showActivityFeed = ref.watch(featureFlagProvider('friend_activity_feed'));
+    final showTimeline = ref.watch(featureFlagProvider('timeline_mode'));
+    final showTournament = ref.watch(featureFlagProvider('tournament_mode'));
+    final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
+    final activityFeed = ref.watch(activityFeedProvider).valueOrNull ?? const [];
+    final footballFact = showAiFacts ? ref.watch(footballFactProvider('intersection')).valueOrNull : null;
+    final progressionAsync = ref.watch(playerProgressionProvider);
+    final progression = progressionAsync.valueOrNull;
+    final missions = ref.watch(playerMissionsProvider).valueOrNull ?? const [];
+    final season = ref.watch(seasonInfoProvider).valueOrNull;
+    final stats = ref.watch(userStatsProvider).valueOrNull;
+    final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
+    final streak = stats?.currentStreak ?? 0;
 
     return Scaffold(
+      extendBody: true,
       appBar: CrossBallAppBar(
         title: l10n.homeTitle,
         actions: [
           IconButton(
-            icon: const Icon(Icons.workspace_premium_outlined),
+            icon: Icon(Icons.emoji_events_rounded, color: colors.accent),
             onPressed: () => context.push(AppRoutes.premium),
           ),
         ],
       ),
       body: PitchBackground(
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.all(AppSpacing.lg),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.containerMargin,
+                    AppSpacing.sm,
+                    AppSpacing.containerMargin,
+                    AppSpacing.xl,
+                  ),
                   children: [
+                    CrossBallLevelStrip(
+                      level: progression?.currentLevel ?? 1,
+                      progress: progression?.levelProgress ?? 0,
+                      label: progression != null ? '${l10n.level} ${progression.currentLevel}' : l10n.level,
+                      isLoading: progressionAsync.isLoading,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                     if (announcement != null)
                       LiveOpsAnnouncementBanner(announcement: announcement),
                     if (liveOps?.isMaintenanceMode == true)
-                      Card(
-                        color: AppColors.error.withValues(alpha: 0.15),
-                        margin: const EdgeInsets.only(bottom: AppSpacing.md),
-                        child: ListTile(
-                          leading: const Icon(Icons.build_circle_outlined, color: AppColors.error),
-                          title: Text(l10n.maintenanceNotice),
-                          subtitle: Text(
-                            liveOps?.emergency['message'] as String? ??
-                                l10n.maintenanceNoticeBody,
-                          ),
+                      CrossBallGlassPanel(
+                        padding: const EdgeInsets.all(AppSpacing.md),
+                        child: Row(
+                          children: [
+                            Icon(Icons.build_circle_outlined, color: colors.error),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(l10n.maintenanceNotice,
+                                      style: Theme.of(context).textTheme.titleMedium),
+                                  Text(
+                                    liveOps?.emergency['message'] as String? ??
+                                        l10n.maintenanceNoticeBody,
+                                    style: Theme.of(context).textTheme.bodySmall,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    Center(child: CrossBallLogo(size: 72)),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      l10n.tagline,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: colors.accent,
-                            fontWeight: FontWeight.w600,
-                          ),
+                    if (liveOps?.isMaintenanceMode == true)
+                      const SizedBox(height: AppSpacing.md),
+                    CrossBallHeroCard(
+                      title: l10n.dailyChallenge,
+                      subtitle: isNewPlayer ? l10n.dailyChallengeEasyDesc : l10n.dailyChallengeDesc,
+                      actionLabel: l10n.continueButton,
+                      badge: streak > 0 ? '$streak ${l10n.currentStreak}' : l10n.dailyChallenge,
+                      badgeIcon: streak > 0 ? Icons.local_fire_department_rounded : Icons.calendar_today_rounded,
+                      onTap: () => context.push('${AppRoutes.puzzle}?mode=daily'),
                     ),
-                    const SizedBox(height: AppSpacing.xl - 4),
+                    if (season != null && season.isActive) SeasonCard(season: season),
+                    if (showAiFacts && footballFact != null && footballFact.isValid)
+                      FootballFactBanner(fact: footballFact),
+                    if (showActivityFeed && activityFeed.isNotEmpty)
+                      ActivityFeedCard(events: activityFeed),
+                    if (missions.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.md),
+                      DailyMissionsCard(missions: missions),
+                    ],
                     if (showEvents && liveOps != null && liveOps.activeEvents.isNotEmpty) ...[
-                      Text(
-                        l10n.activeEvents,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      CrossBallLabelCaps(l10n.activeEvents),
                       const SizedBox(height: AppSpacing.sm),
                       ...liveOps.activeEvents.map(
                         (event) => LiveOpsEventCard(
                           event: event,
-                          onTap: () => context.push('${AppRoutes.puzzle}?mode=daily'),
+                          onTap: () {
+                            if (event.eventType == 'tournament') {
+                              context.push(AppRoutes.tournament);
+                            } else {
+                              context.push('${AppRoutes.puzzle}?mode=daily');
+                            }
+                          },
                         ),
                       ),
                       const SizedBox(height: AppSpacing.md),
                     ],
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _QuickStatTile(
+                            label: l10n.experiencePoints,
+                            value: progression?.experiencePoints.toString() ?? '—',
+                            icon: Icons.star_rounded,
+                            tint: colors.accent,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: _QuickStatTile(
+                            label: l10n.currentStreak,
+                            value: streak.toString(),
+                            icon: Icons.local_fire_department_rounded,
+                            tint: colors.lime,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                     if (liveOps != null && liveOps.communityGoals.isNotEmpty) ...[
-                      Text(
-                        l10n.communityGoals,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
+                      CrossBallLabelCaps(l10n.communityGoals),
                       const SizedBox(height: AppSpacing.sm),
                       ...liveOps.communityGoals.map(
                         (goal) => LiveOpsCommunityGoalBar(goal: goal),
@@ -95,50 +166,93 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.md),
                     ],
                     CrossBallCard(
-                      icon: Icons.calendar_today_outlined,
-                      title: l10n.dailyChallenge,
-                      subtitle: l10n.dailyChallengeDesc,
-                      onTap: () => context.push('${AppRoutes.puzzle}?mode=daily'),
-                    ),
-                    if (showFriendChallenge)
-                      CrossBallCard(
-                        icon: Icons.people_outline,
-                        title: l10n.friendChallenge,
-                        subtitle: l10n.friendChallengeDesc,
-                        onTap: () => context.push(AppRoutes.challenge),
-                      ),
-                    CrossBallCard(
-                      icon: Icons.fitness_center_outlined,
+                      icon: Icons.fitness_center_rounded,
                       title: l10n.practice,
                       subtitle: l10n.practiceDesc,
                       onTap: () => context.push('${AppRoutes.puzzle}?mode=practice'),
                     ),
-                    const SizedBox(height: AppSpacing.md),
-                    Row(
-                      children: [
-                        if (showStats)
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => context.push(AppRoutes.stats),
-                              child: Text(l10n.stats),
-                            ),
-                          ),
-                        if (showStats) const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => context.push(AppRoutes.settings),
-                            child: Text(l10n.settings),
-                          ),
-                        ),
-                      ],
+                    if (showTimeline)
+                      CrossBallCard(
+                        icon: Icons.timeline_rounded,
+                        title: l10n.timelineMode,
+                        subtitle: l10n.timelineModeDesc,
+                        onTap: () => context.push('${AppRoutes.puzzle}?mode=timeline'),
+                      ),
+                    if (showTournament)
+                      CrossBallCard(
+                        icon: Icons.emoji_events_outlined,
+                        title: l10n.tournament,
+                        subtitle: l10n.tournamentDesc,
+                        onTap: () => context.push(AppRoutes.tournament),
+                      ),
+                    if (showFriendChallenge)
+                      CrossBallCard(
+                        icon: Icons.people_outline_rounded,
+                        title: l10n.friendChallenge,
+                        subtitle: l10n.friendChallengeDesc,
+                        onTap: () => context.push(AppRoutes.challenge),
+                      ),
+                    if (showStats)
+                      CrossBallCard(
+                        icon: Icons.insights_rounded,
+                        title: l10n.stats,
+                        subtitle: l10n.gamesPlayed,
+                        onTap: () => context.push(AppRoutes.stats),
+                      ),
+                    CrossBallCard(
+                      icon: Icons.leaderboard_rounded,
+                      title: l10n.leaderboard,
+                      subtitle: l10n.competitiveRating,
+                      onTap: () => context.push(AppRoutes.leaderboard),
+                    ),
+                    CrossBallCard(
+                      icon: Icons.settings_rounded,
+                      title: l10n.settings,
+                      onTap: () => context.push(AppRoutes.settings),
                     ),
                   ],
                 ),
               ),
-              const BannerAdWidget(placement: AdPlacement.home),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _QuickStatTile extends StatelessWidget {
+  const _QuickStatTile({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.tint,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color tint;
+
+  @override
+  Widget build(BuildContext context) {
+    return CrossBallGlassPanel(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: tint, size: 22),
+          const SizedBox(height: AppSpacing.sm),
+          CrossBallLabelCaps(label),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  fontSize: 26,
+                ),
+          ),
+        ],
       ),
     );
   }

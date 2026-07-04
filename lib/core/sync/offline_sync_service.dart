@@ -44,6 +44,8 @@ class OfflineSyncService {
           headers: {
             'apikey': AppConfig.supabaseAnonKey,
             'Content-Type': 'application/json',
+            if (session['user_uuid'] is String)
+              'x-user-uuid': session['user_uuid'] as String,
           },
           body: jsonEncode(session),
         );

@@ -23,6 +23,7 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_secure_storage: ^9.2.4
   google_mobile_ads: ^6.0.0
+  app_tracking_transparency: ^2.0.6
   connectivity_plus: ^6.1.4
   equatable: ^2.0.7
   collection: ^1.19.1
@@ -31,6 +32,10 @@ dependencies:
   share_plus: ^11.0.0
   in_app_purchase: ^3.2.3
   app_links: ^6.4.0
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  flutter_timezone: ^4.1.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -43,8 +48,9 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/icon/app_icon.png
-  adaptive_icon_background: "#051F14"
+  adaptive_icon_background: "#0F2418"
   adaptive_icon_foreground: assets/icon/app_icon.png
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true
@@ -52,3 +58,12 @@ flutter:
   assets:
     - .env
     - assets/icon/app_icon.png
+    - assets/clubs/manifest.json
+    - assets/clubs/barcelona/
+    - assets/clubs/liverpool-fc/
+    - assets/clubs/manchester-city/
+    - assets/clubs/galatasaray/
+    - assets/clubs/fenerbahce/
+    - assets/clubs/besiktas/
+    - assets/clubs/juventus/
+    - assets/clubs/bayern-munich/

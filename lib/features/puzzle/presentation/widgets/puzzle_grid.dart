@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_tokens.dart';
-import '../../../../shared/widgets/club_header_cell.dart';
+import '../../../../core/club_identity/club_badge_tokens.dart';
+import '../../../../shared/widgets/club_identity/club_identity_widgets.dart';
 import '../../domain/puzzle.dart';
 
 class PuzzleGrid extends StatelessWidget {
@@ -83,10 +85,16 @@ class PuzzleGrid extends StatelessWidget {
                         child: Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: ClubHeaderCell(
+                            child: PuzzleClubTile(
                               club: puzzle.colClubAt(col),
                               badgeSize: badgeSize,
                               maxLabelWidth: cellSize - 4,
+                              visualState: _headerState(
+                                gridSize: gridSize,
+                                index: col,
+                                isRow: false,
+                                selected: selectedCol,
+                              ),
                             ),
                           ),
                         ),
@@ -106,10 +114,16 @@ class PuzzleGrid extends StatelessWidget {
                         child: Center(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
-                            child: ClubHeaderCell(
+                            child: PuzzleClubTile(
                               club: puzzle.rowClubAt(row),
                               badgeSize: badgeSize,
                               maxLabelWidth: headerWidth - 4,
+                              visualState: _headerState(
+                                gridSize: gridSize,
+                                index: row,
+                                isRow: true,
+                                selected: selectedRow,
+                              ),
                             ),
                           ),
                         ),
@@ -135,9 +149,35 @@ class PuzzleGrid extends StatelessWidget {
       ),
     );
   }
+
+  ClubBadgeVisualState _headerState({
+    required int gridSize,
+    required int index,
+    required bool isRow,
+    required int? selected,
+  }) {
+    if (selected == index) return ClubBadgeVisualState.selected;
+    final fullySolved = isRow ? _rowFullySolved(gridSize, index) : _colFullySolved(gridSize, index);
+    if (fullySolved) return ClubBadgeVisualState.solved;
+    return ClubBadgeVisualState.normal;
+  }
+
+  bool _rowFullySolved(int gridSize, int row) {
+    for (var col = 0; col < gridSize; col++) {
+      if (!(cells['${row}_$col']?.isSolved ?? false)) return false;
+    }
+    return true;
+  }
+
+  bool _colFullySolved(int gridSize, int col) {
+    for (var row = 0; row < gridSize; row++) {
+      if (!(cells['${row}_$col']?.isSolved ?? false)) return false;
+    }
+    return true;
+  }
 }
 
-class _GridCell extends StatelessWidget {
+class _GridCell extends StatefulWidget {
   const _GridCell({
     required this.cell,
     required this.size,
@@ -151,44 +191,91 @@ class _GridCell extends StatelessWidget {
   final VoidCallback onTap;
 
   @override
+  State<_GridCell> createState() => _GridCellState();
+}
+
+class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixin {
+  late AnimationController _pulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
+    if (widget.isSelected) {
+      _pulseController.repeat(reverse: true);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _GridCell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isSelected && !oldWidget.isSelected) {
+      _pulseController.repeat(reverse: true);
+    } else if (!widget.isSelected && oldWidget.isSelected) {
+      _pulseController.stop();
+      _pulseController.reset();
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.cb;
-    final solved = cell?.isSolved ?? false;
+    final solved = widget.cell?.isSolved ?? false;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final inner = size - AppSpacing.sm;
+    final inner = widget.size - AppSpacing.sm;
 
     return Padding(
       padding: const EdgeInsets.all(2),
       child: GestureDetector(
-        onTap: solved ? null : onTap,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: solved
-                ? colors.primary.withValues(alpha: 0.5)
-                : isSelected
-                    ? colors.primary.withValues(alpha: 0.22)
-                    : isDark
-                        ? Colors.white.withValues(alpha: 0.07)
-                        : colors.background,
-            borderRadius: AppRadius.mdBorder,
-            border: Border.all(
-              color: isSelected
-                  ? colors.accent.withValues(alpha: 0.85)
-                  : isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : colors.primary.withValues(alpha: 0.35),
-              width: isSelected ? 2 : 1.5,
-            ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: colors.accent.withValues(alpha: 0.25),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
+        onTap: solved ? null : widget.onTap,
+        child: AnimatedBuilder(
+          animation: _pulseController,
+          builder: (context, child) {
+            final glow = widget.isSelected ? 0.15 + _pulseController.value * 0.12 : 0.0;
+            return DecoratedBox(
+              decoration: BoxDecoration(
+                color: solved
+                    ? colors.success.withValues(alpha: isDark ? 0.22 : 0.18)
+                    : widget.isSelected
+                        ? colors.lime.withValues(alpha: 0.12 + glow)
+                        : isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : colors.background,
+                borderRadius: AppRadius.lgBorder,
+                border: Border.all(
+                  color: solved
+                      ? colors.success.withValues(alpha: 0.65)
+                      : widget.isSelected
+                          ? colors.lime.withValues(alpha: 0.85)
+                          : isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : colors.primary.withValues(alpha: 0.25),
+                  width: widget.isSelected ? 2 : 1.5,
+                  strokeAlign: BorderSide.strokeAlignInside,
+                ),
+                boxShadow: widget.isSelected
+                    ? AppElevation.limeGlow(colors.lime)
+                    : solved
+                        ? [
+                            BoxShadow(
+                              color: colors.success.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                            ),
+                          ]
+                        : null,
+              ),
+              child: child,
+            );
+          },
           child: SizedBox(
             width: inner,
             height: inner,
@@ -197,13 +284,17 @@ class _GridCell extends StatelessWidget {
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.check_circle, color: colors.accent, size: 18),
+                        Icon(Icons.check_circle_rounded, color: colors.success, size: 20),
                         const SizedBox(height: 2),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 2),
                           child: Text(
-                            cell!.solvedPlayerName ?? '',
-                            style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w700),
+                            widget.cell!.solvedPlayerName ?? '',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                              color: colors.textPrimary,
+                            ),
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -211,11 +302,27 @@ class _GridCell extends StatelessWidget {
                         ),
                       ],
                     )
-                  : Icon(
-                      Icons.add_rounded,
-                      color: isSelected ? colors.accent : colors.primary.withValues(alpha: 0.55),
-                      size: 24,
-                    ),
+                  : widget.isSelected
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.touch_app_rounded, color: colors.lime, size: 22),
+                            Text(
+                              AppLocalizations.of(context)!.gridSelectCell,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                color: colors.lime,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Icon(
+                          Icons.add_rounded,
+                          color: colors.primary.withValues(alpha: 0.5),
+                          size: 24,
+                        ),
             ),
           ),
         ),

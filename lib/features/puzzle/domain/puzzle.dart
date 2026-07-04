@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../core/club_identity/club_display_resolver.dart';
 
-enum PuzzleMode { daily, practice, challenge }
+enum PuzzleMode { daily, practice, challenge, timeline }
 
 enum HintType {
   nationality,

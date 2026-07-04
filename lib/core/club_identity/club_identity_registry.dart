@@ -1,24 +1,30 @@
 import '../../features/puzzle/domain/puzzle.dart';
 import 'club_identity.dart';
 import 'club_identity_data.dart';
+import 'club_metadata_loader.dart';
 
 /// Resolves [ClubIdentity] from registry + API overrides + deterministic fallback.
 abstract final class ClubIdentityRegistry {
   static ClubIdentity resolve(Club club) {
     final slugKey = club.slug.toLowerCase();
-    final base = ClubIdentityData.bySlug[slugKey] ?? _generatedFallback(club);
+    final curated = ClubMetadataLoader.overrides[slugKey] ?? ClubIdentityData.bySlug[slugKey];
+    final base = curated ?? _generatedFallback(club);
 
     return ClubIdentity(
       primaryColor: _or(club.badgePrimaryColor, base.primaryColor),
       secondaryColor: _or(club.badgeSecondaryColor, base.secondaryColor),
       accentColor: _or(club.badgeAccentColor, base.accentColor),
-      symbolType: _hasCustomSymbol(club.badgeIconType)
-          ? ClubIdentity.parseSymbolType(club.badgeIconType)
-          : base.symbolType,
+      symbolType: curated != null
+          ? curated.symbolType
+          : (_hasCustomSymbol(club.badgeIconType)
+              ? ClubIdentity.parseSymbolType(club.badgeIconType)
+              : base.symbolType),
       shortCode: _or(club.shortCode ?? club.badgeInitials, base.shortCode),
-      badgeStyle: club.badgeGradientStyle != null && club.badgeGradientStyle!.isNotEmpty
-          ? ClubIdentity.parseBadgeStyle(club.badgeGradientStyle)
-          : base.badgeStyle,
+      badgeStyle: curated != null
+          ? curated.badgeStyle
+          : (club.badgeGradientStyle != null && club.badgeGradientStyle!.isNotEmpty
+              ? ClubIdentity.parseBadgeStyle(club.badgeGradientStyle)
+              : base.badgeStyle),
     );
   }
 

@@ -2,13 +2,16 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/config/app_config.dart';
+import '../../../core/device/device_timezone.dart';
 import 'auth_remote_data_source.dart';
 import '../domain/auth_repository.dart';
 import '../domain/user_profile.dart';
 
 const _keyUserUuid = 'crossball_user_uuid';
 const _keyOnboardingComplete = 'crossball_onboarding_complete';
-const _keyIsPremium = 'crossball_is_premium';
+const _keyDisplayName = 'crossball_display_name';
+const _keyPushOptIn = 'crossball_push_opt_in';
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl({
@@ -39,32 +42,49 @@ class AuthRepositoryImpl implements AuthRepository {
     }
     final onboarding = await isOnboardingComplete();
     final prefs = await _prefs;
-    final localPremium = prefs.getBool(_keyIsPremium) ?? false;
+    final localDisplayName = prefs.getString(_keyDisplayName);
+    final localPushOptIn = prefs.getBool(_keyPushOptIn) ?? true;
 
-    final remote = await _remote.syncUser(
-      userUuid: id,
-      onboardingComplete: onboarding,
-      isPremium: localPremium,
-    );
+    Map<String, dynamic>? remote;
+    try {
+      remote = await _remote.syncUser(
+        userUuid: id,
+        onboardingComplete: onboarding,
+        displayName: localDisplayName,
+        timezoneOffsetMinutes: DeviceTimezone.offsetMinutes,
+        pushOptIn: localPushOptIn,
+      );
+    } on SyncUserException {
+      remote = null;
+    }
 
-    final isPremium = remote?['is_premium'] as bool? ?? localPremium;
-    await prefs.setBool(_keyIsPremium, isPremium);
+    final isPremium = AppConfig.forceFreeTier
+        ? false
+        : (remote?['is_premium'] as bool? ?? false);
+
+    final displayName = remote?['display_name'] as String? ?? localDisplayName;
+    final pushOptIn = remote?['push_opt_in'] as bool? ?? localPushOptIn;
+
+    if (displayName != null && displayName.isNotEmpty) {
+      await prefs.setString(_keyDisplayName, displayName);
+    } else {
+      await prefs.remove(_keyDisplayName);
+    }
+    await prefs.setBool(_keyPushOptIn, pushOptIn);
 
     return UserProfile(
       userUuid: id,
+      displayName: displayName,
       onboardingComplete: onboarding,
       isPremium: isPremium,
+      pushOptIn: pushOptIn,
     );
   }
 
   @override
   Future<void> setPremium(bool value) async {
-    final prefs = await _prefs;
-    await prefs.setBool(_keyIsPremium, value);
-    final id = await _secureStorage.read(key: _keyUserUuid);
-    if (id != null) {
-      await _remote.syncUser(userUuid: id, isPremium: value);
-    }
+    // Premium is server-authoritative via verify-premium; local-only no-op.
+    if (AppConfig.forceFreeTier) return;
   }
 
   @override
@@ -73,7 +93,11 @@ class AuthRepositoryImpl implements AuthRepository {
     await prefs.setBool(_keyOnboardingComplete, value);
     final id = await _secureStorage.read(key: _keyUserUuid);
     if (id != null) {
-      await _remote.syncUser(userUuid: id, onboardingComplete: value);
+      try {
+        await _remote.syncUser(userUuid: id, onboardingComplete: value);
+      } on SyncUserException {
+        // Local flag remains; will sync on next launch.
+      }
     }
   }
 
@@ -81,5 +105,49 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> isOnboardingComplete() async {
     final prefs = await _prefs;
     return prefs.getBool(_keyOnboardingComplete) ?? false;
+  }
+
+  @override
+  Future<UserProfile> setDisplayName(String? displayName) async {
+    final id = await _secureStorage.read(key: _keyUserUuid);
+    if (id == null) throw SyncUserException('missing_user_uuid', 0);
+
+    final trimmed = displayName?.trim();
+    final remote = await _remote.syncUser(
+      userUuid: id,
+      displayName: trimmed,
+      clearDisplayName: trimmed == null || trimmed.isEmpty,
+    );
+
+    final prefs = await _prefs;
+    final resolved = remote['display_name'] as String?;
+    if (resolved != null && resolved.isNotEmpty) {
+      await prefs.setString(_keyDisplayName, resolved);
+    } else {
+      await prefs.remove(_keyDisplayName);
+    }
+
+    final profile = await getOrCreateAnonymousUser();
+    return profile.copyWith(displayName: resolved);
+  }
+
+  @override
+  Future<void> syncDeviceProfile({bool? pushOptIn}) async {
+    final id = await _secureStorage.read(key: _keyUserUuid);
+    if (id == null) return;
+
+    final prefs = await _prefs;
+    final optIn = pushOptIn ?? prefs.getBool(_keyPushOptIn) ?? true;
+
+    try {
+      await _remote.syncUser(
+        userUuid: id,
+        timezoneOffsetMinutes: DeviceTimezone.offsetMinutes,
+        pushOptIn: optIn,
+      );
+    } on SyncUserException {
+      // Best-effort device profile sync.
+    }
+    await prefs.setBool(_keyPushOptIn, optIn);
   }
 }
