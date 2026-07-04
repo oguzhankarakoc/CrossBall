@@ -50,6 +50,8 @@ supabase functions deploy activity-feed player-fact tournament career-timeline
 
 See [Supabase Setup](supabase/README.md) and [Data Pipeline](data_pipeline/README.md) for details.
 
+**iOS App Store launch:** [IOS_LAUNCH_GUIDE.md](docs/IOS_LAUNCH_GUIDE.md) — App Store Connect, RevenueCat, AdMob, Push.
+
 ## Project structure
 
 ```

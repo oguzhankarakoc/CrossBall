@@ -7,6 +7,7 @@ import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../../core/config/app_config.dart';
+import '../../core/notifications/remote_push_service.dart';
 import 'push_token_api.dart';
 
 /// Local streak reminders + FCM token registration hook.
@@ -16,14 +17,24 @@ class PushNotificationService {
   final PushTokenApi _api;
   final FlutterLocalNotificationsPlugin _local = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
+  String? _userUuid;
+  String? _locale;
+  String? _appVersion;
 
   Future<void> initialize({
     required String userUuid,
     String? locale,
     bool pushOptIn = true,
+    String? appVersion,
   }) async {
-    if (_initialized) return;
+    if (_initialized) {
+      await _syncRemotePush(userUuid: userUuid, locale: locale, pushOptIn: pushOptIn, appVersion: appVersion);
+      return;
+    }
     _initialized = true;
+    _userUuid = userUuid;
+    _locale = locale;
+    _appVersion = appVersion;
 
     tz_data.initializeTimeZones();
     try {
@@ -52,6 +63,13 @@ class PushNotificationService {
       await _local.cancel(1001);
     }
 
+    await _syncRemotePush(
+      userUuid: userUuid,
+      locale: locale,
+      pushOptIn: pushOptIn,
+      appVersion: appVersion,
+    );
+
     if (kDebugMode) {
       debugPrint('[Push] initialized for $userUuid opt_in=$pushOptIn');
     }
@@ -64,6 +82,33 @@ class PushNotificationService {
     } else {
       await _local.cancel(1001);
     }
+
+    final userUuid = _userUuid;
+    if (userUuid != null) {
+      await _syncRemotePush(
+        userUuid: userUuid,
+        locale: _locale,
+        pushOptIn: enabled,
+        appVersion: _appVersion,
+      );
+    }
+  }
+
+  Future<void> _syncRemotePush({
+    required String userUuid,
+    required bool pushOptIn,
+    String? locale,
+    String? appVersion,
+  }) async {
+    _userUuid = userUuid;
+    _locale = locale;
+    _appVersion = appVersion;
+    await remotePushService.updateOptIn(
+      userUuid: userUuid,
+      pushOptIn: pushOptIn,
+      locale: locale,
+      appVersion: appVersion,
+    );
   }
 
   Future<void> _scheduleStreakReminder() async {

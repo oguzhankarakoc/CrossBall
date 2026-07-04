@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Runtime configuration loaded from `.env`.
@@ -66,4 +70,62 @@ abstract final class AppConfig {
 
   static String get iapPremiumProductIdAndroid =>
       dotenv.env['IAP_PREMIUM_PRODUCT_ID_ANDROID']?.trim() ?? 'crossball_premium';
+
+  // Remote push (FCM) — optional; set REMOTE_PUSH_ENABLED=true after Firebase setup
+  static bool get isRemotePushEnabled =>
+      dotenv.env['REMOTE_PUSH_ENABLED']?.trim().toLowerCase() == 'true';
+
+  static String get firebaseProjectId =>
+      dotenv.env['FIREBASE_PROJECT_ID']?.trim() ?? '';
+
+  static String get firebaseMessagingSenderId =>
+      dotenv.env['FIREBASE_MESSAGING_SENDER_ID']?.trim() ?? '';
+
+  static String get firebaseIosApiKey =>
+      dotenv.env['FIREBASE_IOS_API_KEY']?.trim() ?? '';
+
+  static String get firebaseIosAppId =>
+      dotenv.env['FIREBASE_IOS_APP_ID']?.trim() ?? '';
+
+  static String get firebaseAndroidApiKey =>
+      dotenv.env['FIREBASE_ANDROID_API_KEY']?.trim() ?? '';
+
+  static String get firebaseAndroidAppId =>
+      dotenv.env['FIREBASE_ANDROID_APP_ID']?.trim() ?? '';
+
+  static bool get isFirebaseConfigured {
+    if (firebaseProjectId.isEmpty || firebaseMessagingSenderId.isEmpty) {
+      return false;
+    }
+    if (kIsWeb) return false;
+    if (!kIsWeb && Platform.isIOS) {
+      return firebaseIosApiKey.isNotEmpty && firebaseIosAppId.isNotEmpty;
+    }
+    if (!kIsWeb && Platform.isAndroid) {
+      return firebaseAndroidApiKey.isNotEmpty && firebaseAndroidAppId.isNotEmpty;
+    }
+    return false;
+  }
+
+  static FirebaseOptions? get firebaseOptions {
+    if (!isFirebaseConfigured || kIsWeb) return null;
+    if (Platform.isIOS) {
+      return FirebaseOptions(
+        apiKey: firebaseIosApiKey,
+        appId: firebaseIosAppId,
+        messagingSenderId: firebaseMessagingSenderId,
+        projectId: firebaseProjectId,
+        iosBundleId: 'com.crossball.crossball',
+      );
+    }
+    if (Platform.isAndroid) {
+      return FirebaseOptions(
+        apiKey: firebaseAndroidApiKey,
+        appId: firebaseAndroidAppId,
+        messagingSenderId: firebaseMessagingSenderId,
+        projectId: firebaseProjectId,
+      );
+    }
+    return null;
+  }
 }
