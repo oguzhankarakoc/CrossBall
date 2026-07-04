@@ -3,6 +3,7 @@
 import hashlib
 import json
 import os
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import psycopg2
 from dotenv import load_dotenv
@@ -10,8 +11,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+def normalize_database_url(url: str) -> str:
+    """Strip Supabase URI params that psycopg2 does not accept (e.g. pgbouncer=true)."""
+    parsed = urlparse(url)
+    if not parsed.query:
+        return url
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    params.pop('pgbouncer', None)
+    query = urlencode(params, doseq=True)
+    return urlunparse(parsed._replace(query=query))
+
+
 def get_connection():
-    conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
+    url = normalize_database_url(os.environ['DATABASE_URL'])
+    connect_kwargs: dict[str, str] = {}
+    if 'localhost' not in url and '127.0.0.1' not in url:
+        connect_kwargs['sslmode'] = 'require'
+    conn = psycopg2.connect(url, **connect_kwargs)
     with conn.cursor() as cur:
         cur.execute("SET statement_timeout = '0'")
     conn.commit()
