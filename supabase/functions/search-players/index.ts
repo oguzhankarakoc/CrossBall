@@ -26,6 +26,38 @@ function normalizeQuery(query: string): string {
     .trim()
 }
 
+function playerIdentityKey(name: string): string {
+  const normalized = normalizeQuery(name).replace(/[^a-z0-9\s]/g, '').trim()
+  const parts = normalized.split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return normalized
+  const surname = parts[parts.length - 1]
+  if (parts.length === 1) return surname
+  const first = parts[0].replace(/\.$/, '')
+  const token = first.charAt(0)
+  return `${surname}|${token}`
+}
+
+function playerCompletenessScore(player: EnrichedPlayer): number {
+  let score = (player.clubs_preview?.length ?? 0) * 5
+  if (player.nationality_code) score += 20
+  if (player.primary_position) score += 10
+  score += player.name.length
+  if (!/^[A-Z]\.\s/.test(player.name)) score += 15
+  return score
+}
+
+function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
+  const best = new Map<string, EnrichedPlayer>()
+  for (const player of players) {
+    const key = playerIdentityKey(player.name)
+    const existing = best.get(key)
+    if (!existing || playerCompletenessScore(player) > playerCompletenessScore(existing)) {
+      best.set(key, player)
+    }
+  }
+  return [...best.values()]
+}
+
 function scorePlayer(player: EnrichedPlayer, normalized: string): number {
   const name = player.name.toLowerCase()
   let score = player.popularity_score
@@ -287,7 +319,8 @@ Deno.serve(async (req) => {
       rowClubId,
       colClubId,
     )
-    const ranked = enriched
+    const deduped = dedupePlayersByIdentity(enriched)
+    const ranked = deduped
       .sort((a, b) => scorePlayer(b, normalized) - scorePlayer(a, normalized))
       .slice(0, limit)
 

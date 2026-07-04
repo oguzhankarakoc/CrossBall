@@ -10,6 +10,7 @@ from .api_football_client import ApiFootballClient, ApiFootballError
 from .club_metadata import canonical_club_name
 from .kaggle_transform import MIN_CAREER_YEAR, TOP_CLUB_NAMES
 from .normalize import normalize_name
+from .player_identity import player_identity_key
 
 TEAM_IDS_PATH = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'api_football' / 'team_ids.json'
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'api_football_careers.csv'
@@ -88,17 +89,22 @@ def build_stints_from_player_transfers(
     return list(open_stints.values())
 
 
-def _load_name_to_external_id(players_csv: Path | None) -> dict[str, str]:
+def _load_player_lookups(
+    players_csv: Path | None,
+) -> tuple[dict[str, str], dict[str, str]]:
     if not players_csv or not players_csv.is_file():
-        return {}
-    mapping: dict[str, str] = {}
+        return {}, {}
+    by_name: dict[str, str] = {}
+    by_identity: dict[str, str] = {}
     with players_csv.open(newline='', encoding='utf-8') as f:
         for row in csv.DictReader(f):
             ext_id = str(row.get('id', '')).strip()
             name = str(row.get('name', '')).strip()
-            if ext_id and name:
-                mapping[normalize_name(name)] = ext_id
-    return mapping
+            if not ext_id or not name:
+                continue
+            by_name[normalize_name(name)] = ext_id
+            by_identity[player_identity_key(name)] = ext_id
+    return by_name, by_identity
 
 
 def sync_transfers_to_career_rows(
@@ -115,7 +121,7 @@ def sync_transfers_to_career_rows(
     client = client or ApiFootballClient()
 
     af_id_to_name = {v: k for k, v in team_map.items()}
-    name_to_external = _load_name_to_external_id(players_csv)
+    name_to_external, identity_to_external = _load_player_lookups(players_csv)
 
     items = list(team_map.items())
     if offset:
@@ -150,6 +156,8 @@ def sync_transfers_to_career_rows(
 
             stats['players_seen'] = int(stats['players_seen']) + 1
             ext_id = name_to_external.get(normalize_name(player_name))
+            if not ext_id:
+                ext_id = identity_to_external.get(player_identity_key(player_name))
             if not ext_id and af_player_id is not None:
                 ext_id = f'af-{af_player_id}'
 

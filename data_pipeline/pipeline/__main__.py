@@ -16,6 +16,7 @@ from .fetch_kaggle import fetch_kaggle_dataset
 from .kaggle_transform import transform_kaggle_files, write_pipeline_csv
 from .load import (
     compute_content_hash,
+    dedupe_players,
     get_connection,
     refresh_club_relationships,
     refresh_intersections,
@@ -25,6 +26,7 @@ from .load import (
 )
 from .club_metadata import LEGACY_CLUB_SLUGS, canonical_club_name
 from .normalize import is_youth_or_reserve, normalize_name, slugify
+from .player_identity import player_identity_key
 from .validate import validate_players
 
 
@@ -89,6 +91,7 @@ def normalize_raw(raw_players: list[dict], club_slug_map: dict[str, str]) -> lis
                 'external_id': player_id,
                 'name': name,
                 'normalized_name': normalize_name(name),
+                'identity_key': player_identity_key(name),
                 'nationality_code': (row.get('nationality') or '')[:2] or None,
                 'primary_position': row.get('position') or None,
                 'careers': [career],
@@ -134,6 +137,9 @@ def run_pipeline(input_path: Path, clubs_path: Path) -> None:
         slug_to_id = upsert_clubs(conn, clubs)
         remap_career_club_ids(players, clubs, slug_to_id)
         upsert_players(conn, players)
+        merged = dedupe_players(conn)
+        if merged:
+            print(f'  Merged {merged} duplicate player record(s).')
         refresh_intersections(conn)
         refresh_club_relationships(conn)
         print('  Load complete.')
@@ -181,6 +187,9 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path) -> None:
         slug_to_id = upsert_clubs(conn, clubs)
         remap_career_club_ids(players, clubs, slug_to_id)
         upsert_players(conn, players)
+        merged = dedupe_players(conn)
+        if merged:
+            print(f'  Merged {merged} duplicate player record(s).')
         refresh_intersections(conn)
         refresh_club_relationships(conn)
         print('  Patch load complete.')
@@ -261,6 +270,18 @@ def cmd_refresh_intersections() -> None:
         conn.close()
 
 
+def cmd_dedupe_players() -> None:
+    """Merge duplicate player rows (same identity_key) and refresh graph views."""
+    conn = get_connection()
+    try:
+        merged = dedupe_players(conn)
+        print(f'  Merged {merged} duplicate player record(s).')
+        refresh_intersections(conn)
+        refresh_club_relationships(conn)
+    finally:
+        conn.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description='CrossBall data pipeline')
     sub = parser.add_subparsers(dest='command')
@@ -297,6 +318,7 @@ def main():
     ingest_parser.add_argument('--input', required=True, type=Path)
 
     sub.add_parser('refresh-intersections', help='Refresh player_club_intersections view')
+    sub.add_parser('dedupe-players', help='Merge duplicate players by identity_key')
 
     patch_parser = sub.add_parser(
         'apply-patches',
@@ -346,6 +368,8 @@ def main():
         print(f'Ingested {len(rows)} rows from {args.input}')
     elif args.command == 'refresh-intersections':
         cmd_refresh_intersections()
+    elif args.command == 'dedupe-players':
+        cmd_dedupe_players()
     elif args.command == 'apply-patches':
         cmd_apply_patches(args.patches, args.clubs)
     elif args.command == 'sync-api-football':
