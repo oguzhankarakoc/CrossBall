@@ -71,6 +71,8 @@ lib/
     ├── search/
     ├── challenge/
     ├── stats/
+    ├── economy/
+    ├── liveops/
     ├── settings/
     ├── premium/
     └── ads/
@@ -180,25 +182,99 @@ mistake_penalty: 15 points per wrong attempt on cell
 
 ---
 
+## 6b. Game Economy Engine (GEE)
+
+Independent backend-driven progression system. **No hardcoded reward values in the client** — all tuning lives in `economy_config`.
+
+### Responsibilities
+
+| System | Tables / RPCs |
+|--------|----------------|
+| XP & levels | `economy_level_thresholds`, `player_progression` |
+| Competitive rating | Separate from XP; capped deltas in `economy_config.rating` |
+| Leagues | `economy_leagues` (Bronze → Legend) |
+| Streaks | `player_progression.current_streak`, milestone rewards in config |
+| Achievements | `economy_achievement_definitions`, `player_achievements` |
+| Missions | `economy_mission_definitions`, `player_missions` |
+| Seasons | `economy_seasons`, `player_season_stats` |
+| Rewards | `economy_reward_types`, `player_rewards_granted` |
+| Analytics | `economy_events_log` |
+
+### Event processing
+
+Puzzle completion triggers `gee_process_event(user_uuid, event_type, payload)` from the `complete-session` edge function.
+
+Event types: `daily_completed`, `practice_completed`, `puzzle_completed`, `challenge_won`, `challenge_lost`.
+
+Payload includes: score, mistakes, hints, duration, difficulty tier, quality score, rarity counts, perfect-game flag.
+
+### Fair play
+
+`economy_config.premium` locks `xp_multiplier`, `rating_multiplier`, and `score_multiplier` at **1.0**. Premium benefits are cosmetic/QoL only.
+
+### Client integration
+
+```
+lib/features/economy/
+├── domain/player_progression.dart
+└── data/economy_repository_impl.dart
+```
+
+- `playerProgressionProvider` fetches `economy-profile` edge function
+- Stats screen shows level, XP, rating, league
+- Offline sync caches progression from `complete-session` economy response
+
+---
+
+## 6c. LiveOps Engine (LOE)
+
+Independent remote operations layer for events, config, and feature flags. Communicates with other engines but does not couple to them.
+
+| System | Tables / RPCs |
+|--------|----------------|
+| Remote config | `liveops_config` |
+| Feature flags | `liveops_feature_flags`, `loe_evaluate_flag()` |
+| Events | `liveops_events`, `liveops_event_i18n` |
+| Collections | `liveops_puzzle_collections`, i18n |
+| Community goals | `liveops_community_goals` |
+| Announcements | `liveops_announcements`, i18n |
+| A/B tests | `liveops_ab_experiments`, `liveops_ab_assignments` |
+| Content rotation | `liveops_content_rotation` |
+| Football calendar | `liveops_football_calendar` |
+| Analytics | `liveops_analytics_events`, `loe_track_event()` |
+
+### Client snapshot
+
+`loe_get_snapshot(user, locale, platform, country, app_version)` returns config, resolved flags, active events, announcements, collections, community goals, rotation, and experiments.
+
+Edge function: `liveops-config` (GET)
+
+### Failsafe
+
+Client falls back to cached snapshot, then `LiveOpsDefaults` — puzzles always playable.
+
+---
+
 ## 7. Search System
 
 ### Requirements
 
 - Fuzzy, accent-insensitive, case-insensitive
 - Target latency: 50–150 ms perceived
+- **Spoiler-free:** no suggestions before the user types (no recent, popular, or cell suggestions on modal open)
 
 ### Backend
 
 - PostgreSQL `pg_trgm` on `normalized_name`
 - GIN index on `search_vector` (tsvector)
 - Edge function `search-players` with `similarity()` ranking
+- Autocomplete only when `q` length ≥ 2
 
 ### Client
 
 - Debounce 200 ms
-- Local recent picks cache (SharedPreferences)
-- Popular picks from `rarity_stats` aggregation
-- Optional local search index file for offline typeahead
+- Empty query shows placeholder only (`Search player...`)
+- Hints are the only assist mechanism during gameplay
 
 ### Normalization
 
@@ -211,13 +287,18 @@ mistake_penalty: 15 points per wrong attempt on cell
 
 ## 8. Hint System
 
-| Hint | Cost | Reveals |
-|------|------|---------|
-| 1 | 1 rewarded ad | Nationality |
-| 2 | 1 rewarded ad | Position |
-| 3 | Premium or 2nd ad | First letter pattern |
+All hints require **rewarded ads** for free users (except premium-only career club reveal). Hints never reveal player names or valid answers.
 
-Hints stored per session; cannot stack same hint type.
+| Order | Hint | Access |
+|-------|------|--------|
+| 1 | Nationality | Rewarded ad |
+| 2 | Primary position | Rewarded ad |
+| 3 | First letter pattern | Rewarded ad |
+| 4 | Career league | Rewarded ad |
+| 5 | Retired or active | Rewarded ad |
+| 6 | Additional career club | Premium only |
+
+Hints use a deterministic sample player per cell/session so values stay consistent. Stored per session in `session_hints`.
 
 ---
 
@@ -402,23 +483,77 @@ Same shape as daily puzzle + `creator_score`, `creator_uuid`.
 
 ---
 
-## 15. Puzzle Generation
+## 15. Puzzle Generation Engine
 
-### Pipeline
+Backend-driven only — the Flutter client never generates puzzles.
 
-1. Curators seed high-quality club pairs
-2. Algorithm generates candidate grids from top-100 clubs
-3. For each cell: count valid intersections via career history join
-4. Reject if any cell < 3 valid answers
-5. Score difficulty: inverse of average valid answers per cell
-6. Store in `puzzles` + `puzzle_cells`
+### Step 1: Club relationship graph
 
-### Fairness rules
+`refresh_club_relationships()` builds pairwise senior-club relationships from `player_career_history`:
 
-- Minimum 3 valid answers per cell
-- Ideal 8+ valid answers
-- No duplicate clubs in same row/column
-- Balanced nationality distribution in valid answer set
+| Column | Purpose |
+|--------|---------|
+| `club_a_id`, `club_b_id` | Canonical pair (a < b) |
+| `valid_player_count` | Intersection size |
+| `player_ids` | UUID array of valid players |
+| `difficulty_score` | Derived from count (more players = easier) |
+
+### Step 2: Precompute on ETL
+
+After every data load, the pipeline runs:
+
+1. `refresh_player_club_intersections()`
+2. `refresh_club_relationships()`
+
+### Step 3–4: Generate from relationships
+
+`generate_puzzle(mode, grid_size, difficulty_tier)` (migrations `014`–`015`):
+
+1. **`pick_valid_puzzle_clubs`** — selects row/col clubs from `club_relationships` graph (top-N brute force), not random sampling
+2. Structural validation: every cell meets tier minimum via `get_club_relationship`
+3. **Quality gate:** `evaluate_puzzle_candidate` — quality ≥ 85 and human simulation ≥ 90
+4. **Daily fallback:** if strict gate fails after max attempts, publishes best candidate (quality ≥ 60, human ≥ 65) with `relaxed_quality_gate` flag
+5. Reject duplicate `puzzle_hash` in last 30 days; retry with shuffled club order
+
+`ensure_daily_puzzle(date)` tries tiers in order: **hard → legend → medium** (medium often too sparse for current career data volume).
+
+### Step 5: Difficulty tiers (minimum valid answers per cell)
+
+| Tier | Min answers |
+|------|-------------|
+| Easy | 15+ |
+| Medium | 8+ |
+| Hard | 5+ |
+| Legend | 3+ |
+
+### Step 6: Duplicate prevention
+
+`puzzle_hash` = MD5 of sorted club IDs. Rejected if hash exists in last 30 days.
+
+### Step 7: Puzzle Quality Evaluation
+
+After structural validation, every candidate is scored before publish:
+
+| Score | Range | Threshold |
+|-------|-------|-----------|
+| **Puzzle Quality Score** | 0–100 | ≥ 85 to publish |
+| **Human Simulation Score** | 0–100 | ≥ 90 to publish |
+
+**Quality components** (weighted): avg valid answers, difficulty consistency, club/league/country diversity, popularity variety, rare-player opportunity, freshness, replay value, visual grid balance, avoidance of overused clubs and pairs.
+
+**Human simulation components**: enjoyability, not too easy, not frustrating, rewards football knowledge, "aha" moments, rare discovery encouragement, handcrafted feel.
+
+Candidates failing either threshold are rejected automatically. The engine tries up to **5000** attempts (quality over speed). Scores and full breakdown stored in `quality_score`, `human_simulation_score`, `quality_metrics` on `puzzles`.
+
+RPC: `evaluate_puzzle_candidate(row_ids, col_ids, grid_size, min_answers)` — returns JSONB with scores and component breakdown.
+
+### Step 8: Daily challenge
+
+`ensure_daily_puzzle(date)` — **one global puzzle per UTC date**, same for all users (competitive leaderboard). Called by `daily-puzzle` edge function with default tier `hard`. Client uses cache `v6` and rejects demo fallback when Supabase is configured.
+
+### Step 9: Practice mode
+
+`select_practice_puzzle(user_uuid)` — weighted random from practice pool, penalizes recently played clubs, tier fallback on generation. Served by `practice-puzzle` edge function.
 
 ---
 
@@ -426,14 +561,23 @@ Same shape as daily puzzle + `creator_score`, `creator_uuid`.
 
 Python batch job (`data_pipeline/`):
 
-1. Fetch raw data (CSV/API)
-2. Normalize club names → slug
-3. Filter youth/reserve appearances
-4. Deduplicate players
-5. Validate referential integrity
-6. Upsert to PostgreSQL
+| Stage | Source | Command |
+|-------|--------|---------|
+| Bulk history | Kaggle SoFIFA (FIFA 23 + EA FC 24) | `run-all` / `fetch-kaggle` |
+| Recent transfers | API-Football `/transfers` (100 req/day free) | `sync-api-football` |
+| Manual gaps | `data/raw/patches/career_patches.csv` | `apply-patches` |
+| Automation | GitHub Actions cron | `data-sync-daily.yml`, `data-etl-weekly.yml` |
 
-Deterministic: same input → same output hash.
+Flow after load:
+
+1. Upsert clubs + players + `player_career_history` (conflict → **update** end dates)
+2. `refresh_player_club_intersections()`
+3. `refresh_club_relationships()` — powers puzzle generation
+4. `ensure_daily_puzzle()` — after scheduled sync
+
+**Priority when merging careers:** manual patch > API-Football > Kaggle SoFIFA.
+
+Deterministic Kaggle transform: same input → same content hash. API responses cached 30 days on disk (`data/cache/api_football/`).
 
 ---
 
@@ -468,8 +612,10 @@ See `docs/TESTING.md`.
 | Flutter | App Store, Google Play |
 | Supabase | Managed cloud project |
 | Edge functions | `supabase functions deploy` (npm imports via `deno.json`) |
-| Migrations | `./scripts/run_migrations.sh` or `supabase db push` |
-| Pipeline | GitHub Actions cron / `./scripts/run_etl.sh` |
+| Migrations | `./scripts/run_migrations.sh` (001–015) or `supabase db push` |
+| Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — API-Football + patches + daily puzzle |
+| Pipeline (weekly) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh |
+| Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh` |
 | Analytics | PostHog cloud |
 
 ---
@@ -484,4 +630,4 @@ See `docs/TESTING.md`.
 
 ---
 
-*CrossBall Architecture v1.1.0 — production MVP*
+*CrossBall Architecture v1.2.0 — puzzle engine, GEE, LOE, API-Football sync*

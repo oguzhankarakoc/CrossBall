@@ -8,6 +8,8 @@ import '../../features/puzzle/data/puzzle_repository_impl.dart';
 import '../../features/puzzle/domain/puzzle_repository.dart';
 import '../../features/search/data/search_repository_impl.dart';
 import '../../features/search/domain/search.dart';
+import '../../features/economy/data/economy_repository_impl.dart';
+import '../../features/economy/domain/player_progression.dart';
 import '../../features/stats/data/stats_repository_impl.dart';
 import '../../features/stats/domain/stats.dart';
 import '../../core/cache/offline_cache.dart';
@@ -37,6 +39,15 @@ final challengeRepositoryProvider = Provider<ChallengeRepository>((ref) {
 
 final statsRepositoryProvider = Provider<StatsRepository>((ref) {
   return StatsRepositoryImpl(cache: ref.watch(offlineCacheProvider));
+});
+
+final economyRepositoryProvider = Provider<EconomyRepository>((ref) {
+  return EconomyRepositoryImpl(cache: ref.watch(offlineCacheProvider));
+});
+
+final playerProgressionProvider = FutureProvider((ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  return ref.watch(economyRepositoryProvider).getProgression(profile.userUuid);
 });
 
 final dailyPuzzleProvider = FutureProvider((ref) async {

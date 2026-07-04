@@ -102,6 +102,15 @@ const SLUG_ALIAS_GROUPS: string[][] = [
   ['barcelona', 'fc-barcelona'],
   ['chelsea', 'chelsea-fc'],
   ['psg', 'paris-saintgermain', 'paris-saint-germain'],
+  ['bayern-munich', 'bayern', 'fc-bayern-munchen', 'bayern-munchen'],
+  ['manchester-united', 'man-utd', 'man-united', 'manchester-utd'],
+  ['manchester-city', 'man-city'],
+  ['arsenal-fc', 'arsenal'],
+  ['liverpool-fc', 'liverpool'],
+  ['inter-milan', 'inter'],
+  ['atletico-madrid', 'atletico'],
+  ['fc-porto', 'porto'],
+  ['tottenham-hotspur', 'tottenham', 'spurs'],
 ]
 
 function canonicalSlug(slug: string): string {

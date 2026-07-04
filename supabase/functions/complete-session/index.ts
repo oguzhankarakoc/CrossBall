@@ -1,17 +1,18 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-uuid',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-user-uuid',
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
+    const body = await req.json()
     const {
       session_id,
       final_score,
@@ -20,7 +21,16 @@ serve(async (req) => {
       total_duration_ms = 0,
       is_suspicious = false,
       user_uuid,
-    } = await req.json()
+      mode = 'practice',
+      difficulty_tier = 'medium',
+      puzzle_quality_score = 85,
+      is_perfect = false,
+      rare_count = 0,
+      legendary_count = 0,
+      mythic_count = 0,
+      correct_count = 0,
+      challenge_won,
+    } = body
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -52,7 +62,64 @@ serve(async (req) => {
       { onConflict: 'id' },
     )
 
-    if (userId && !is_suspicious) {
+    let economyResult: Record<string, unknown> | null = null
+
+    if (user_uuid && !is_suspicious) {
+      const eventType =
+        mode === 'daily'
+          ? 'daily_completed'
+          : mode === 'practice'
+            ? 'practice_completed'
+            : 'puzzle_completed'
+
+      const payload = {
+        final_score,
+        mistakes,
+        hints_used,
+        total_duration_ms,
+        mode,
+        difficulty_tier,
+        puzzle_quality_score,
+        is_perfect,
+        rare_count,
+        legendary_count,
+        mythic_count,
+        correct_count,
+      }
+
+      const { data: puzzleEconomy, error: economyError } = await supabase.rpc(
+        'gee_process_event',
+        {
+          p_user_uuid: user_uuid,
+          p_event_type: eventType,
+          p_payload: payload,
+        },
+      )
+
+      if (economyError) {
+        console.error('gee_process_event failed:', economyError.message)
+      } else {
+        economyResult = puzzleEconomy as Record<string, unknown>
+      }
+
+      if (mode === 'challenge' && typeof challenge_won === 'boolean') {
+        const challengeEvent = challenge_won ? 'challenge_won' : 'challenge_lost'
+        const { data: challengeEconomy, error: challengeError } = await supabase.rpc(
+          'gee_process_event',
+          {
+            p_user_uuid: user_uuid,
+            p_event_type: challengeEvent,
+            p_payload: { final_score, mode: 'challenge' },
+          },
+        )
+        if (!challengeError && challengeEconomy) {
+          economyResult = {
+            ...(economyResult ?? {}),
+            challenge: challengeEconomy,
+          }
+        }
+      }
+
       const { data: stats } = await supabase
         .from('user_stats')
         .select('games_played, total_score, total_mistakes, hints_used')
@@ -66,6 +133,8 @@ serve(async (req) => {
           total_score: Number(stats?.total_score ?? 0) + Number(final_score),
           total_mistakes: (stats?.total_mistakes ?? 0) + mistakes,
           hints_used: (stats?.hints_used ?? 0) + hints_used,
+          current_streak: Number(economyResult?.current_streak ?? stats?.current_streak ?? 0),
+          best_streak: Number(economyResult?.best_streak ?? stats?.best_streak ?? 0),
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },
@@ -73,7 +142,11 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, session_id }),
+      JSON.stringify({
+        ok: true,
+        session_id,
+        economy: economyResult,
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
   } catch (err) {

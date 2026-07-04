@@ -39,6 +39,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get stats => 'Stats';
 
   @override
+  String get activeEvents => 'Active Events';
+
+  @override
+  String get communityGoals => 'Community Goals';
+
+  @override
+  String get maintenanceNotice => 'Maintenance';
+
+  @override
+  String get maintenanceNoticeBody =>
+      'Some services may be limited. You can still play puzzles.';
+
+  @override
   String get settings => 'Settings';
 
   @override
@@ -75,7 +88,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get comingSoon => 'Loading...';
 
   @override
+  String get puzzleLoadFailed =>
+      'Could not load today\'s puzzle. Check your connection and try again.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
   String get gamesPlayed => 'Games Played';
+
+  @override
+  String get level => 'Level';
+
+  @override
+  String get experiencePoints => 'XP';
+
+  @override
+  String get competitiveRating => 'Rating';
+
+  @override
+  String get league => 'League';
 
   @override
   String get currentStreak => 'Current Streak';
@@ -217,6 +249,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hintFirstLetter => 'Watch ad for first letter hint';
+
+  @override
+  String get hintCareerLeague => 'Watch ad for career league hint';
+
+  @override
+  String get hintRetiredStatus => 'Watch ad for active/retired hint';
+
+  @override
+  String get hintCareerClub => 'Premium: reveal another career club';
 
   @override
   String get practiceLimitReached =>

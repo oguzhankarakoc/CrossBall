@@ -30,8 +30,8 @@ class AuthRemoteDataSource {
         'user_uuid': userUuid,
         'onboarding_complete': onboardingComplete,
         'is_premium': isPremium,
-        if (locale != null) 'locale': locale,
-        if (themePreference != null) 'theme_preference': themePreference,
+        'locale': ?locale,
+        'theme_preference': ?themePreference,
       }),
     );
 

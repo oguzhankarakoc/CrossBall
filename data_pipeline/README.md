@@ -1,16 +1,85 @@
 # CrossBall Data Ingestion Pipeline
 
-Deterministic, reproducible pipeline for ingesting football player and club data from Kaggle (SoFIFA format).
+Deterministic, reproducible pipeline for ingesting football player and club data from Kaggle (SoFIFA format) plus curated career patches for recent transfers/loans.
 
 ## Scope
 
 - Top ~100 clubs
 - Players with senior careers from 1990 onward
-- Multi-year SoFIFA CSV merge → career history
+- Multi-year SoFIFA CSV merge (FIFA 23 + EA FC 24 when available) → career history
+- **Curated patches** for recent gaps (e.g. Rashford → Barcelona loan) — zero API cost
 - Includes loan spells
 - Excludes youth, reserve, and B teams
 - Legal-safe club badge metadata on load
 - Canonical club slugs aligned with Supabase migration `007`
+
+## Data sources (all free)
+
+| Source | Cost | Notes |
+|--------|------|-------|
+| Kaggle EA FC 24 + FIFA 23 (SoFIFA export) | Free | Primary bulk ingest |
+| `data/raw/patches/career_patches.csv` | Free | Manual curation for recent transfers/loans |
+| **API-Football** (`/transfers`) | Free — 100 req/day | Recent transfers & loans (auto sync) |
+
+No paid APIs required. Re-runs **update** existing career rows (end dates, source) instead of ignoring conflicts.
+
+### API-Football (recommended for fresh data)
+
+1. Register free at https://www.api-football.com/ (no credit card)
+2. Copy API key to `data_pipeline/.env`:
+   ```
+   API_FOOTBALL_KEY=your_key_here
+   ```
+3. Run (uses ~30 of 100 daily requests by default):
+   ```bash
+   chmod +x scripts/sync_api_football.sh
+   ./scripts/sync_api_football.sh        # 30 teams
+   ./scripts/sync_api_football.sh 30 30  # next 30 teams (offset 30)
+   ```
+
+Responses are **cached 30 days** locally — re-runs are free until cache expires.
+
+**Quota tips (free plan):**
+- 100 requests/day, 10/minute
+- Default sync = 30 teams = 30 requests
+- Full top-club sweep (~54 teams) = 2 days (`offset 0` then `offset 30`)
+- Manual patches always override API rows for the same player/club/date
+
+## Automation (recommended)
+
+Data sync is **not automatic until you enable it**. Two options:
+
+### Option A — GitHub Actions (zero server, recommended)
+
+1. Push repo to GitHub
+2. Add **Repository secrets** (Settings → Secrets → Actions):
+   - `DATABASE_URL` — Supabase Postgres URI
+   - `API_FOOTBALL_KEY` — free API key
+   - *(optional)* `KAGGLE_USERNAME` + `KAGGLE_KEY` for weekly full Kaggle fetch
+3. Workflows run automatically:
+   - **Daily 07:00 Istanbul** — API-Football transfers → DB → daily puzzle
+   - **Sunday 08:00 Istanbul** — weekly Kaggle + patches
+
+Manual trigger: GitHub → Actions → "Data Sync (Daily)" → Run workflow.
+
+See `.github/workflows/README.md` for details.
+
+### Option B — Local cron (Mac/Linux)
+
+```bash
+chmod +x scripts/install_local_cron.sh scripts/run_scheduled_sync.sh scripts/run_scheduled_etl.sh
+./scripts/install_local_cron.sh --install
+```
+
+Requires `data_pipeline/.env` on the machine (same keys as above). Logs: `logs/data-sync.log`.
+
+### Manual (development only)
+
+```bash
+./scripts/sync_api_football.sh      # one-off API sync
+./scripts/run_etl.sh                # one-off full ETL
+./scripts/apply_career_patches.sh   # patches only
+```
 
 ## Setup
 
@@ -26,9 +95,22 @@ cp .env.example .env   # set DATABASE_URL (Supabase local or remote)
 
 1. Create API token at https://www.kaggle.com/settings
 2. Save as `~/.kaggle/kaggle.json` (chmod 600)
-3. Accept dataset terms: https://www.kaggle.com/datasets/maso0dahmed/football-players-data
+3. Accept dataset terms on Kaggle for:
+   - https://www.kaggle.com/datasets/stefanoleone992/ea-sports-fc-24-complete-player-dataset
+   - https://www.kaggle.com/datasets/stefanoleone992/fifa-23-complete-player-dataset
 
 **Manual alternative:** Download CSV files and place them in `data/raw/kaggle/`.
+
+### Quick patch update (recent loans/transfers only)
+
+From project root — no Kaggle download required:
+
+```bash
+chmod +x scripts/apply_career_patches.sh
+./scripts/apply_career_patches.sh
+```
+
+Add rows to `data_pipeline/data/raw/patches/career_patches.csv` (SoFIFA player `id`, club, dates, `is_loan`).
 
 ## Usage
 
@@ -86,8 +168,11 @@ SELECT public.refresh_player_club_intersections();
 
 | Command | Description |
 |---------|-------------|
-| `fetch-kaggle` | Download maso0dahmed/football-players-data |
-| `transform-kaggle` | SoFIFA CSV → players.csv + clubs.csv |
+| `fetch-kaggle` | Download EA FC 24 + FIFA 23 SoFIFA exports (free) |
+| `transform-kaggle` | SoFIFA CSV → players.csv + clubs.csv + merge patches |
+| `apply-patches` | Load curated career patches only (fast incremental update) |
+| `sync-api-football` | Fetch transfers from API-Football → patch CSV (+ optional `--load`) |
+| `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
 | `run` | Validate + upsert to PostgreSQL |
 | `run-all` | All of the above |
 
@@ -109,6 +194,8 @@ pytest tests/ -q
 ```
 
 CI runs these tests on every push (see `.github/workflows/ci.yml`).
+
+**Important:** Never run two sync/load jobs in parallel (causes PostgreSQL deadlocks on `players` upsert).
 
 ## Verify
 

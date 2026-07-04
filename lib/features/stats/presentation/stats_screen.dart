@@ -19,6 +19,7 @@ class StatsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final statsAsync = ref.watch(userStatsProvider);
+    final progressionAsync = ref.watch(playerProgressionProvider);
     final isPremium = ref.watch(isPremiumProvider);
 
     return Scaffold(
@@ -33,6 +34,35 @@ class StatsScreen extends ConsumerWidget {
                 data: (stats) => ListView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   children: [
+                    progressionAsync.when(
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                      data: (progression) => Column(
+                        children: [
+                          _StatCard(
+                            label: l10n.level,
+                            value: '${progression.currentLevel}',
+                            icon: Icons.military_tech,
+                          ),
+                          _StatCard(
+                            label: l10n.experiencePoints,
+                            value: progression.experiencePoints.toString(),
+                            icon: Icons.star,
+                          ),
+                          _StatCard(
+                            label: l10n.competitiveRating,
+                            value: progression.competitiveRating.toStringAsFixed(0),
+                            icon: Icons.trending_up,
+                          ),
+                          _StatCard(
+                            label: l10n.league,
+                            value: _formatLeague(progression.currentLeague),
+                            icon: Icons.emoji_events,
+                          ),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                      ),
+                    ),
                     _StatCard(
                       label: l10n.gamesPlayed,
                       value: stats.gamesPlayed.toString(),
@@ -103,6 +133,9 @@ class StatsScreen extends ConsumerWidget {
     );
   }
 }
+
+String _formatLeague(String slug) =>
+    slug.isEmpty ? slug : slug[0].toUpperCase() + slug.substring(1);
 
 class _StatCard extends StatelessWidget {
   const _StatCard({

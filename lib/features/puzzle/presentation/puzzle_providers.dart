@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/game_constants.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
+import '../../../core/utils/rarity.dart';
 import '../../../core/utils/scoring.dart';
 import '../../../features/ads/ads_service.dart';
 import '../../../features/auth/presentation/auth_providers.dart';
 import '../../../features/challenge/domain/challenge.dart';
 import '../../search/domain/search.dart';
 import '../domain/puzzle.dart';
+import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
 import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
@@ -122,7 +124,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
   PuzzleRepository get _repo => _ref.read(puzzleRepositoryProvider);
 
-  Future<void> loadPuzzle({int? gridSize}) async {
+  Future<void> loadPuzzle({int? gridSize, bool forceRefresh = false}) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
       final isPremium = _ref.read(isPremiumProvider);
@@ -148,9 +150,13 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         puzzle = await _repo.getChallengePuzzle(params.challengeId!);
         creatorScore = challenge.creatorScore;
       } else if (params.mode == PuzzleMode.practice) {
-        puzzle = await _repo.getPracticePuzzle(gridSize: size);
+        final profile = await _ref.read(userProfileProvider.future);
+        puzzle = await _repo.getPracticePuzzle(
+          gridSize: size,
+          userUuid: profile.userUuid,
+        );
       } else {
-        puzzle = await _repo.getDailyPuzzle();
+        puzzle = await _repo.getDailyPuzzle(forceRefresh: forceRefresh);
       }
 
       final cells = <String, PuzzleCell>{};
@@ -183,7 +189,10 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         startedAt: startedAt,
       );
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      final message = e is PuzzleFetchException
+          ? 'puzzle_load_failed'
+          : e.toString();
+      state = state.copyWith(isLoading: false, error: message);
     }
   }
 
@@ -307,17 +316,16 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
 
     final isPremium = _ref.read(isPremiumProvider);
-    final hintsOnCell = state.hintsRevealed['${row}_$col']?.length ?? 0;
 
-    if (hintType == HintType.firstLetter && !isPremium) {
-      final rewarded = await _ref.read(adsServiceProvider).showRewarded();
-      if (!rewarded) return null;
+    if (hintType == HintType.careerClub) {
+      if (!isPremium) return null;
     } else if (!isPremium) {
       final rewarded = await _ref.read(adsServiceProvider).showRewarded();
       if (!rewarded) return null;
     }
 
     final key = '${row}_$col';
+    final hintsOnCell = state.hintsRevealed[key]?.length ?? 0;
     final cell = state.cells[key];
     if (cell == null) return null;
 
@@ -346,6 +354,49 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         : metadata['total_duration_ms'] as int? ?? 0;
 
     final profile = await _ref.read(userProfileProvider.future);
+    final puzzle = state.puzzle!;
+
+    var rareCount = 0;
+    var legendaryCount = 0;
+    var mythicCount = 0;
+    var correctCount = 0;
+    for (final cell in state.cells.values) {
+      if (!cell.isSolved || cell.usagePercentage == null) continue;
+      correctCount++;
+      final tier = RarityTier.fromUsagePercentage(cell.usagePercentage!);
+      switch (tier) {
+        case RarityTier.rare:
+        case RarityTier.epic:
+          rareCount++;
+        case RarityTier.legendary:
+          legendaryCount++;
+        case RarityTier.mythic:
+          mythicCount++;
+        case RarityTier.common:
+          break;
+      }
+    }
+
+    final isPerfect = state.mistakes == 0 && state.hintsUsed == 0;
+
+    ChallengeResult? challengeResult;
+    if (params.mode == PuzzleMode.challenge && params.challengeId != null) {
+      challengeResult = await _ref.read(challengeRepositoryProvider).completeChallenge(
+            challengeId: params.challengeId!,
+            sessionId: state.sessionId!,
+            challengerScore: state.totalScore,
+            userUuid: profile.userUuid,
+            mistakes: state.mistakes,
+            hintsUsed: state.hintsUsed,
+            durationMs: durationMs,
+          );
+      _ref.read(analyticsProvider).track('challenge_completed', properties: {
+        'challenge_id': params.challengeId,
+        'you_won': challengeResult.youWon,
+      });
+      state = state.copyWith(challengeResult: challengeResult);
+    }
+
     await _repo.completeSession(
       sessionId: state.sessionId!,
       finalScore: state.totalScore,
@@ -355,11 +406,23 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'mistakes': state.mistakes,
         'hints_used': state.hintsUsed,
         'total_duration_ms': durationMs,
+        'mode': params.mode.name,
+        'difficulty_tier': puzzle.difficultyTier,
+        'puzzle_quality_score': puzzle.qualityScore,
+        'is_perfect': isPerfect,
+        'rare_count': rareCount,
+        'legendary_count': legendaryCount,
+        'mythic_count': mythicCount,
+        'correct_count': correctCount,
+        if (challengeResult != null) 'challenge_won': challengeResult.youWon,
       },
     );
 
+    _ref.invalidate(playerProgressionProvider);
+    _ref.invalidate(userStatsProvider);
+
     _ref.read(lastCompletedSessionProvider.notifier).state = CompletedSessionInfo(
-      puzzleId: state.puzzle!.id,
+      puzzleId: puzzle.id,
       sessionId: state.sessionId!,
       score: state.totalScore,
       mistakes: state.mistakes,
@@ -381,24 +444,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       _ref.read(analyticsProvider).track('ad_impression', properties: {
         'placement': 'interstitial_complete',
       });
-    }
-
-    ChallengeResult? challengeResult;
-    if (params.mode == PuzzleMode.challenge && params.challengeId != null) {
-      challengeResult = await _ref.read(challengeRepositoryProvider).completeChallenge(
-            challengeId: params.challengeId!,
-            sessionId: state.sessionId!,
-            challengerScore: state.totalScore,
-            userUuid: profile.userUuid,
-            mistakes: state.mistakes,
-            hintsUsed: state.hintsUsed,
-            durationMs: durationMs,
-          );
-      _ref.read(analyticsProvider).track('challenge_completed', properties: {
-        'challenge_id': params.challengeId,
-        'you_won': challengeResult.youWon,
-      });
-      state = state.copyWith(challengeResult: challengeResult);
     }
 
     _ref.read(analyticsProvider).track('puzzle_completed', properties: {

@@ -3,7 +3,10 @@ import '../../puzzle/domain/puzzle.dart';
 abstract interface class PuzzleRepository {
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false});
   Future<Puzzle> getPuzzleById(String puzzleId);
-  Future<Puzzle> getPracticePuzzle({required int gridSize});
+  Future<Puzzle> getPracticePuzzle({
+    required int gridSize,
+    required String userUuid,
+  });
   Future<Puzzle> getChallengePuzzle(String challengeId);
   Future<AnswerResult> validateAnswer({
     required String puzzleId,

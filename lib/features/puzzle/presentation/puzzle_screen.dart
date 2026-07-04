@@ -7,6 +7,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../challenge/domain/challenge.dart';
+import '../../../features/premium/premium_service.dart';
 import '../domain/puzzle.dart';
 import 'puzzle_providers.dart';
 import 'widgets/player_search_modal.dart';
@@ -88,6 +89,25 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                       ),
                     ),
                   )
+                : game.error == 'puzzle_load_failed'
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(l10n.puzzleLoadFailed, textAlign: TextAlign.center),
+                              const SizedBox(height: AppSpacing.md),
+                              FilledButton(
+                                onPressed: () => ref
+                                    .read(puzzleGameProvider(widget.params).notifier)
+                                    .loadPuzzle(forceRefresh: true),
+                                child: Text(l10n.retry),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
                 : game.error != null
                     ? Center(child: Text(game.error!))
                     : game.puzzle == null
@@ -160,6 +180,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         rowClub: puzzle.rowClubAt(row),
         colClub: puzzle.colClubAt(col),
         revealedHints: game.hintsRevealed[cellKey] ?? const [],
+        isPremium: ref.read(isPremiumProvider),
       ),
     );
 

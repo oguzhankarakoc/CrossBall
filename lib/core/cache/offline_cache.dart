@@ -12,9 +12,11 @@ class OfflineCache {
 
   final SharedPreferences? _prefsOverride;
 
-  static const _keyDailyPuzzle = 'cache_daily_puzzle_v3';
-  static const _keyDailyPuzzleDate = 'cache_daily_puzzle_date_v3';
+  static const _keyDailyPuzzle = 'cache_daily_puzzle_v6';
+  static const _keyDailyPuzzleDate = 'cache_daily_puzzle_date_v6';
   static const _keyStats = 'cache_user_stats';
+  static const _keyProgression = 'cache_player_progression_v1';
+  static const _keyLiveOps = 'cache_liveops_snapshot_v1';
   static const _keyRecentPicks = 'cache_recent_picks';
   static const _keyPendingAnswers = 'cache_pending_answers';
 
@@ -68,6 +70,30 @@ class OfflineCache {
   Future<Map<String, dynamic>?> getStats() async {
     final prefs = await _prefs;
     final raw = prefs.getString(_keyStats);
+    if (raw == null) return null;
+    return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  Future<void> cacheProgression(Map<String, dynamic> progression) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyProgression, jsonEncode(progression));
+  }
+
+  Future<Map<String, dynamic>?> getProgression() async {
+    final prefs = await _prefs;
+    final raw = prefs.getString(_keyProgression);
+    if (raw == null) return null;
+    return jsonDecode(raw) as Map<String, dynamic>;
+  }
+
+  Future<void> cacheLiveOps(Map<String, dynamic> snapshot) async {
+    final prefs = await _prefs;
+    await prefs.setString(_keyLiveOps, jsonEncode(snapshot));
+  }
+
+  Future<Map<String, dynamic>?> getLiveOps() async {
+    final prefs = await _prefs;
+    final raw = prefs.getString(_keyLiveOps);
     if (raw == null) return null;
     return jsonDecode(raw) as Map<String, dynamic>;
   }

@@ -1,0 +1,48 @@
+name: Data ETL (Weekly)
+
+on:
+  schedule:
+    # Sunday 05:00 UTC ≈ 08:00 Istanbul
+    - cron: '0 5 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: data-etl-weekly
+  cancel-in-progress: false
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pipeline dependencies
+        working-directory: data_pipeline
+        run: pip install -r requirements.txt
+
+      - name: Write pipeline .env
+        working-directory: data_pipeline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: |
+          test -n "$DATABASE_URL" || (echo "Missing DATABASE_URL secret" && exit 1)
+          cat > .env <<EOF
+          DATABASE_URL=${DATABASE_URL}
+          API_FOOTBALL_KEY=${API_FOOTBALL_KEY}
+          EOF
+
+      - name: Run weekly ETL
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: chmod +x scripts/run_scheduled_etl.sh && ./scripts/run_scheduled_etl.sh
+
+      - name: Summary
+        if: always()
+        run: echo "Weekly ETL finished at $(date -u)"

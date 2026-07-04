@@ -39,6 +39,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get stats => 'İstatistikler';
 
   @override
+  String get activeEvents => 'Aktif Etkinlikler';
+
+  @override
+  String get communityGoals => 'Topluluk Hedefleri';
+
+  @override
+  String get maintenanceNotice => 'Bakım';
+
+  @override
+  String get maintenanceNoticeBody =>
+      'Bazı hizmetler sınırlı olabilir. Bulmaca oynamaya devam edebilirsiniz.';
+
+  @override
   String get settings => 'Ayarlar';
 
   @override
@@ -76,7 +89,26 @@ class AppLocalizationsTr extends AppLocalizations {
   String get comingSoon => 'Yükleniyor...';
 
   @override
+  String get puzzleLoadFailed =>
+      'Günün bulmacası yüklenemedi. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get retry => 'Tekrar dene';
+
+  @override
   String get gamesPlayed => 'Oynanan Oyun';
+
+  @override
+  String get level => 'Seviye';
+
+  @override
+  String get experiencePoints => 'XP';
+
+  @override
+  String get competitiveRating => 'Derece';
+
+  @override
+  String get league => 'Lig';
 
   @override
   String get currentStreak => 'Mevcut Seri';
@@ -218,6 +250,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get hintFirstLetter => 'İlk harf ipucu için reklam izle';
+
+  @override
+  String get hintCareerLeague => 'Kariyer ligi ipucu için reklam izle';
+
+  @override
+  String get hintRetiredStatus => 'Aktif/emekli ipucu için reklam izle';
+
+  @override
+  String get hintCareerClub => 'Premium: kariyerden bir kulüp daha';
 
   @override
   String get practiceLimitReached =>

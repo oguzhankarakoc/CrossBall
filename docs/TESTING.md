@@ -14,7 +14,7 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
         └─────────────┘
 ```
 
-**Current status:** 28 Flutter tests + data pipeline pytest suite, all passing in CI.
+**Current status:** 32+ Flutter tests + 7 pipeline pytest tests, all passing in CI.
 
 ## Coverage targets
 

@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/cache/offline_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../domain/puzzle.dart';
+import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
 
 final _uuidPattern = RegExp(
@@ -50,7 +51,15 @@ class PuzzleApiService {
         if (response.statusCode == 200) {
           return jsonDecode(response.body) as Map<String, dynamic>;
         }
-      } catch (_) {}
+        throw PuzzleFetchException(
+          'Daily puzzle unavailable (${response.statusCode})',
+          statusCode: response.statusCode,
+        );
+      } on PuzzleFetchException {
+        rethrow;
+      } catch (_) {
+        throw const PuzzleFetchException('Daily puzzle network error');
+      }
     }
     return _demoPuzzle();
   }
@@ -148,6 +157,37 @@ class PuzzleApiService {
         'badge_gradient_style': gradient,
       };
 
+  Future<Map<String, dynamic>> fetchPracticePuzzle({
+    required int gridSize,
+    required String userUuid,
+  }) async {
+    if (_client != null && AppConfig.isSupabaseConfigured) {
+      try {
+        final response = await _http.get(
+          Uri.parse(
+            '$_baseUrl/functions/v1/practice-puzzle?grid_size=$gridSize&user_uuid=$userUuid',
+          ),
+          headers: {
+            ..._headers,
+            'x-user-uuid': userUuid,
+          },
+        );
+        if (response.statusCode == 200) {
+          return jsonDecode(response.body) as Map<String, dynamic>;
+        }
+        throw PuzzleFetchException(
+          'Practice puzzle unavailable (${response.statusCode})',
+          statusCode: response.statusCode,
+        );
+      } on PuzzleFetchException {
+        rethrow;
+      } catch (_) {
+        throw const PuzzleFetchException('Practice puzzle network error');
+      }
+    }
+    return _demoPuzzle();
+  }
+
   Map<String, dynamic> _demoPuzzle() {
     final clubs = [
       _clubBadge('barcelona', 'FC Barcelona', 'barcelona', 'ES', '#A50044', '#004D98', 'BAR',
@@ -162,7 +202,7 @@ class PuzzleApiService {
       _clubBadge('man-utd', 'Manchester United', 'manchester-united', 'GB', '#DA291C', '#FBE122', 'MUN',
           displayName: 'Manchester United', shortName: 'Man United', leagueName: 'Premier League',
           iconType: 'abstract_orb'),
-      _clubBadge('bayern', 'Bayern Munich', 'bayern-munich', 'DE', '#DC052D', '#0066B2', 'BAY',
+      _clubBadge('bayern-munich', 'Bayern Munich', 'bayern-munich', 'DE', '#DC052D', '#0066B2', 'BAY',
           displayName: 'FC Bayern Munich', shortName: 'Bayern', leagueName: 'Bundesliga',
           iconType: 'abstract_diamond'),
       _clubBadge('juventus', 'Juventus', 'juventus', 'IT', '#000000', '#FFFFFF', 'JUV',
@@ -195,7 +235,6 @@ class PuzzleApiService {
   }
 
   AnswerResult _demoValidate(String playerId, String rowClubId, String colClubId) {
-    // Demo validation map for Barcelona x Chelsea cell
     const validAnswers = {
       'pedro': {'name': 'Pedro', 'usage': 67.0, 'tier': 'common'},
       'deco': {'name': 'Deco', 'usage': 4.0, 'tier': 'legendary'},
@@ -203,10 +242,15 @@ class PuzzleApiService {
       'etoo': {'name': "Samuel Eto'o", 'usage': 8.0, 'tier': 'epic'},
     };
 
+    bool matchesClub(String ref, String slug) =>
+        ref == slug || ref.replaceAll('-', '') == slug.replaceAll('-', '');
+
+    final isBarcelonaChelsea =
+        (matchesClub(rowClubId, 'barcelona') && matchesClub(colClubId, 'chelsea')) ||
+        (matchesClub(rowClubId, 'chelsea') && matchesClub(colClubId, 'barcelona'));
+
     final match = validAnswers[playerId];
-    if (match != null &&
-        ((rowClubId == 'barcelona' && colClubId == 'chelsea') ||
-            (rowClubId == 'chelsea' && colClubId == 'barcelona'))) {
+    if (match != null && isBarcelonaChelsea) {
       final usage = match['usage']! as double;
       return AnswerResult(
         correct: true,
@@ -217,13 +261,13 @@ class PuzzleApiService {
       );
     }
 
-    // For demo: accept any player with >50% random correct for other cells
+    // Offline demo: reject unknown players instead of accepting everything.
     return AnswerResult(
-      correct: playerId.isNotEmpty,
+      correct: false,
       playerName: playerId,
-      usagePercentage: 35,
-      rarityTier: 'rare',
-      rarityScore: 65,
+      usagePercentage: 0,
+      rarityTier: 'common',
+      rarityScore: 0,
     );
   }
 
@@ -244,7 +288,7 @@ class PuzzleApiService {
             'col_club_id': colClubId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
-            'hint_type': hintType.name == 'firstLetter' ? 'first_letter' : hintType.name,
+            'hint_type': _hintTypeToApi(hintType),
           }),
         );
         if (response.statusCode == 200) {
@@ -257,10 +301,22 @@ class PuzzleApiService {
     return _demoHint(hintType);
   }
 
+  String _hintTypeToApi(HintType hintType) => switch (hintType) {
+        HintType.nationality => 'nationality',
+        HintType.position => 'position',
+        HintType.firstLetter => 'first_letter',
+        HintType.careerLeague => 'career_league',
+        HintType.retiredStatus => 'retired_status',
+        HintType.careerClub => 'career_club',
+      };
+
   HintResult _demoHint(HintType hintType) => switch (hintType) {
         HintType.nationality => const HintResult(hintType: HintType.nationality, hintValue: 'Brazil'),
         HintType.position => const HintResult(hintType: HintType.position, hintValue: 'Midfielder'),
         HintType.firstLetter => const HintResult(hintType: HintType.firstLetter, hintValue: 'D _ _ _'),
+        HintType.careerLeague => const HintResult(hintType: HintType.careerLeague, hintValue: 'Premier League'),
+        HintType.retiredStatus => const HintResult(hintType: HintType.retiredStatus, hintValue: 'Active'),
+        HintType.careerClub => const HintResult(hintType: HintType.careerClub, hintValue: 'Arsenal'),
       };
 }
 
@@ -277,8 +333,10 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
 
   @override
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false}) async {
+    final today = DateTime.now().toIso8601String().split('T').first;
+
     if (!forceRefresh) {
-      final cached = await _cache.getDailyPuzzle();
+      final cached = await _cache.getDailyPuzzle(forDate: today);
       if (cached != null) {
         if (_isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured) {
           return Puzzle.fromJson(cached);
@@ -287,11 +345,24 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       }
     }
 
-    final raw = await _api.fetchDailyPuzzle();
-    if (_isValidLivePuzzleCache(raw) || !AppConfig.isSupabaseConfigured) {
-      await _cache.cacheDailyPuzzle(raw);
+    try {
+      final raw = await _api.fetchDailyPuzzle();
+      if (!_isValidLivePuzzleCache(raw) && AppConfig.isSupabaseConfigured) {
+        throw const PuzzleFetchException('Invalid daily puzzle payload');
+      }
+      if (_isValidLivePuzzleCache(raw) || !AppConfig.isSupabaseConfigured) {
+        await _cache.cacheDailyPuzzle(raw);
+      }
+      return Puzzle.fromJson(raw);
+    } on PuzzleFetchException {
+      if (AppConfig.isSupabaseConfigured) {
+        final cached = await _cache.getDailyPuzzle(forDate: today);
+        if (cached != null && _isValidLivePuzzleCache(cached)) {
+          return Puzzle.fromJson(cached);
+        }
+      }
+      rethrow;
     }
-    return Puzzle.fromJson(raw);
   }
 
   @override
@@ -301,16 +372,21 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   }
 
   @override
-  Future<Puzzle> getPracticePuzzle({required int gridSize}) async {
-    final daily = await getDailyPuzzle();
+  Future<Puzzle> getPracticePuzzle({
+    required int gridSize,
+    required String userUuid,
+  }) async {
+    final raw = await _api.fetchPracticePuzzle(gridSize: gridSize, userUuid: userUuid);
+    final puzzle = Puzzle.fromJson(raw);
     return Puzzle(
-      id: _uuid.v4(),
-      date: daily.date,
-      gridSize: gridSize,
-      rowClubs: daily.rowClubs,
-      colClubs: daily.colClubs,
-      cells: daily.cells,
+      id: puzzle.id,
+      date: puzzle.date,
+      gridSize: puzzle.gridSize,
+      rowClubs: puzzle.rowClubs,
+      colClubs: puzzle.colClubs,
+      cells: puzzle.cells,
       mode: PuzzleMode.practice,
+      difficulty: puzzle.difficulty,
     );
   }
 

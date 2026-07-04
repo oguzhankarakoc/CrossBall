@@ -54,6 +54,7 @@ __pycache__/
 venv/
 data_pipeline/.venv/
 data_pipeline/data/raw/kaggle/
+data_pipeline/data/cache/
 
 # Symbolication related
 app.*.symbols

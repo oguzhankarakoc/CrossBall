@@ -48,6 +48,12 @@ verify_jwt = false
 [functions.puzzle-by-id]
 verify_jwt = false
 
+[functions.economy-profile]
+verify_jwt = false
+
+[functions.liveops-config]
+verify_jwt = false
+
 [auth]
 enabled = true
 site_url = "http://localhost:3000"

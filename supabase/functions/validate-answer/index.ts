@@ -7,79 +7,12 @@ const corsHeaders = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-/** Slugs that refer to the same logical club (legacy seed vs ETL). */
-const SLUG_ALIAS_GROUPS: string[][] = [
-  ['barcelona', 'fc-barcelona'],
-  ['chelsea', 'chelsea-fc'],
-  ['psg', 'paris-saintgermain', 'paris-saint-germain'],
-]
-
-function canonicalSlug(slug: string): string {
-  for (const group of SLUG_ALIAS_GROUPS) {
-    if (group.includes(slug)) return group[0]
-  }
-  return slug
-}
-
 function tierFromUsage(pct: number): string {
   if (pct > 50) return 'common'
   if (pct > 25) return 'rare'
   if (pct > 10) return 'epic'
   if (pct > 3) return 'legendary'
   return 'mythic'
-}
-
-async function resolveEquivalentClubIds(
-  supabase: ReturnType<typeof createClient>,
-  clubRef: string,
-): Promise<string[]> {
-  const { data: rpcIds, error } = await supabase.rpc('club_ids_equivalent_to', {
-    p_club_ref: clubRef,
-  })
-  if (!error && Array.isArray(rpcIds) && rpcIds.length > 0) {
-    return rpcIds as string[]
-  }
-
-  let slug = clubRef
-  if (UUID_RE.test(clubRef)) {
-    const { data: club } = await supabase
-      .from('clubs')
-      .select('slug')
-      .eq('id', clubRef)
-      .maybeSingle()
-    if (!club?.slug) return [clubRef]
-    slug = club.slug
-  }
-
-  const canonical = canonicalSlug(slug)
-  const aliasSlugs = SLUG_ALIAS_GROUPS.find((g) => g[0] === canonical) ?? [slug]
-
-  const { data: clubs } = await supabase.from('clubs').select('id, slug').in('slug', aliasSlugs)
-
-  const ids = new Set<string>()
-  if (UUID_RE.test(clubRef)) ids.add(clubRef)
-  for (const club of clubs ?? []) ids.add(club.id as string)
-  return [...ids]
-}
-
-async function playerPlayedForClubRef(
-  supabase: ReturnType<typeof createClient>,
-  playerId: string,
-  clubRef: string,
-): Promise<boolean> {
-  const clubIds = await resolveEquivalentClubIds(supabase, clubRef)
-  if (clubIds.length === 0) return false
-
-  const { count } = await supabase
-    .from('player_career_history')
-    .select('*', { count: 'exact', head: true })
-    .eq('player_id', playerId)
-    .eq('is_senior', true)
-    .eq('is_youth', false)
-    .eq('is_reserve', false)
-    .in('club_id', clubIds)
-
-  return (count ?? 0) > 0
 }
 
 Deno.serve(async (req) => {
@@ -89,24 +22,33 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { row_club_id, col_club_id, player_id, puzzle_cell_id, session_id } = body
+    const { row_club_id, col_club_id, player_id, puzzle_cell_id } = body
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const [hasRow, hasCol] = await Promise.all([
-      playerPlayedForClubRef(supabase, player_id, String(row_club_id)),
-      playerPlayedForClubRef(supabase, player_id, String(col_club_id)),
-    ])
-    const correct = hasRow && hasCol
+    const { data: correct, error: validateError } = await supabase.rpc(
+      'validate_player_intersection',
+      {
+        p_player_id: player_id,
+        p_row_club_ref: String(row_club_id),
+        p_col_club_ref: String(col_club_id),
+      },
+    )
+
+    if (validateError) {
+      console.error('validate_player_intersection failed:', validateError.message)
+    }
+
+    const isCorrect = !validateError && correct === true
 
     let usagePercentage = 0
     let rarityScore = 0
     const validCellId = puzzle_cell_id && UUID_RE.test(String(puzzle_cell_id))
 
-    if (correct && validCellId) {
+    if (isCorrect && validCellId) {
       try {
         const { data: rarity } = await supabase
           .from('rarity_stats')
@@ -145,7 +87,7 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        correct,
+        correct: isCorrect,
         player_name: player?.name ?? '',
         usage_percentage: usagePercentage,
         rarity_tier: tierFromUsage(usagePercentage),

@@ -4,7 +4,14 @@ import '../../../core/club_identity/club_display_resolver.dart';
 
 enum PuzzleMode { daily, practice, challenge }
 
-enum HintType { nationality, position, firstLetter }
+enum HintType {
+  nationality,
+  position,
+  firstLetter,
+  careerLeague,
+  retiredStatus,
+  careerClub,
+}
 
 enum SessionStatus { active, completed, abandoned, suspicious }
 
@@ -165,6 +172,8 @@ class Puzzle extends Equatable {
     required this.cells,
     this.mode = PuzzleMode.daily,
     this.difficulty = 0.5,
+    this.difficultyTier = 'medium',
+    this.qualityScore = 85,
   });
 
   final String id;
@@ -175,6 +184,8 @@ class Puzzle extends Equatable {
   final List<PuzzleCell> cells;
   final PuzzleMode mode;
   final double difficulty;
+  final String difficultyTier;
+  final double qualityScore;
 
   int get totalCells => gridSize * gridSize;
 
@@ -212,6 +223,8 @@ class Puzzle extends Equatable {
         orElse: () => PuzzleMode.daily,
       ),
       difficulty: (json['difficulty'] as num?)?.toDouble() ?? 0.5,
+      difficultyTier: json['difficulty_tier'] as String? ?? 'medium',
+      qualityScore: (json['quality_score'] as num?)?.toDouble() ?? 85,
     );
   }
 
@@ -233,6 +246,8 @@ class Puzzle extends Equatable {
             .toList(),
         'mode': mode.name,
         'difficulty': difficulty,
+        'difficulty_tier': difficultyTier,
+        'quality_score': qualityScore,
       };
 
   Puzzle copyWith({List<PuzzleCell>? cells}) => Puzzle(
@@ -261,12 +276,14 @@ class HintResult extends Equatable {
 
   factory HintResult.fromJson(Map<String, dynamic> json) {
     final typeRaw = (json['hint_type'] as String? ?? 'nationality').replaceAll('-', '_');
-    HintType hintType = HintType.nationality;
-    if (typeRaw.contains('position')) {
-      hintType = HintType.position;
-    } else if (typeRaw.contains('letter')) {
-      hintType = HintType.firstLetter;
-    }
+    final hintType = switch (typeRaw) {
+      'position' => HintType.position,
+      'first_letter' => HintType.firstLetter,
+      'career_league' => HintType.careerLeague,
+      'retired_status' => HintType.retiredStatus,
+      'career_club' => HintType.careerClub,
+      _ => HintType.nationality,
+    };
     return HintResult(
       hintType: hintType,
       hintValue: json['hint_value'] as String? ?? '',

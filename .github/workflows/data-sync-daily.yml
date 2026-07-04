@@ -1,0 +1,47 @@
+name: Data Sync (Daily)
+
+on:
+  schedule:
+    # 04:00 UTC daily ≈ 07:00 Istanbul
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: data-sync-daily
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install pipeline dependencies
+        working-directory: data_pipeline
+        run: pip install -r requirements.txt
+
+      - name: Write pipeline .env
+        working-directory: data_pipeline
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+        run: |
+          test -n "$DATABASE_URL" || (echo "Missing DATABASE_URL secret" && exit 1)
+          test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
+          cat > .env <<EOF
+          DATABASE_URL=${DATABASE_URL}
+          API_FOOTBALL_KEY=${API_FOOTBALL_KEY}
+          EOF
+
+      - name: Run scheduled API-Football sync
+        run: chmod +x scripts/run_scheduled_sync.sh && ./scripts/run_scheduled_sync.sh
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "Daily sync finished at $(date -u)"

@@ -25,6 +25,8 @@ supabase functions deploy search-players
 supabase functions deploy puzzle-by-id
 supabase functions deploy request-hint
 supabase functions deploy complete-session
+supabase functions deploy economy-profile
+supabase functions deploy liveops-config
 supabase functions deploy challenge-create
 supabase functions deploy challenge-get
 supabase functions deploy challenge-complete
@@ -60,7 +62,16 @@ SUPABASE_ANON_KEY=<from supabase status>
 | `005_club_identity_v2.sql` | Icon types, gradient styles |
 | `006_club_display_names.sql` | Display names, short names, leagues |
 | `007_club_slug_canonical.sql` | Slug aliases, `club_ids_equivalent_to`, validation RPCs |
-| `008_seed_daily_puzzle.sql` | Repoint stale club FKs, seed today's daily puzzle |
+| `008_seed_daily_puzzle.sql` | Legacy manual seed (superseded by 009 engine) |
+| `009_puzzle_generation_engine.sql` | Club relationships, puzzle hash, generation RPCs |
+| `010_puzzle_quality_evaluation.sql` | Quality + human simulation scoring gates |
+| `011_game_economy_engine.sql` | GEE: progression, config, achievements, missions, seasons |
+| `012_liveops_engine.sql` | LOE: remote config, feature flags, events, announcements |
+| `013_club_slug_aliases.sql` | Extended slug aliases (bayern-munich, manchester-united, …) |
+| `014_puzzle_generation_relationship_aware.sql` | Graph-aware club picking + daily tier fallback |
+| `015_puzzle_pick_coordinated.sql` | Optimized pick + relaxed daily quality fallback |
+
+Apply through `015` for production daily puzzle generation.
 
 ### Apply migrations manually
 
@@ -78,12 +89,16 @@ Uses `DATABASE_URL` from `data_pipeline/.env`.
 
 | Function | Method | Purpose |
 |----------|--------|---------|
-| `daily-puzzle` | GET | Today's published puzzle |
+| `daily-puzzle` | GET | Today's puzzle (auto-generates via engine if missing) |
+| `practice-puzzle` | GET | Weighted practice puzzle (no recent repeats) |
+| `generate-puzzle` | POST | Manual/cron puzzle generation |
 | `puzzle-by-id` | GET | Fetch puzzle by UUID |
 | `validate-answer` | POST | Server-side answer validation + rarity |
 | `search-players` | GET | Fuzzy player search with club preview |
 | `request-hint` | POST | Return hint for cell |
-| `complete-session` | POST | Finalize puzzle session + score |
+| `complete-session` | POST | Finalize puzzle session + GEE rewards |
+| `economy-profile` | GET | Player progression profile (XP, level, rating, league) |
+| `liveops-config` | GET | LiveOps snapshot (config, flags, events, announcements) |
 | `challenge-create` | POST | Create async challenge |
 | `challenge-get` | GET | Fetch challenge puzzle by code |
 | `challenge-complete` | POST | Submit challenge result |
@@ -94,10 +109,7 @@ See `docs/ARCHITECTURE.md` for request/response contracts.
 
 ## Validation (`validate-answer`)
 
-Answer validation checks `player_career_history` for senior, non-youth, non-reserve stints at **both** clubs. Club references are resolved through:
-
-1. RPC `club_ids_equivalent_to(p_club_ref)` — merges legacy slug aliases (e.g. `fc-barcelona` → `barcelona`)
-2. Fallback slug alias groups in the edge function
+Answer validation uses RPC `validate_player_intersection` and `club_ids_equivalent_to()` (migration `007` + `013` slug aliases). Example: Real Madrid × Bayern accepts players with senior stints at both clubs (loans count).
 
 Rarity stats are updated only when `puzzle_cell_id` is a valid UUID.
 
@@ -109,7 +121,7 @@ Rarity stats are updated only when `puzzle_cell_id` is a valid UUID.
 
 ## Refresh materialized view
 
-Schedule via pg_cron or run after pipeline ingest:
+Schedule via pg_cron, GitHub Actions daily sync, or run after pipeline ingest:
 
 ```sql
 SELECT public.refresh_player_club_intersections();
@@ -119,7 +131,9 @@ SELECT public.refresh_player_club_intersections();
 
 | Symptom | Fix |
 |---------|-----|
-| Valid player marked wrong | Deploy latest `validate-answer`; run migration `007` + `008` |
+| Valid player marked wrong | Deploy `validate-answer`; run migrations `007`, `013` |
+| Same 6 teams every day (demo grid) | API failed → client fell back to demo; run migrations `014`–`015`, deploy `daily-puzzle`, clear app cache (v6) |
+| `ensure_daily_puzzle` HTTP 500 | Run `./scripts/run_migrations.sh 014 015`; verify `club_relationships` count > 0 |
 | `deno.land` deploy error | Use `npm:@supabase/supabase-js@2` (already in repo) |
-| Empty daily puzzle | Run `./scripts/run_migrations.sh 008` |
-| Stale club UUIDs in app | Full app restart (cache key bumps invalidate old puzzles) |
+| DB deadlock during sync | Never run two `sync_api_football` / `apply-patches` jobs in parallel |
+| Stale club UUIDs in app | Full app restart (cache key v6 invalidates old demo puzzles) |

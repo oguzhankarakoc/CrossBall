@@ -22,12 +22,14 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
     required this.rowClub,
     required this.colClub,
     this.revealedHints = const [],
+    this.isPremium = false,
   });
 
   final PuzzleGameParams params;
   final Club rowClub;
   final Club colClub;
   final List<String> revealedHints;
+  final bool isPremium;
 
   @override
   ConsumerState<PlayerSearchModal> createState() => _PlayerSearchModalState();
@@ -38,9 +40,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   final _focusNode = FocusNode();
   Timer? _debounce;
   List<Player> _results = [];
-  List<Player> _recent = [];
-  List<Player> _popular = [];
-  List<Player> _suggested = [];
   bool _loading = false;
   bool _hintLoading = false;
   late List<String> _hints;
@@ -61,45 +60,41 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         widget.colClub.name,
       };
 
+  static const _hintSequence = [
+    HintType.nationality,
+    HintType.position,
+    HintType.firstLetter,
+    HintType.careerLeague,
+    HintType.retiredStatus,
+    HintType.careerClub,
+  ];
+
   @override
   void initState() {
     super.initState();
     _hints = List<String>.from(widget.revealedHints);
-    _loadInitial();
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
   }
 
-  Future<void> _loadInitial() async {
-    final repo = ref.read(searchRepositoryProvider);
-    final results = await Future.wait([
-      repo.getRecentPicks(),
-      repo.getSuggestedForCell(_searchContext),
-      repo.getPopularPicks(context: _searchContext),
-    ]);
-    if (mounted) {
-      setState(() {
-        _recent = results[0];
-        _suggested = results[1];
-        _popular = results[2];
-        _results = _recent.isNotEmpty ? _recent : _popular;
-      });
-    }
-  }
-
   void _onQueryChanged() {
     _debounce?.cancel();
+    final query = _controller.text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _results = [];
+        _loading = false;
+      });
+      return;
+    }
     _debounce = Timer(
       const Duration(milliseconds: GameConstants.searchDebounceMs),
-      () => _search(_controller.text),
+      () => _search(query),
     );
   }
 
   Future<void> _search(String query) async {
-    if (query.trim().isEmpty) {
-      await _loadInitial();
-      return;
-    }
+    if (query.trim().isEmpty) return;
 
     setState(() => _loading = true);
     final start = DateTime.now();
@@ -122,10 +117,10 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   }
 
   HintType? get _nextHintType {
-    if (_hints.isEmpty) return HintType.nationality;
-    if (_hints.length == 1) return HintType.position;
-    if (_hints.length == 2) return HintType.firstLetter;
-    return null;
+    if (_hints.length >= _hintSequence.length) return null;
+    final next = _hintSequence[_hints.length];
+    if (next == HintType.careerClub && !widget.isPremium) return null;
+    return next;
   }
 
   Future<void> _requestHint() async {
@@ -155,8 +150,8 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
-    final query = _controller.text;
-    final showSections = query.isEmpty;
+    final query = _controller.text.trim();
+    final hasQuery = query.isNotEmpty;
     final nextHint = _nextHintType;
 
     return DraggableScrollableSheet(
@@ -265,10 +260,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                         : _controller.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear),
-                                onPressed: () {
-                                  _controller.clear();
-                                  _loadInitial();
-                                },
+                                onPressed: () => _controller.clear(),
                               )
                             : null,
                     filled: true,
@@ -293,41 +285,24 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                   controller: scrollController,
                   padding: const EdgeInsets.only(bottom: AppSpacing.lg),
                   children: [
-                    if (showSections && _recent.isNotEmpty) ...[
-                      _SectionHeader(title: l10n.recentPicks, icon: Icons.history),
-                      ..._recent.map((p) => PlayerSearchCard(
-                            player: p,
-                            highlightClubs: _highlightClubs,
-                            showRelevanceBadge: p.isCellRelevant,
-                            onTap: () => Navigator.pop(context, p),
-                          )),
-                    ],
-                    if (showSections && _suggested.isNotEmpty) ...[
-                      _SectionHeader(title: l10n.suggestedForCell, icon: Icons.bolt),
-                      ..._suggested.map((p) => PlayerSearchCard(
-                            player: p,
-                            highlightClubs: _highlightClubs,
-                            showRelevanceBadge: true,
-                            onTap: () => Navigator.pop(context, p),
-                          )),
-                    ],
-                    if (showSections && _popular.isNotEmpty) ...[
-                      _SectionHeader(title: l10n.popularPicks, icon: Icons.trending_up),
-                      ..._popular.map((p) => PlayerSearchCard(
-                            player: p,
-                            highlightClubs: _highlightClubs,
-                            showRelevanceBadge: p.isCellRelevant,
-                            onTap: () => Navigator.pop(context, p),
-                          )),
-                    ],
-                    if (!showSections)
+                    if (!hasQuery)
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.xl),
+                        child: Center(
+                          child: Text(
+                            l10n.searchPlayer,
+                            style: TextStyle(color: colors.textSecondary),
+                          ),
+                        ),
+                      ),
+                    if (hasQuery)
                       ..._results.map((p) => PlayerSearchCard(
                             player: p,
                             highlightClubs: _highlightClubs,
-                            showRelevanceBadge: p.isCellRelevant,
+                            showRelevanceBadge: false,
                             onTap: () => Navigator.pop(context, p),
                           )),
-                    if (!showSections && _results.isEmpty && !_loading && query.isNotEmpty)
+                    if (hasQuery && _results.isEmpty && !_loading)
                       Padding(
                         padding: const EdgeInsets.all(AppSpacing.xl),
                         child: Center(
@@ -351,36 +326,10 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         HintType.nationality => l10n.hintNationality,
         HintType.position => l10n.hintPosition,
         HintType.firstLetter => l10n.hintFirstLetter,
+        HintType.careerLeague => l10n.hintCareerLeague,
+        HintType.retiredStatus => l10n.hintRetiredStatus,
+        HintType.careerClub => l10n.hintCareerClub,
       };
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.icon});
-
-  final String title;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.cb;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.xs),
-      child: Row(
-        children: [
-          Icon(icon, size: 16, color: colors.accent),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colors.accent,
-                  letterSpacing: 0.2,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class AnswerResultSheet extends StatelessWidget {

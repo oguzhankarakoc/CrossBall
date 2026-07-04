@@ -39,7 +39,7 @@ class OfflineSyncService {
 
     for (final session in pending) {
       try {
-        await _http.post(
+        final response = await _http.post(
           Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
           headers: {
             'apikey': AppConfig.supabaseAnonKey,
@@ -47,6 +47,16 @@ class OfflineSyncService {
           },
           body: jsonEncode(session),
         );
+        if (response.statusCode == 200) {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          final economy = body['economy'] as Map<String, dynamic>?;
+          final progression = economy?['progression'] as Map<String, dynamic>?;
+          if (progression != null) {
+            await _cache.cacheProgression(progression);
+          }
+        } else {
+          await _cache.queuePendingAnswer(session);
+        }
       } catch (e) {
         if (kDebugMode) debugPrint('OfflineSync flush failed: $e');
         await _cache.queuePendingAnswer(session);

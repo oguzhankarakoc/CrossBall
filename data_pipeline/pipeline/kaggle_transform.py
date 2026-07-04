@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from .career_patches import DEFAULT_PATCHES_PATH, load_all_career_patches, merge_career_patches
 from .club_metadata import canonical_club_name, club_record
 from .nationality_map import nationality_to_iso
 from .normalize import is_youth_or_reserve, normalize_name, slugify
@@ -124,6 +125,7 @@ def transform_kaggle_files(
     input_path: Path,
     *,
     min_year: int = MIN_CAREER_YEAR,
+    patches_path: Path | None = DEFAULT_PATCHES_PATH,
 ) -> tuple[list[dict], list[dict]]:
     """Merge multi-year SoFIFA exports into player career rows."""
     files = discover_kaggle_files(input_path)
@@ -220,7 +222,17 @@ def transform_kaggle_files(
                 'end_date': stint['end_date'] or '',
                 'is_loan': 'true' if stint['is_loan'] else 'false',
                 'appearances': 1,
+                'source': 'kaggle_sofifa',
             })
+
+    patches = load_all_career_patches(patches_path)
+    player_rows, patch_count = merge_career_patches(player_rows, patches)
+    if patch_count:
+        print(f'  Applied {patch_count} career patch row(s) (manual + API-Football)')
+
+    clubs_seen: set[str] = set()
+    for row in player_rows:
+        clubs_seen.add(row['team'])
 
     club_rows = [club_record(name) for name in sorted(clubs_seen)]
     return player_rows, club_rows
@@ -236,8 +248,9 @@ def write_pipeline_csv(
     clubs_out.parent.mkdir(parents=True, exist_ok=True)
 
     if players:
+        fieldnames = list(players[0].keys())
         with players_out.open('w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=list(players[0].keys()))
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
             writer.writerows(players)
 

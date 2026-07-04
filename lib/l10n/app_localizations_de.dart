@@ -40,6 +40,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get stats => 'Statistiken';
 
   @override
+  String get activeEvents => 'Aktive Events';
+
+  @override
+  String get communityGoals => 'Community-Ziele';
+
+  @override
+  String get maintenanceNotice => 'Wartung';
+
+  @override
+  String get maintenanceNoticeBody =>
+      'Einige Dienste können eingeschränkt sein. Rätsel spielen geht weiter.';
+
+  @override
   String get settings => 'Einstellungen';
 
   @override
@@ -77,7 +90,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get comingSoon => 'Laden...';
 
   @override
+  String get puzzleLoadFailed =>
+      'Das Tagesrätsel konnte nicht geladen werden. Verbindung prüfen und erneut versuchen.';
+
+  @override
+  String get retry => 'Erneut versuchen';
+
+  @override
   String get gamesPlayed => 'Gespielte Spiele';
+
+  @override
+  String get level => 'Level';
+
+  @override
+  String get experiencePoints => 'XP';
+
+  @override
+  String get competitiveRating => 'Rating';
+
+  @override
+  String get league => 'Liga';
 
   @override
   String get currentStreak => 'Aktuelle Serie';
@@ -219,6 +251,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get hintFirstLetter => 'Werbung für Anfangsbuchstaben ansehen';
+
+  @override
+  String get hintCareerLeague => 'Werbung für Karriere-Liga ansehen';
+
+  @override
+  String get hintRetiredStatus => 'Werbung für Aktiv/Retired ansehen';
+
+  @override
+  String get hintCareerClub => 'Premium: weiteren Verein aus Karriere';
 
   @override
   String get practiceLimitReached =>

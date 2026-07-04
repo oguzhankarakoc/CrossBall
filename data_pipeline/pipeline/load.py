@@ -114,12 +114,23 @@ def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
                     """
                     INSERT INTO player_career_history
                       (player_id, club_id, start_date, end_date, is_loan,
-                       is_senior, is_youth, is_reserve, appearances)
+                       is_senior, is_youth, is_reserve, appearances, source)
                     VALUES (%(player_id)s, %(club_id)s, %(start_date)s, %(end_date)s,
-                            %(is_loan)s, %(is_senior)s, false, false, %(appearances)s)
-                    ON CONFLICT (player_id, club_id, start_date, is_loan) DO NOTHING
+                            %(is_loan)s, %(is_senior)s, false, false, %(appearances)s,
+                            %(source)s)
+                    ON CONFLICT (player_id, club_id, start_date, is_loan) DO UPDATE SET
+                      end_date = EXCLUDED.end_date,
+                      appearances = GREATEST(
+                        COALESCE(player_career_history.appearances, 0),
+                        COALESCE(EXCLUDED.appearances, 0)
+                      ),
+                      source = EXCLUDED.source
                     """,
-                    {**career, 'player_id': player_id},
+                    {
+                        **career,
+                        'player_id': player_id,
+                        'source': career.get('source') or 'kaggle_sofifa',
+                    },
                 )
 
             total += 1
@@ -129,6 +140,24 @@ def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
 
     conn.commit()
     return total
+
+
+def refresh_club_relationships(conn) -> None:
+    """Rebuild precomputed club relationship graph for puzzle generation."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT EXISTS (
+              SELECT 1 FROM pg_proc WHERE proname = 'refresh_club_relationships'
+            )
+            """
+        )
+        if not cur.fetchone()[0]:
+            return
+        cur.execute('SELECT public.refresh_club_relationships()')
+        count = cur.fetchone()[0]
+        conn.commit()
+        print(f'  Refreshed club_relationships ({count} pairs).')
 
 
 def refresh_intersections(conn) -> None:

@@ -160,6 +160,30 @@ abstract class AppLocalizations {
   /// **'Stats'**
   String get stats;
 
+  /// No description provided for @activeEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Events'**
+  String get activeEvents;
+
+  /// No description provided for @communityGoals.
+  ///
+  /// In en, this message translates to:
+  /// **'Community Goals'**
+  String get communityGoals;
+
+  /// No description provided for @maintenanceNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get maintenanceNotice;
+
+  /// No description provided for @maintenanceNoticeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Some services may be limited. You can still play puzzles.'**
+  String get maintenanceNoticeBody;
+
   /// No description provided for @settings.
   ///
   /// In en, this message translates to:
@@ -232,11 +256,47 @@ abstract class AppLocalizations {
   /// **'Loading...'**
   String get comingSoon;
 
+  /// No description provided for @puzzleLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load today\'s puzzle. Check your connection and try again.'**
+  String get puzzleLoadFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
   /// No description provided for @gamesPlayed.
   ///
   /// In en, this message translates to:
   /// **'Games Played'**
   String get gamesPlayed;
+
+  /// No description provided for @level.
+  ///
+  /// In en, this message translates to:
+  /// **'Level'**
+  String get level;
+
+  /// No description provided for @experiencePoints.
+  ///
+  /// In en, this message translates to:
+  /// **'XP'**
+  String get experiencePoints;
+
+  /// No description provided for @competitiveRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get competitiveRating;
+
+  /// No description provided for @league.
+  ///
+  /// In en, this message translates to:
+  /// **'League'**
+  String get league;
 
   /// No description provided for @currentStreak.
   ///
@@ -507,6 +567,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Watch ad for first letter hint'**
   String get hintFirstLetter;
+
+  /// No description provided for @hintCareerLeague.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for career league hint'**
+  String get hintCareerLeague;
+
+  /// No description provided for @hintRetiredStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad for active/retired hint'**
+  String get hintRetiredStatus;
+
+  /// No description provided for @hintCareerClub.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium: reveal another career club'**
+  String get hintCareerClub;
 
   /// No description provided for @practiceLimitReached.
   ///
