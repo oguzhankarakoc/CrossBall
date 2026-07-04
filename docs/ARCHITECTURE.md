@@ -121,6 +121,8 @@ App launch → SecureStorage read/write UUID
 | Timeline | Career years overlay | Premium (flag) | None |
 | Unlimited Practice | Any | Premium | None |
 
+**Planned modes:** See [GAME_MODES_BACKLOG.md](./GAME_MODES_BACKLOG.md) — 12-mode prioritized backlog and full **Club × Nationality (World XI)** product spec.
+
 ---
 
 ## 4b. Original Club Identity System
