@@ -10,6 +10,9 @@ concurrency:
   group: data-sync-daily
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   sync:
     runs-on: ubuntu-latest

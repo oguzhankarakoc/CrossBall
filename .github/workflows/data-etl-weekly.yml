@@ -10,6 +10,9 @@ concurrency:
   group: data-etl-weekly
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   etl:
     runs-on: ubuntu-latest
