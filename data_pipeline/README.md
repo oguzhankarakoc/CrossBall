@@ -154,7 +154,9 @@ python -m pipeline run \
 Set `DATABASE_URL` in `.env` to your Supabase Postgres connection string (Settings → Database → URI).
 
 ```bash
-export DATABASE_URL="postgresql://postgres.[ref]:[password]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+# Local Mac: direct connection (Connect modal, port 5432) works fine.
+# GitHub Actions: must use Transaction pooler (IPv4) — CrossBall region is ap-south-1:
+export DATABASE_URL="postgresql://postgres.kseqeqpoouneaiymdzpq:[password]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
 python -m pipeline run-all
 ```
 

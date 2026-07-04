@@ -11,7 +11,7 @@ load_dotenv()
 
 
 def get_connection():
-    conn = psycopg2.connect(os.environ['DATABASE_URL'])
+    conn = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
     with conn.cursor() as cur:
         cur.execute("SET statement_timeout = '0'")
     conn.commit()

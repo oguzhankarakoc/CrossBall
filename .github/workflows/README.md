@@ -8,12 +8,26 @@ Repository → **Settings → Secrets and variables → Actions → New reposito
 
 | Secret | Required | Description |
 |--------|----------|-------------|
-| `DATABASE_URL` | Yes | Supabase Postgres URI (`data_pipeline/.env`) |
+| `DATABASE_URL` | Yes | **Transaction pooler** URI for CI (see below) — not the direct `db.*:5432` string |
 | `API_FOOTBALL_KEY` | Yes (daily sync) | Free key from [api-football.com](https://www.api-football.com/) |
 | `KAGGLE_USERNAME` | No | Enables full Kaggle download in weekly job |
 | `KAGGLE_KEY` | No | Kaggle API token |
 
 Never commit `.env` files — secrets only in GitHub Settings.
+
+### DATABASE_URL for GitHub Actions (important)
+
+CrossBall Supabase project region: **ap-south-1**. GitHub runners **cannot** reach direct connection (`db.*.supabase.co:5432` — IPv6 only).
+
+Use **Transaction pooler** (port **6543**) in the `DATABASE_URL` secret:
+
+```
+postgresql://postgres.kseqeqpoouneaiymdzpq:[PASSWORD]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres
+```
+
+Supabase → **Connect** → URI → **Transaction pooler** → copy. Same DB password as local.
+
+Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — that still works locally.
 
 ## Workflows
 
