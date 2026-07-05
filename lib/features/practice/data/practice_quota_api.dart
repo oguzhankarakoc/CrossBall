@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../core/config/app_config.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 
 class PracticeQuotaApi {
   PracticeQuotaApi({http.Client? httpClient}) : _http = httpClient ?? http.Client();
@@ -10,12 +11,17 @@ class PracticeQuotaApi {
   final http.Client _http;
 
   Future<Map<String, dynamic>> fetchQuota(String userUuid) async {
-    final response = await _http.get(
-      Uri.parse(
-        '${AppConfig.supabaseUrl}/functions/v1/practice-quota?user_uuid=$userUuid',
-      ),
-      headers: _headers(userUuid),
+    final uri = Uri.parse(
+      '${AppConfig.supabaseUrl}/functions/v1/practice-quota?user_uuid=$userUuid',
     );
+    cbDebug('Practice', 'fetchQuota GET', uri.toString());
+    final response = await _http.get(uri, headers: _headers(userUuid));
+    cbDebug('Practice', 'fetchQuota response', {
+      'status': response.statusCode,
+      'bodyPreview': response.body.length > 200
+          ? '${response.body.substring(0, 200)}…'
+          : response.body,
+    });
     return _parseResponse(response);
   }
 

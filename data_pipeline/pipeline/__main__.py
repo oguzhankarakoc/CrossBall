@@ -2,6 +2,7 @@
 
 import argparse
 import csv
+import os
 import uuid
 from pathlib import Path
 
@@ -164,9 +165,15 @@ def cmd_transform_kaggle(input_path: Path, players_out: Path, clubs_out: Path) -
     print(f'  Output: {players_out}, {clubs_out}')
 
 
-def cmd_apply_patches(patches_path: Path, clubs_path: Path) -> None:
+def _patch_load_light() -> bool:
+    return os.environ.get('PATCH_LOAD_LIGHT', '').strip().lower() in ('1', 'true', 'yes')
+
+
+def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: bool | None = None) -> None:
     """Apply curated career patches to PostgreSQL without a full Kaggle re-download."""
-    print('  Applying career patches (manual + API-Football)')
+    light = _patch_load_light() if light is None else light
+    mode = 'light (skip dedupe + graph refresh)' if light else 'full'
+    print(f'  Applying career patches (manual + API-Football) — {mode}')
     patches = load_all_career_patches(manual_path=patches_path)
     if not patches:
         raise SystemExit(f'No patches found at {patches_path}')
@@ -187,11 +194,14 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path) -> None:
         slug_to_id = upsert_clubs(conn, clubs)
         remap_career_club_ids(players, clubs, slug_to_id)
         upsert_players(conn, players)
-        merged = dedupe_players(conn)
-        if merged:
-            print(f'  Merged {merged} duplicate player record(s).')
-        refresh_intersections(conn)
-        refresh_club_relationships(conn)
+        if light:
+            print('  Skipped dedupe + graph refresh (weekly ETL rebuilds the graph).')
+        else:
+            merged = dedupe_players(conn)
+            if merged:
+                print(f'  Merged {merged} duplicate player record(s).')
+            refresh_intersections(conn)
+            refresh_club_relationships(conn)
         print('  Patch load complete.')
     finally:
         conn.close()
@@ -232,10 +242,27 @@ def cmd_sync_api_football(
 
 def cmd_ensure_daily() -> None:
     """Ensure today's global daily puzzle exists (after data refresh)."""
+    tier = os.environ.get('ENSURE_DAILY_TIER', 'medium').strip() or 'medium'
     conn = get_connection()
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT public.ensure_daily_puzzle(CURRENT_DATE, %s)", ('hard',))
+            cur.execute(
+                """
+                SELECT id FROM puzzles
+                WHERE puzzle_date = CURRENT_DATE
+                  AND mode = 'daily'
+                  AND grid_size = 3
+                  AND is_published = TRUE
+                LIMIT 1
+                """
+            )
+            existing = cur.fetchone()
+            if existing:
+                print(f'  Daily puzzle already exists: {existing[0]} (skipped generation)')
+                return
+
+            print(f'  Generating daily puzzle (tier={tier})...')
+            cur.execute("SELECT public.ensure_daily_puzzle(CURRENT_DATE, %s)", (tier,))
             puzzle_id = cur.fetchone()[0]
         conn.commit()
         print(f'  Daily puzzle ready: {puzzle_id}')
@@ -334,6 +361,11 @@ def main():
         type=Path,
         default=Path('data/raw/clubs.csv'),
     )
+    patch_parser.add_argument(
+        '--light',
+        action='store_true',
+        help='Skip dedupe + graph refresh (for daily CI sync; weekly ETL does full rebuild)',
+    )
 
     af_parser = sub.add_parser(
         'sync-api-football',
@@ -371,7 +403,7 @@ def main():
     elif args.command == 'dedupe-players':
         cmd_dedupe_players()
     elif args.command == 'apply-patches':
-        cmd_apply_patches(args.patches, args.clubs)
+        cmd_apply_patches(args.patches, args.clubs, light=args.light or _patch_load_light())
     elif args.command == 'sync-api-football':
         cmd_sync_api_football(
             offset=args.offset,

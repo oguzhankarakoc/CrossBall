@@ -10,6 +10,7 @@ import 'core/ads/tracking_permission_service.dart';
 import 'core/club_identity/club_metadata_loader.dart';
 import 'core/config/app_config.dart';
 import 'core/crash/crash_reporting_service.dart';
+import 'core/debug/crossball_debug_log.dart';
 import 'core/sync/offline_sync_service.dart';
 import 'features/ads/ads_service.dart';
 import 'features/auth/presentation/auth_providers.dart';
@@ -24,9 +25,11 @@ Future<void> main() async {
 
   try {
     await AppConfig.load();
+    cbDebugConfigSnapshot();
     await ClubMetadataLoader.loadBundled();
   } catch (e, st) {
     debugPrint('AppConfig.load failed: $e\n$st');
+    cbDebugError('Config', 'AppConfig.load failed', e, st);
   }
 
   if (AppConfig.isSupabaseConfigured) {
@@ -35,9 +38,13 @@ Future<void> main() async {
         url: AppConfig.supabaseUrl,
         anonKey: AppConfig.supabaseAnonKey, // ignore: deprecated_member_use
       ).timeout(const Duration(seconds: 10));
+      cbDebug('Config', 'Supabase.initialize OK');
     } catch (e, st) {
       debugPrint('Supabase.initialize failed: $e\n$st');
+      cbDebugError('Config', 'Supabase.initialize failed', e, st);
     }
+  } else {
+    cbDebug('Config', 'Supabase skipped — URL or anon key missing in .env');
   }
 
   final container = ProviderContainer();

@@ -175,6 +175,7 @@ SELECT public.refresh_player_club_intersections();
 | `apply-patches` | Load curated career patches only (fast incremental update) |
 | `sync-api-football` | Fetch transfers from API-Football → patch CSV (+ optional `--load`) |
 | `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
+| `apply-patches --light` | Patch load without dedupe/graph refresh (daily CI sync) |
 | `run` | Validate + upsert to PostgreSQL |
 | `run-all` | All of the above |
 

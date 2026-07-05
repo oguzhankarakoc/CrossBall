@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/device/device_timezone.dart';
 import 'auth_remote_data_source.dart';
 import '../domain/auth_repository.dart';
@@ -54,7 +55,11 @@ class AuthRepositoryImpl implements AuthRepository {
         timezoneOffsetMinutes: DeviceTimezone.offsetMinutes,
         pushOptIn: localPushOptIn,
       );
-    } on SyncUserException {
+    } on SyncUserException catch (e) {
+      cbDebug('Auth', 'syncUser remote failed — using local profile', {
+        'error': e.errorCode,
+        'status': e.statusCode,
+      });
       remote = null;
     }
 

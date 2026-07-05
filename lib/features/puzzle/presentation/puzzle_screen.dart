@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/routing/app_routes.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../l10n/app_localizations.dart';
@@ -52,6 +53,18 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         ref.read(practiceSessionProvider.notifier).syncForCurrentUser();
       });
     }
+    ref.listenManual(
+      puzzleGameProvider(widget.params).select((s) => s.error),
+      (previous, next) {
+        if (next != null && next != previous) {
+          cbDebug('Puzzle', 'UI showing error', {
+            'mode': widget.params.mode.name,
+            'errorKey': next,
+          });
+        }
+      },
+      fireImmediately: false,
+    );
   }
 
   @override

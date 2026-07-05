@@ -38,8 +38,9 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 | **Schedule** | Every day 04:00 UTC (07:00 Istanbul) |
 | **Manual** | Actions → Data Sync (Daily) → Run workflow |
 | **Script** | `./scripts/run_scheduled_sync.sh` |
-| **Steps** | API-Football transfers (30 teams, rotating offset) → patch load → `ensure_daily_puzzle` |
+| **Steps** | API-Football transfers (30 teams, rotating offset) → **light** patch load → `ensure_daily_puzzle` |
 | **API cost** | ~30 requests/day (free tier: 100/day) |
+| **Timeout** | 90 min (light load skips dedupe + graph refresh; weekly ETL rebuilds graph) |
 
 ### Data ETL (Weekly) — `data-etl-weekly.yml`
 
@@ -81,6 +82,7 @@ Requires `data_pipeline/.env` on the machine. Mac must stay on at scheduled time
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | Workflow fails: missing secret | Secrets not configured | Add `DATABASE_URL` + `API_FOOTBALL_KEY` |
+| Job cancelled after 45–90 min | Full dedupe + graph refresh on large DB | Daily job uses `PATCH_LOAD_LIGHT=1` (default); run weekly ETL for full rebuild |
 | DB deadlock | Two syncs at once (local + Actions) | Run only one sync at a time |
 | API quota exceeded | >100 requests/day | Wait 24h; cache reduces repeat calls |
 | Daily puzzle unchanged | `ensure_daily_puzzle` already ran today | Expected — one puzzle per UTC date |

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/game_constants.dart';
+import '../../core/debug/crossball_debug_log.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/practice/data/practice_quota_api.dart';
 
@@ -88,11 +89,18 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
   PracticeQuotaApi get _api => _ref.read(practiceQuotaApiProvider);
 
   Future<void> syncFromServer(String userUuid) async {
+    cbDebug('Practice', 'syncQuota start', {'userUuid': userUuid});
     state = state.copyWith(isSyncing: true, clearSyncError: true);
     try {
       final quota = await _api.fetchQuota(userUuid);
       state = PracticeSessionState.fromQuotaJson(quota);
-    } catch (e) {
+      cbDebug('Practice', 'syncQuota OK', {
+        'completedToday': state.completedToday,
+        'dailyLimit': state.dailyLimit,
+        'isPremium': state.isPremium,
+      });
+    } catch (e, st) {
+      cbDebugError('Practice', 'syncQuota failed', e, st);
       state = state.copyWith(
         isSyncing: false,
         syncError: e.toString(),

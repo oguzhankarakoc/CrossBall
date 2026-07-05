@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/constants/game_constants.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
 import '../../../core/utils/rarity.dart';
@@ -165,6 +166,14 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   }) async {
     state = state.copyWith(isLoading: true, error: null);
     final loadStarted = Stopwatch()..start();
+    final logTag = _debugTagForMode(params.mode);
+    cbDebug(logTag, 'loadPuzzle start', {
+      'mode': params.mode.name,
+      'forceRefresh': forceRefresh,
+      'gridSize': gridSize ?? params.gridSize ?? GameConstants.gridSize,
+      'challengeId': params.challengeId,
+      'supabaseConfigured': AppConfig.isSupabaseConfigured,
+    });
     try {
       final size = gridSize ?? params.gridSize ?? GameConstants.gridSize;
       UserProfile? profile;
@@ -238,10 +247,17 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
         });
       } else {
+        cbDebug('Daily', 'fetching daily puzzle', {'userUuid': profile?.userUuid});
         puzzle = await _repo.getDailyPuzzle(
           forceRefresh: forceRefresh,
           userUuid: profile?.userUuid,
         );
+        cbDebug('Daily', 'daily puzzle loaded', {
+          'puzzleId': puzzle.id,
+          'date': puzzle.date,
+          'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+          'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
+        });
       }
 
       final cells = <String, PuzzleCell>{};
@@ -249,6 +265,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         cells['${cell.row}_${cell.col}'] = cell;
       }
 
+      cbDebug(logTag, 'creating session', {
+        'puzzleId': puzzle.id,
+        'mode': params.mode.name,
+        'userUuid': profile?.userUuid,
+      });
       final sessionId = await _repo.createSession(
         puzzleId: puzzle.id,
         mode: params.mode,
@@ -279,6 +300,12 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           'elapsedMs': loadStarted.elapsedMilliseconds,
           'sessionId': sessionId,
         });
+      } else {
+        cbDebug(logTag, 'loadPuzzle success', {
+          'elapsedMs': loadStarted.elapsedMilliseconds,
+          'sessionId': sessionId,
+          'puzzleId': puzzle.id,
+        });
       }
     } catch (e, st) {
       if (_isTrainingMode) {
@@ -293,15 +320,36 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
             'statusCode': e.statusCode,
           });
         }
+      } else {
+        cbDebugError(
+          logTag,
+          'loadPuzzle failed after ${loadStarted.elapsedMilliseconds}ms',
+          e,
+          st,
+        );
+        if (e is PuzzleFetchException) {
+          cbDebug(logTag, 'PuzzleFetchException detail', {
+            'message': e.message,
+            'statusCode': e.statusCode,
+          });
+        }
       }
       final message = e is PuzzleFetchException
           ? (_isTrainingMode
               ? 'practice_load_failed'
               : 'puzzle_load_failed')
           : e.toString();
+      cbDebug(logTag, 'loadPuzzle UI error key', {'errorKey': message});
       state = state.copyWith(isLoading: false, error: message);
     }
   }
+
+  String _debugTagForMode(PuzzleMode mode) => switch (mode) {
+        PuzzleMode.daily => 'Daily',
+        PuzzleMode.practice => 'Practice',
+        PuzzleMode.timeline => 'Practice',
+        PuzzleMode.challenge => 'Challenge',
+      };
 
   Future<void> startNewPracticeSession() async {
     _sessionFinalized = false;

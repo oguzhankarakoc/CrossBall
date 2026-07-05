@@ -7,13 +7,24 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 PIPELINE_DIR="$ROOT/data_pipeline"
 LIMIT="${SYNC_LIMIT:-30}"
 
+# Daily sync: upsert patches only — skip full dedupe + graph refresh (weekly ETL rebuilds).
+export PATCH_LOAD_LIGHT="${PATCH_LOAD_LIGHT:-1}"
+# Medium tier generates faster than hard; still valid for daily leaderboard.
+export ENSURE_DAILY_TIER="${ENSURE_DAILY_TIER:-medium}"
+# Fail fast on runaway SQL instead of hanging until GitHub cancels the job.
+export DB_STATEMENT_TIMEOUT="${DB_STATEMENT_TIMEOUT:-30min}"
+
 cd "$PIPELINE_DIR"
 
-if [[ ! -d .venv ]]; then
-  python3 -m venv .venv
+if [[ "${CI:-}" == "true" || "${USE_SYSTEM_PYTHON:-}" == "1" ]]; then
+  echo "=== Using system Python (CI / USE_SYSTEM_PYTHON) ==="
+else
+  if [[ ! -d .venv ]]; then
+    python3 -m venv .venv
+  fi
+  source .venv/bin/activate
+  pip install -q -r requirements.txt
 fi
-source .venv/bin/activate
-pip install -q -r requirements.txt
 
 # Rotate offset through mapped teams (covers full set over ~2 days at 30 req/day).
 if [[ -n "${SYNC_OFFSET:-}" ]]; then
@@ -32,7 +43,7 @@ PY
 )"
 fi
 
-echo "=== Scheduled API-Football sync (offset=$OFFSET limit=$LIMIT) ==="
+echo "=== Scheduled API-Football sync (offset=$OFFSET limit=$LIMIT light=$PATCH_LOAD_LIGHT tier=$ENSURE_DAILY_TIER) ==="
 python -m pipeline sync-api-football --offset "$OFFSET" --limit "$LIMIT" --load
 
 echo "=== Ensure today's daily puzzle exists ==="

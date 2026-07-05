@@ -1,16 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'crossball_debug_log.dart';
 
-/// Debug-only logs for practice mode diagnostics (filter Xcode/console with `[Practice]`).
-void practiceDebug(String message, [Object? detail]) {
-  if (!kDebugMode) return;
-  final suffix = detail == null ? '' : ' | $detail';
-  debugPrint('[Practice] $message$suffix');
-}
+const _tag = 'Practice';
 
-void practiceDebugError(String message, Object error, [StackTrace? stackTrace]) {
-  if (!kDebugMode) return;
-  debugPrint('[Practice] ERROR $message | $error');
-  if (stackTrace != null) {
-    debugPrint('[Practice] $stackTrace');
-  }
-}
+/// Debug-only logs for practice mode (filter console with `[Practice]`).
+void practiceDebug(String message, [Object? detail]) => cbDebug(_tag, message, detail);
+
+void practiceDebugError(String message, Object error, [StackTrace? stackTrace]) =>
+    cbDebugError(_tag, message, error, stackTrace);

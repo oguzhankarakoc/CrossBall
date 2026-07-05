@@ -40,8 +40,12 @@ def get_connection():
     if 'localhost' not in url and '127.0.0.1' not in url:
         connect_kwargs['sslmode'] = 'require'
     conn = psycopg2.connect(url, **connect_kwargs)
+    timeout = os.environ.get('DB_STATEMENT_TIMEOUT', '').strip()
     with conn.cursor() as cur:
-        cur.execute("SET statement_timeout = '0'")
+        if timeout:
+            cur.execute(f"SET statement_timeout = '{timeout}'")
+        else:
+            cur.execute("SET statement_timeout = '0'")
     conn.commit()
     return conn
 

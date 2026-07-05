@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/cache/offline_cache.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
@@ -43,26 +44,78 @@ class PuzzleApiService {
       };
 
   Future<Map<String, dynamic>> fetchDailyPuzzle({String? userUuid}) async {
+    cbDebug('Daily', 'fetchDailyPuzzle start', {
+      'userUuid': userUuid,
+      'supabaseConfigured': AppConfig.isSupabaseConfigured,
+      'hasClient': _client != null,
+      'baseHost': Uri.tryParse(_baseUrl)?.host ?? _baseUrl,
+    });
+
     if (_client != null && AppConfig.isSupabaseConfigured) {
+      final stopwatch = Stopwatch()..start();
       try {
         final query = userUuid != null ? '?user_uuid=$userUuid' : '';
-        final response = await _http.get(
-          Uri.parse('$_baseUrl/functions/v1/daily-puzzle$query'),
-          headers: _headers,
+        final uri = Uri.parse('$_baseUrl/functions/v1/daily-puzzle$query');
+        cbDebug('Daily', 'HTTP GET', uri.toString());
+
+        final response = await _http
+            .get(uri, headers: _headers)
+            .timeout(
+              const Duration(seconds: 30),
+              onTimeout: () {
+                throw const PuzzleFetchException('Daily puzzle request timed out after 30s');
+              },
+            );
+        stopwatch.stop();
+        cbDebugHttpResponse(
+          'Daily',
+          'daily-puzzle response',
+          uri: uri.toString(),
+          statusCode: response.statusCode,
+          elapsedMs: stopwatch.elapsedMilliseconds,
+          body: response.body,
         );
+
         if (response.statusCode == 200) {
-          return jsonDecode(response.body) as Map<String, dynamic>;
+          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          cbDebug('Daily', 'fetchDailyPuzzle OK', {
+            'puzzle_id': decoded['puzzle_id'] ?? decoded['id'],
+            'date': decoded['date'],
+            'row_clubs': (decoded['row_clubs'] as List?)?.length,
+            'col_clubs': (decoded['col_clubs'] as List?)?.length,
+          });
+          return decoded;
+        }
+
+        String detail = '';
+        try {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          detail = body['error']?.toString() ?? '';
+        } catch (parseErr) {
+          cbDebug('Daily', 'error body parse failed', parseErr);
         }
         throw PuzzleFetchException(
-          'Daily puzzle unavailable (${response.statusCode})',
+          detail.isNotEmpty
+              ? 'Daily puzzle unavailable: $detail'
+              : 'Daily puzzle unavailable (${response.statusCode})',
           statusCode: response.statusCode,
         );
-      } on PuzzleFetchException {
+      } on PuzzleFetchException catch (e, st) {
+        cbDebugError('Daily', 'PuzzleFetchException', e, st);
         rethrow;
-      } catch (_) {
-        throw const PuzzleFetchException('Daily puzzle network error');
+      } catch (e, st) {
+        stopwatch.stop();
+        cbDebugError(
+          'Daily',
+          'network/parse error after ${stopwatch.elapsedMilliseconds}ms',
+          e,
+          st,
+        );
+        throw PuzzleFetchException('Daily puzzle network error: $e');
       }
     }
+
+    cbDebug('Daily', 'using demo puzzle (Supabase not configured or no client)');
     return _demoPuzzle();
   }
 
@@ -139,30 +192,75 @@ class PuzzleApiService {
     required String mode,
     required int gridSize,
   }) async {
-    final response = await _http.post(
-      Uri.parse('$_baseUrl/functions/v1/start-session'),
-      headers: {
-        ..._headers,
-        'x-user-uuid': userUuid,
-      },
-      body: jsonEncode({
-        'user_uuid': userUuid,
-        'puzzle_id': puzzleId,
-        'mode': mode,
-        'grid_size': gridSize,
-      }),
-    );
+    cbDebug('Session', 'startSession request', {
+      'mode': mode,
+      'puzzleId': puzzleId,
+      'gridSize': gridSize,
+      'userUuid': userUuid,
+    });
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      final sessionId = data['session_id'] as String?;
-      if (sessionId != null && sessionId.isNotEmpty) return sessionId;
+    final stopwatch = Stopwatch()..start();
+    final uri = Uri.parse('$_baseUrl/functions/v1/start-session');
+    try {
+      final response = await _http
+          .post(
+            uri,
+            headers: {
+              ..._headers,
+              'x-user-uuid': userUuid,
+            },
+            body: jsonEncode({
+              'user_uuid': userUuid,
+              'puzzle_id': puzzleId,
+              'mode': mode,
+              'grid_size': gridSize,
+            }),
+          )
+          .timeout(
+            const Duration(seconds: 20),
+            onTimeout: () {
+              throw const PuzzleFetchException('start-session timed out after 20s');
+            },
+          );
+      stopwatch.stop();
+      cbDebugHttpResponse(
+        'Session',
+        'start-session response',
+        uri: uri.toString(),
+        statusCode: response.statusCode,
+        elapsedMs: stopwatch.elapsedMilliseconds,
+        body: response.body,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final sessionId = data['session_id'] as String?;
+        if (sessionId != null && sessionId.isNotEmpty) {
+          cbDebug('Session', 'startSession OK', {'sessionId': sessionId});
+          return sessionId;
+        }
+        cbDebug('Session', 'startSession missing session_id in 200 body');
+      }
+
+      String detail = '';
+      try {
+        final body = jsonDecode(response.body) as Map<String, dynamic>;
+        detail = body['error']?.toString() ?? '';
+      } catch (_) {}
+
+      throw PuzzleFetchException(
+        detail.isNotEmpty
+            ? 'Failed to start session: $detail'
+            : 'Failed to start session (${response.statusCode})',
+        statusCode: response.statusCode,
+      );
+    } on PuzzleFetchException catch (e, st) {
+      cbDebugError('Session', 'startSession failed', e, st);
+      rethrow;
+    } catch (e, st) {
+      cbDebugError('Session', 'startSession network error', e, st);
+      throw PuzzleFetchException('start-session network error: $e');
     }
-
-    throw PuzzleFetchException(
-      'Failed to start session (${response.statusCode})',
-      statusCode: response.statusCode,
-    );
   }
 
   Map<String, dynamic> _clubBadge(
@@ -469,32 +567,50 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   @override
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid}) async {
     final today = DateTime.now().toIso8601String().split('T').first;
+    cbDebug('Daily', 'getDailyPuzzle', {'today': today, 'forceRefresh': forceRefresh});
 
     if (!forceRefresh) {
       final cached = await _cache.getDailyPuzzle(forDate: today);
       if (cached != null) {
-        if (_isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured) {
+        final valid = _isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured;
+        cbDebug('Daily', 'cache lookup', {
+          'hit': true,
+          'valid': valid,
+          'puzzle_id': cached['puzzle_id'] ?? cached['id'],
+        });
+        if (valid) {
           return Puzzle.fromJson(cached);
         }
+        cbDebug('Daily', 'invalid cache — invalidating (non-UUID club ids?)');
         await _cache.invalidateDailyPuzzle();
+      } else {
+        cbDebug('Daily', 'cache lookup', {'hit': false});
       }
     }
 
     try {
       final raw = await _api.fetchDailyPuzzle(userUuid: userUuid);
       if (!_isValidLivePuzzleCache(raw) && AppConfig.isSupabaseConfigured) {
+        cbDebug('Daily', 'invalid live payload — club ids must be UUIDs', {
+          'row_sample': (raw['row_clubs'] as List?)?.first,
+          'col_sample': (raw['col_clubs'] as List?)?.first,
+        });
         throw const PuzzleFetchException('Invalid daily puzzle payload');
       }
       if (_isValidLivePuzzleCache(raw) || !AppConfig.isSupabaseConfigured) {
         await _cache.cacheDailyPuzzle(raw);
+        cbDebug('Daily', 'cached fresh daily puzzle');
       }
       return Puzzle.fromJson(raw);
-    } on PuzzleFetchException {
+    } on PuzzleFetchException catch (e) {
+      cbDebugError('Daily', 'getDailyPuzzle fetch failed', e);
       if (AppConfig.isSupabaseConfigured) {
         final cached = await _cache.getDailyPuzzle(forDate: today);
         if (cached != null && _isValidLivePuzzleCache(cached)) {
+          cbDebug('Daily', 'fallback to stale cache after fetch failure');
           return Puzzle.fromJson(cached);
         }
+        cbDebug('Daily', 'no valid cache fallback available');
       }
       rethrow;
     }
@@ -619,7 +735,14 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         gridSize: gridSize,
       );
     }
-    return _uuid.v4();
+    final localId = _uuid.v4();
+    cbDebug('Session', 'using local session UUID (offline/demo)', {
+      'sessionId': localId,
+      'mode': mode.name,
+      'supabaseConfigured': AppConfig.isSupabaseConfigured,
+      'hasUserUuid': userUuid != null,
+    });
+    return localId;
   }
 
   @override

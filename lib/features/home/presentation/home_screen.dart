@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/routing/app_routes.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../features/economy/domain/player_progression.dart';
 import '../../../features/economy/presentation/daily_missions_card.dart';
@@ -107,7 +108,10 @@ class HomeScreen extends ConsumerWidget {
                       actionLabel: l10n.continueButton,
                       badge: streak > 0 ? '$streak ${l10n.currentStreak}' : l10n.dailyChallenge,
                       badgeIcon: streak > 0 ? Icons.local_fire_department_rounded : Icons.calendar_today_rounded,
-                      onTap: () => context.push('${AppRoutes.puzzle}?mode=daily'),
+                      onTap: () {
+                        cbDebug('Daily', 'home → open daily puzzle');
+                        context.push('${AppRoutes.puzzle}?mode=daily');
+                      },
                     ),
                     if (season != null && season.isActive) SeasonCard(season: season),
                     if (showAiFacts && footballFact != null && footballFact.isValid)

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../../../core/config/app_config.dart';
+import '../../../core/debug/crossball_debug_log.dart';
 
 class SyncUserException implements Exception {
   SyncUserException(this.errorCode, this.statusCode);
@@ -31,8 +32,14 @@ class AuthRemoteDataSource {
     bool clearDisplayName = false,
   }) async {
     if (!AppConfig.isSupabaseConfigured) {
+      cbDebug('Auth', 'syncUser skipped — supabase not configured');
       throw SyncUserException('supabase_not_configured', 0);
     }
+
+    cbDebug('Auth', 'syncUser POST', {
+      'userUuid': userUuid,
+      'onboardingComplete': onboardingComplete,
+    });
 
     final body = <String, dynamic>{
       'user_uuid': userUuid,
@@ -64,12 +71,23 @@ class AuthRemoteDataSource {
         : <String, dynamic>{};
 
     if (response.statusCode == 200 && decoded is Map<String, dynamic>) {
+      cbDebug('Auth', 'syncUser OK', {
+        'is_premium': decoded['is_premium'],
+        'display_name': decoded['display_name'],
+      });
       return decoded;
     }
 
     final errorCode = decoded is Map
         ? (decoded['error'] as String? ?? 'sync_failed')
         : 'sync_failed';
+    cbDebug('Auth', 'syncUser failed', {
+      'status': response.statusCode,
+      'error': errorCode,
+      'bodyPreview': response.body.length > 200
+          ? '${response.body.substring(0, 200)}…'
+          : response.body,
+    });
     throw SyncUserException(errorCode, response.statusCode);
   }
 
