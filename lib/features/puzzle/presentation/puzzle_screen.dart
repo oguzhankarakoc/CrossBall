@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
@@ -23,6 +26,8 @@ import '../../../shared/providers/session_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
 import '../domain/puzzle.dart';
 import 'puzzle_providers.dart';
+import 'daily_puzzle_rollout_provider.dart';
+import 'widgets/daily_puzzle_refresh_panel.dart';
 import 'widgets/player_search_modal.dart';
 import 'widgets/puzzle_grid.dart';
 import 'widgets/puzzle_result_screen.dart';
@@ -41,6 +46,8 @@ class PuzzleScreen extends ConsumerStatefulWidget {
 }
 
 class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
+  Timer? _dailyRefreshPollTimer;
+
   bool get _isTrainingMode =>
       widget.params.mode == PuzzleMode.practice ||
       widget.params.mode == PuzzleMode.timeline;
@@ -62,9 +69,35 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
             'errorKey': next,
           });
         }
+        _syncDailyRefreshPolling(next);
       },
-      fireImmediately: false,
+      fireImmediately: true,
     );
+  }
+
+  @override
+  void dispose() {
+    _dailyRefreshPollTimer?.cancel();
+    super.dispose();
+  }
+
+  void _syncDailyRefreshPolling(String? errorKey) {
+    _dailyRefreshPollTimer?.cancel();
+    if (widget.params.mode != PuzzleMode.daily) return;
+    if (errorKey != 'daily_puzzle_generating') return;
+
+    final rollout = ref.read(dailyPuzzleRolloutProvider).valueOrNull;
+    final retrySeconds = rollout?.retryAfterSeconds ?? 30;
+    _dailyRefreshPollTimer = Timer.periodic(Duration(seconds: retrySeconds), (_) async {
+      if (!mounted) return;
+      await ref.read(dailyPuzzleRolloutProvider.notifier).refresh();
+      await ref.read(puzzleGameProvider(widget.params).notifier).loadPuzzle(forceRefresh: true);
+    });
+  }
+
+  Future<void> _retryDailyPuzzle() async {
+    await ref.read(dailyPuzzleRolloutProvider.notifier).refresh();
+    await ref.read(puzzleGameProvider(widget.params).notifier).loadPuzzle(forceRefresh: true);
   }
 
   @override
@@ -178,6 +211,30 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                   )
                 : game.error == 'practice_ad_required'
                     ? _buildPracticeAdGate(context, l10n, colors)
+                : game.error == 'daily_puzzle_generating' ||
+                        game.error == 'daily_puzzle_failed'
+                    ? DailyPuzzleRefreshPanel(
+                        startedAt: ref
+                            .watch(dailyPuzzleRolloutProvider)
+                            .valueOrNull
+                            ?.startedAt,
+                        elapsedSeconds: ref
+                                .watch(dailyPuzzleRolloutProvider)
+                                .valueOrNull
+                                ?.elapsedSeconds ??
+                            0,
+                        isFailed: game.error == 'daily_puzzle_failed',
+                        errorMessage: ref
+                            .watch(dailyPuzzleRolloutProvider)
+                            .valueOrNull
+                            ?.errorMessage,
+                        retryAfterSeconds: ref
+                                .watch(dailyPuzzleRolloutProvider)
+                                .valueOrNull
+                                ?.retryAfterSeconds ??
+                            30,
+                        onRetry: _retryDailyPuzzle,
+                      )
                 : game.error == 'puzzle_load_failed' ||
                         game.error == 'practice_load_failed'
                     ? Center(
@@ -217,6 +274,25 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                         : SafeArea(
                             child: Column(
                               children: [
+                                if (widget.params.mode == PuzzleMode.daily)
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      AppSpacing.md,
+                                      AppSpacing.sm,
+                                      AppSpacing.md,
+                                      0,
+                                    ),
+                                    child: Text(
+                                      DailyPuzzleSchedule.scheduleNote(
+                                        l10n,
+                                        Localizations.localeOf(context).toString(),
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: colors.textSecondary,
+                                          ),
+                                    ),
+                                  ),
                                 if (footballFact != null && footballFact.isValid)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(

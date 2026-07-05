@@ -43,6 +43,9 @@ PY
 )"
 fi
 
+echo "=== Mark daily puzzle rollout (UTC midnight refresh) ==="
+python -m pipeline daily-rollout-begin
+
 echo "=== Scheduled API-Football sync (offset=$OFFSET limit=$LIMIT light=$PATCH_LOAD_LIGHT tier=$ENSURE_DAILY_TIER) ==="
 python -m pipeline sync-api-football --offset "$OFFSET" --limit "$LIMIT" --load
 

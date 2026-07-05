@@ -5,12 +5,43 @@
   "homeTitle": "CrossBall",
   "dailyChallenge": "Daily Challenge",
   "dailyChallengeDesc": "One puzzle per day. Build your streak.",
+  "dailyRefreshSchedule": "Updates at {localTime} your time (00:00 UTC) · Next in {countdown}",
+  "@dailyRefreshSchedule": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshTitle": "Today's puzzle is being prepared",
+  "dailyPuzzleRefreshBody": "Every day at midnight UTC we refresh clubs and build a new global grid. Yesterday's puzzle is closed while the new one is on the way.",
+  "dailyPuzzleRefreshElapsed": "Preparing for {elapsed}",
+  "@dailyPuzzleRefreshElapsed": {
+    "placeholders": {
+      "elapsed": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshWindowHint": "This usually takes a few minutes. Thanks for your patience.",
+  "dailyPuzzleRefreshAutoHint": "We'll check again automatically in {seconds}s.",
+  "@dailyPuzzleRefreshAutoHint": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "dailyPuzzleRefreshCheckAgain": "Check again",
+  "dailyPuzzleRefreshRetry": "Try again",
+  "dailyPuzzleRefreshFailedTitle": "Today's puzzle isn't ready yet",
+  "dailyPuzzleRefreshFailedBody": "We couldn't publish today's puzzle after the refresh window. You can retry — we'll attempt a safe fallback in the background.",
+  "dailyPuzzleRefreshHomeSubtitle": "New puzzle incoming — refresh in progress at 00:00 UTC.",
+  "dailyPuzzleRefreshHomeHint": "Preparing today's puzzle…",
+  "dailyPuzzleRefreshBadge": "Refreshing",
   "friendChallenge": "Friend Challenge",
   "friendChallengeDesc": "Share a link and compete async.",
   "practice": "Practice",
   "practiceDesc": "5 sessions per day. Watch ads to unlock the next round.",
   "stats": "Stats",
   "activeEvents": "Active Events",
+  "eventLockedBadge": "Coming soon",
+  "eventLockedMessage": "Themed club grids for this event are not available yet. Stay tuned!",
   "communityGoals": "Community Goals",
   "maintenanceNotice": "Maintenance",
   "maintenanceNoticeBody": "Some services may be limited. You can still play puzzles.",

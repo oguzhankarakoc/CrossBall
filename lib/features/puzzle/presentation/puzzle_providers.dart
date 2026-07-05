@@ -17,6 +17,7 @@ import '../../search/domain/search.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
+import 'daily_puzzle_rollout_provider.dart';
 import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
@@ -331,13 +332,23 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           cbDebug(logTag, 'PuzzleFetchException detail', {
             'message': e.message,
             'statusCode': e.statusCode,
+            'errorCode': e.errorCode,
           });
+        }
+        if (!_isTrainingMode &&
+            e is PuzzleFetchException &&
+            (e.isGenerationInProgress || e.isGenerationFailed)) {
+          ref.invalidate(dailyPuzzleRolloutProvider);
         }
       }
       final message = e is PuzzleFetchException
           ? (_isTrainingMode
               ? 'practice_load_failed'
-              : 'puzzle_load_failed')
+              : e.isGenerationInProgress
+                  ? 'daily_puzzle_generating'
+                  : e.isGenerationFailed
+                      ? 'daily_puzzle_failed'
+                      : 'puzzle_load_failed')
           : e.toString();
       cbDebug(logTag, 'loadPuzzle UI error key', {'errorKey': message});
       state = state.copyWith(isLoading: false, error: message);

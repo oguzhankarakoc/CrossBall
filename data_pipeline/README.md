@@ -57,7 +57,7 @@ Data sync is **not automatic until you enable it**. Two options:
    - `API_FOOTBALL_KEY` — free API key
    - *(optional)* `KAGGLE_USERNAME` + `KAGGLE_KEY` for weekly full Kaggle fetch
 3. Workflows run automatically:
-   - **Daily 07:00 Istanbul** — API-Football transfers → DB → daily puzzle
+   - **Daily 00:00 UTC** (03:00 TRT) — API-Football transfers → DB → daily puzzle
    - **Sunday 08:00 Istanbul** — weekly Kaggle + patches
 
 Manual trigger: GitHub → Actions → "Data Sync (Daily)" → Run workflow.

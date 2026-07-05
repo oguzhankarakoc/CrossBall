@@ -10,7 +10,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 SYNC="$ROOT/scripts/run_scheduled_sync.sh"
 ETL="$ROOT/scripts/run_scheduled_etl.sh"
 
-CRON_DAILY="0 7 * * * cd $ROOT && $SYNC >> $ROOT/logs/data-sync.log 2>&1"
+CRON_DAILY="0 3 * * * cd $ROOT && $SYNC >> $ROOT/logs/data-sync.log 2>&1"
 CRON_WEEKLY="0 8 * * 0 cd $ROOT && $ETL >> $ROOT/logs/data-etl.log 2>&1"
 
 mkdir -p "$ROOT/logs"
@@ -26,7 +26,7 @@ else
   cat <<EOF
 Add these lines to crontab (crontab -e):
 
-# CrossBall — daily transfer sync (07:00 local)
+# CrossBall — daily transfer sync (03:00 local = 00:00 UTC in Turkey / TRT)
 $CRON_DAILY
 
 # CrossBall — weekly bulk ETL (Sunday 08:00 local)

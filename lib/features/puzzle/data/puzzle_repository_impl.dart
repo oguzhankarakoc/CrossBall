@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/cache/offline_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/debug/crossball_debug_log.dart';
+import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
@@ -25,6 +26,48 @@ bool _isValidLivePuzzleCache(Map<String, dynamic> raw) {
     }
   }
   return true;
+}
+
+String _extractApiErrorField(Object? errorField) {
+  if (errorField == null) return '';
+  if (errorField is String) return errorField;
+  if (errorField is Map) {
+    for (final key in ['message', 'details', 'hint', 'code', 'error']) {
+      final value = errorField[key];
+      if (value is String && value.isNotEmpty) return value;
+    }
+    return jsonEncode(errorField);
+  }
+  return errorField.toString();
+}
+
+PuzzleFetchException _dailyFetchExceptionFromResponse(int statusCode, String body) {
+  String detail = '';
+  String? errorCode;
+  int? retryAfter;
+  DateTime? startedAt;
+  try {
+    final parsed = jsonDecode(body) as Map<String, dynamic>;
+    detail = _extractApiErrorField(parsed['error']);
+    errorCode = parsed['code'] as String?;
+    retryAfter = (parsed['retry_after'] as num?)?.toInt();
+    final startedRaw = parsed['started_at'];
+    if (startedRaw is String && startedRaw.isNotEmpty) {
+      startedAt = DateTime.tryParse(startedRaw);
+    }
+  } catch (_) {
+    detail = body.length > 180 ? '${body.substring(0, 180)}…' : body;
+  }
+
+  return PuzzleFetchException(
+    detail.isNotEmpty
+        ? 'Daily puzzle unavailable: $detail'
+        : 'Daily puzzle unavailable ($statusCode)',
+    statusCode: statusCode,
+    errorCode: errorCode,
+    retryAfterSeconds: retryAfter,
+    rolloutStartedAt: startedAt,
+  );
 }
 
 class PuzzleApiService {
@@ -87,19 +130,7 @@ class PuzzleApiService {
           return decoded;
         }
 
-        String detail = '';
-        try {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
-          detail = body['error']?.toString() ?? '';
-        } catch (parseErr) {
-          cbDebug('Daily', 'error body parse failed', parseErr);
-        }
-        throw PuzzleFetchException(
-          detail.isNotEmpty
-              ? 'Daily puzzle unavailable: $detail'
-              : 'Daily puzzle unavailable (${response.statusCode})',
-          statusCode: response.statusCode,
-        );
+        throw _dailyFetchExceptionFromResponse(response.statusCode, response.body);
       } on PuzzleFetchException catch (e, st) {
         cbDebugError('Daily', 'PuzzleFetchException', e, st);
         rethrow;
@@ -117,6 +148,37 @@ class PuzzleApiService {
 
     cbDebug('Daily', 'using demo puzzle (Supabase not configured or no client)');
     return _demoPuzzle();
+  }
+
+  Future<Map<String, dynamic>> fetchDailyRolloutStatus() async {
+    if (_client == null || !AppConfig.isSupabaseConfigured) {
+      return {
+        'puzzle_date': DailyPuzzleSchedule.todayPuzzleDateUtc(),
+        'status': 'ready',
+        'retry_after': 0,
+      };
+    }
+
+    final uri = Uri.parse('$_baseUrl/functions/v1/daily-puzzle?status_only=true');
+    cbDebug('Daily', 'HTTP GET rollout status', uri.toString());
+
+    final response = await _http
+        .get(uri, headers: _headers)
+        .timeout(const Duration(seconds: 15));
+
+    cbDebugHttpResponse(
+      'Daily',
+      'daily-puzzle status',
+      uri: uri.toString(),
+      statusCode: response.statusCode,
+      body: response.body,
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 503) {
+      return jsonDecode(response.body) as Map<String, dynamic>;
+    }
+
+    throw _dailyFetchExceptionFromResponse(response.statusCode, response.body);
   }
 
   Future<Map<String, dynamic>> fetchPuzzleById(String puzzleId) async {
@@ -566,23 +628,32 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
 
   @override
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid}) async {
-    final today = DateTime.now().toIso8601String().split('T').first;
+    final today = DailyPuzzleSchedule.todayPuzzleDateUtc();
     cbDebug('Daily', 'getDailyPuzzle', {'today': today, 'forceRefresh': forceRefresh});
 
     if (!forceRefresh) {
       final cached = await _cache.getDailyPuzzle(forDate: today);
       if (cached != null) {
-        final valid = _isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured;
-        cbDebug('Daily', 'cache lookup', {
-          'hit': true,
-          'valid': valid,
-          'puzzle_id': cached['puzzle_id'] ?? cached['id'],
-        });
-        if (valid) {
-          return Puzzle.fromJson(cached);
+        final cachedDate = cached['date'] as String? ?? cached['puzzle_date'] as String?;
+        if (cachedDate != null && cachedDate != today) {
+          cbDebug('Daily', 'stale cache for previous day — invalidating', {
+            'cachedDate': cachedDate,
+            'today': today,
+          });
+          await _cache.invalidateDailyPuzzle();
+        } else {
+          final valid = _isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured;
+          cbDebug('Daily', 'cache lookup', {
+            'hit': true,
+            'valid': valid,
+            'puzzle_id': cached['puzzle_id'] ?? cached['id'],
+          });
+          if (valid) {
+            return Puzzle.fromJson(cached);
+          }
+          cbDebug('Daily', 'invalid cache — invalidating (non-UUID club ids?)');
+          await _cache.invalidateDailyPuzzle();
         }
-        cbDebug('Daily', 'invalid cache — invalidating (non-UUID club ids?)');
-        await _cache.invalidateDailyPuzzle();
       } else {
         cbDebug('Daily', 'cache lookup', {'hit': false});
       }
@@ -604,17 +675,16 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       return Puzzle.fromJson(raw);
     } on PuzzleFetchException catch (e) {
       cbDebugError('Daily', 'getDailyPuzzle fetch failed', e);
-      if (AppConfig.isSupabaseConfigured) {
-        final cached = await _cache.getDailyPuzzle(forDate: today);
-        if (cached != null && _isValidLivePuzzleCache(cached)) {
-          cbDebug('Daily', 'fallback to stale cache after fetch failure');
-          return Puzzle.fromJson(cached);
-        }
-        cbDebug('Daily', 'no valid cache fallback available');
+      if (e.isGenerationInProgress || e.isGenerationFailed) {
+        rethrow;
       }
+      cbDebug('Daily', 'no valid cache fallback for daily (previous day closed at UTC midnight)');
       rethrow;
     }
   }
+
+  @override
+  Future<Map<String, dynamic>> fetchDailyRolloutStatus() => _api.fetchDailyRolloutStatus();
 
   @override
   Future<Puzzle> getPuzzleById(String puzzleId) async {

@@ -2,6 +2,7 @@ import '../../puzzle/domain/puzzle.dart';
 
 abstract interface class PuzzleRepository {
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid});
+  Future<Map<String, dynamic>> fetchDailyRolloutStatus();
   Future<Puzzle> getPuzzleById(String puzzleId);
   Future<Puzzle> getPracticePuzzle({
     required int gridSize,

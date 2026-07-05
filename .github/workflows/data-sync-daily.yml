@@ -2,8 +2,8 @@ name: Data Sync (Daily)
 
 on:
   schedule:
-    # 04:00 UTC daily ≈ 07:00 Istanbul
-    - cron: '0 4 * * *'
+    # 00:00 UTC daily — new global puzzle + transfer sync batch
+    - cron: '0 0 * * *'
   workflow_dispatch:
 
 concurrency:

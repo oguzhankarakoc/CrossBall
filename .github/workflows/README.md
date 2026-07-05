@@ -35,7 +35,7 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 
 | | |
 |--|--|
-| **Schedule** | Every day 04:00 UTC (07:00 Istanbul) |
+| **Schedule** | Every day **00:00 UTC** (03:00 Istanbul / TRT) |
 | **Manual** | Actions → Data Sync (Daily) → Run workflow |
 | **Script** | `./scripts/run_scheduled_sync.sh` |
 | **Steps** | API-Football transfers (30 teams, rotating offset) → **light** patch load → `ensure_daily_puzzle` |

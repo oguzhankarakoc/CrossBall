@@ -24,6 +24,56 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dailyChallengeDesc => 'Günde bir bulmaca. Serini oluştur.';
 
   @override
+  String dailyRefreshSchedule(String localTime, String countdown) {
+    return 'Yerel saatinizle $localTime\'de güncellenir (00:00 UTC) · Sonraki: $countdown';
+  }
+
+  @override
+  String get dailyPuzzleRefreshTitle => 'Bugünün bulmacası hazırlanıyor';
+
+  @override
+  String get dailyPuzzleRefreshBody =>
+      'Her gün UTC gece yarısında kulüp verilerini yenileyip yeni global ızgara oluşturuyoruz. Yeni bulmaca gelene kadar dünkü bulmaca kapalıdır.';
+
+  @override
+  String dailyPuzzleRefreshElapsed(String elapsed) {
+    return 'Hazırlanıyor: $elapsed';
+  }
+
+  @override
+  String get dailyPuzzleRefreshWindowHint =>
+      'Bu işlem genelde birkaç dakika sürer. Sabrınız için teşekkürler.';
+
+  @override
+  String dailyPuzzleRefreshAutoHint(int seconds) {
+    return '$seconds sn sonra otomatik tekrar kontrol edeceğiz.';
+  }
+
+  @override
+  String get dailyPuzzleRefreshCheckAgain => 'Tekrar kontrol et';
+
+  @override
+  String get dailyPuzzleRefreshRetry => 'Yeniden dene';
+
+  @override
+  String get dailyPuzzleRefreshFailedTitle =>
+      'Bugünün bulmacası henüz hazır değil';
+
+  @override
+  String get dailyPuzzleRefreshFailedBody =>
+      'Yenileme sonrası bugünün bulmacası yayınlanamadı. Tekrar deneyebilirsiniz — arka planda güvenli bir yedek denemesi yapılır.';
+
+  @override
+  String get dailyPuzzleRefreshHomeSubtitle =>
+      'Yeni bulmaca yolda — 00:00 UTC yenilemesi devam ediyor.';
+
+  @override
+  String get dailyPuzzleRefreshHomeHint => 'Bugünün bulmacası hazırlanıyor…';
+
+  @override
+  String get dailyPuzzleRefreshBadge => 'Yenileniyor';
+
+  @override
   String get friendChallenge => 'Arkadaş Mücadelesi';
 
   @override
@@ -41,6 +91,13 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get activeEvents => 'Aktif Etkinlikler';
+
+  @override
+  String get eventLockedBadge => 'Yakında';
+
+  @override
+  String get eventLockedMessage =>
+      'Bu etkinlik için özel kulüp ızgaraları henüz hazır değil. Takipte kal!';
 
   @override
   String get communityGoals => 'Topluluk Hedefleri';

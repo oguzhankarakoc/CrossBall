@@ -5,6 +5,7 @@ import csv
 import os
 import uuid
 from pathlib import Path
+from typing import Optional
 
 from .api_football_client import ApiFootballError
 from .api_football_sync import (
@@ -169,7 +170,7 @@ def _patch_load_light() -> bool:
     return os.environ.get('PATCH_LOAD_LIGHT', '').strip().lower() in ('1', 'true', 'yes')
 
 
-def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: bool | None = None) -> None:
+def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[bool] = None) -> None:
     """Apply curated career patches to PostgreSQL without a full Kaggle re-download."""
     light = _patch_load_light() if light is None else light
     mode = 'light (skip dedupe + graph refresh)' if light else 'full'
@@ -240,6 +241,19 @@ def cmd_sync_api_football(
         cmd_apply_patches(DEFAULT_PATCHES_PATH, clubs_path)
 
 
+def cmd_daily_rollout_begin() -> None:
+    """Mark today's daily puzzle as generating (called at UTC midnight before long sync)."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT public.begin_daily_puzzle_rollout(CURRENT_DATE, %s)", ('pipeline',))
+            row = cur.fetchone()
+        conn.commit()
+        print(f'  Daily rollout started: {row[0] if row else "ok"}')
+    finally:
+        conn.close()
+
+
 def cmd_ensure_daily() -> None:
     """Ensure today's global daily puzzle exists (after data refresh)."""
     tier = os.environ.get('ENSURE_DAILY_TIER', 'medium').strip() or 'medium'
@@ -258,12 +272,50 @@ def cmd_ensure_daily() -> None:
             )
             existing = cur.fetchone()
             if existing:
-                print(f'  Daily puzzle already exists: {existing[0]} (skipped generation)')
+                cur.execute(
+                    "SELECT public.complete_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
+                    (existing[0], 'pipeline'),
+                )
+                conn.commit()
+                print(f'  Daily puzzle already exists: {existing[0]} (marked ready)')
                 return
 
+            cur.execute(
+                "SELECT status FROM public.daily_puzzle_rollout WHERE puzzle_date = CURRENT_DATE"
+            )
+            rollout = cur.fetchone()
+            if rollout is None or rollout[0] != 'generating':
+                cur.execute(
+                    "SELECT public.begin_daily_puzzle_rollout(CURRENT_DATE, %s)",
+                    ('pipeline',),
+                )
+
+            cur.execute('SELECT COUNT(*) FROM club_relationships')
+            rel_count = cur.fetchone()[0]
+            if rel_count < 100:
+                print(
+                    f'  club_relationships sparse ({rel_count} pairs) — refreshing graph...'
+                )
+                cur.execute('SELECT public.ensure_club_relationship_graph(100)')
+                refreshed = cur.fetchone()[0]
+                conn.commit()
+                print(f'  Graph refreshed: {refreshed} pairs')
+
             print(f'  Generating daily puzzle (tier={tier})...')
-            cur.execute("SELECT public.ensure_daily_puzzle(CURRENT_DATE, %s)", (tier,))
-            puzzle_id = cur.fetchone()[0]
+            try:
+                cur.execute("SELECT public.ensure_daily_puzzle(CURRENT_DATE, %s)", (tier,))
+                puzzle_id = cur.fetchone()[0]
+                cur.execute(
+                    "SELECT public.complete_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
+                    (puzzle_id, 'pipeline'),
+                )
+            except Exception as exc:
+                cur.execute(
+                    "SELECT public.fail_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
+                    (str(exc)[:500], 'pipeline'),
+                )
+                conn.commit()
+                raise
         conn.commit()
         print(f'  Daily puzzle ready: {puzzle_id}')
     finally:
@@ -383,6 +435,7 @@ def main():
     )
     af_parser.add_argument('--no-cache', action='store_true', help='Ignore cached API responses')
 
+    sub.add_parser('daily-rollout-begin', help='Mark today\'s daily puzzle rollout as generating')
     sub.add_parser('ensure-daily', help='Ensure today\'s global daily puzzle exists in PostgreSQL')
 
     args = parser.parse_args()
@@ -414,6 +467,8 @@ def main():
             clubs_path=args.clubs,
             no_cache=args.no_cache,
         )
+    elif args.command == 'daily-rollout-begin':
+        cmd_daily_rollout_begin()
     elif args.command == 'ensure-daily':
         cmd_ensure_daily()
     else:

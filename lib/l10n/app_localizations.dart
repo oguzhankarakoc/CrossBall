@@ -130,6 +130,84 @@ abstract class AppLocalizations {
   /// **'One puzzle per day. Build your streak.'**
   String get dailyChallengeDesc;
 
+  /// No description provided for @dailyRefreshSchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Updates at {localTime} your time (00:00 UTC) · Next in {countdown}'**
+  String dailyRefreshSchedule(String localTime, String countdown);
+
+  /// No description provided for @dailyPuzzleRefreshTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s puzzle is being prepared'**
+  String get dailyPuzzleRefreshTitle;
+
+  /// No description provided for @dailyPuzzleRefreshBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day at midnight UTC we refresh clubs and build a new global grid. Yesterday\'s puzzle is closed while the new one is on the way.'**
+  String get dailyPuzzleRefreshBody;
+
+  /// No description provided for @dailyPuzzleRefreshElapsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing for {elapsed}'**
+  String dailyPuzzleRefreshElapsed(String elapsed);
+
+  /// No description provided for @dailyPuzzleRefreshWindowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'This usually takes a few minutes. Thanks for your patience.'**
+  String get dailyPuzzleRefreshWindowHint;
+
+  /// No description provided for @dailyPuzzleRefreshAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll check again automatically in {seconds}s.'**
+  String dailyPuzzleRefreshAutoHint(int seconds);
+
+  /// No description provided for @dailyPuzzleRefreshCheckAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get dailyPuzzleRefreshCheckAgain;
+
+  /// No description provided for @dailyPuzzleRefreshRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get dailyPuzzleRefreshRetry;
+
+  /// No description provided for @dailyPuzzleRefreshFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s puzzle isn\'t ready yet'**
+  String get dailyPuzzleRefreshFailedTitle;
+
+  /// No description provided for @dailyPuzzleRefreshFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t publish today\'s puzzle after the refresh window. You can retry — we\'ll attempt a safe fallback in the background.'**
+  String get dailyPuzzleRefreshFailedBody;
+
+  /// No description provided for @dailyPuzzleRefreshHomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New puzzle incoming — refresh in progress at 00:00 UTC.'**
+  String get dailyPuzzleRefreshHomeSubtitle;
+
+  /// No description provided for @dailyPuzzleRefreshHomeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing today\'s puzzle…'**
+  String get dailyPuzzleRefreshHomeHint;
+
+  /// No description provided for @dailyPuzzleRefreshBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Refreshing'**
+  String get dailyPuzzleRefreshBadge;
+
   /// No description provided for @friendChallenge.
   ///
   /// In en, this message translates to:
@@ -165,6 +243,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Active Events'**
   String get activeEvents;
+
+  /// No description provided for @eventLockedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get eventLockedBadge;
+
+  /// No description provided for @eventLockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Themed club grids for this event are not available yet. Stay tuned!'**
+  String get eventLockedMessage;
 
   /// No description provided for @communityGoals.
   ///

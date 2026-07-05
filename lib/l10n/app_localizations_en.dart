@@ -24,6 +24,56 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyChallengeDesc => 'One puzzle per day. Build your streak.';
 
   @override
+  String dailyRefreshSchedule(String localTime, String countdown) {
+    return 'Updates at $localTime your time (00:00 UTC) · Next in $countdown';
+  }
+
+  @override
+  String get dailyPuzzleRefreshTitle => 'Today\'s puzzle is being prepared';
+
+  @override
+  String get dailyPuzzleRefreshBody =>
+      'Every day at midnight UTC we refresh clubs and build a new global grid. Yesterday\'s puzzle is closed while the new one is on the way.';
+
+  @override
+  String dailyPuzzleRefreshElapsed(String elapsed) {
+    return 'Preparing for $elapsed';
+  }
+
+  @override
+  String get dailyPuzzleRefreshWindowHint =>
+      'This usually takes a few minutes. Thanks for your patience.';
+
+  @override
+  String dailyPuzzleRefreshAutoHint(int seconds) {
+    return 'We\'ll check again automatically in ${seconds}s.';
+  }
+
+  @override
+  String get dailyPuzzleRefreshCheckAgain => 'Check again';
+
+  @override
+  String get dailyPuzzleRefreshRetry => 'Try again';
+
+  @override
+  String get dailyPuzzleRefreshFailedTitle =>
+      'Today\'s puzzle isn\'t ready yet';
+
+  @override
+  String get dailyPuzzleRefreshFailedBody =>
+      'We couldn\'t publish today\'s puzzle after the refresh window. You can retry — we\'ll attempt a safe fallback in the background.';
+
+  @override
+  String get dailyPuzzleRefreshHomeSubtitle =>
+      'New puzzle incoming — refresh in progress at 00:00 UTC.';
+
+  @override
+  String get dailyPuzzleRefreshHomeHint => 'Preparing today\'s puzzle…';
+
+  @override
+  String get dailyPuzzleRefreshBadge => 'Refreshing';
+
+  @override
   String get friendChallenge => 'Friend Challenge';
 
   @override
@@ -41,6 +91,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get activeEvents => 'Active Events';
+
+  @override
+  String get eventLockedBadge => 'Coming soon';
+
+  @override
+  String get eventLockedMessage =>
+      'Themed club grids for this event are not available yet. Stay tuned!';
 
   @override
   String get communityGoals => 'Community Goals';

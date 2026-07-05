@@ -132,7 +132,7 @@ After pushing to GitHub, add **Actions secrets**: `DATABASE_URL`, `API_FOOTBALL_
 
 | Workflow | Schedule | Purpose |
 |----------|----------|---------|
-| `data-sync-daily.yml` | Daily 07:00 TR | API-Football → DB → daily puzzle |
+| `data-sync-daily.yml` | Daily 00:00 UTC (03:00 TRT) | API-Football → DB → daily puzzle |
 | `data-etl-weekly.yml` | Sunday 08:00 TR | Kaggle bulk + patches |
 
 See [`.github/workflows/README.md`](.github/workflows/README.md) and [Data Pipeline](data_pipeline/README.md).

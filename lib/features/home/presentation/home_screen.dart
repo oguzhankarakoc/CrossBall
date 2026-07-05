@@ -5,13 +5,16 @@ import 'package:go_router/go_router.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../features/economy/domain/player_progression.dart';
 import '../../../features/economy/presentation/daily_missions_card.dart';
 import '../../../features/economy/presentation/season_card.dart';
+import '../../../features/liveops/domain/liveops_event_extensions.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../features/social/presentation/activity_feed_card.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
 import '../../../features/liveops/presentation/widgets/liveops_widgets.dart';
+import '../../../features/puzzle/presentation/daily_puzzle_rollout_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
@@ -39,8 +42,29 @@ class HomeScreen extends ConsumerWidget {
     final missions = ref.watch(playerMissionsProvider).valueOrNull ?? const [];
     final season = ref.watch(seasonInfoProvider).valueOrNull;
     final stats = ref.watch(userStatsProvider).valueOrNull;
+    final rollout = ref.watch(dailyPuzzleRolloutProvider).valueOrNull;
+    final isDailyRefreshing = rollout?.isBlocked ?? false;
     final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
     final streak = stats?.currentStreak ?? 0;
+    final localeName = Localizations.localeOf(context).toString();
+    final dailySubtitle = [
+      if (isDailyRefreshing)
+        l10n.dailyPuzzleRefreshHomeSubtitle
+      else
+        isNewPlayer ? l10n.dailyChallengeEasyDesc : l10n.dailyChallengeDesc,
+      if (!isDailyRefreshing)
+        DailyPuzzleSchedule.scheduleNote(l10n, localeName),
+    ].join('\n');
+    final dailyBadge = isDailyRefreshing
+        ? l10n.dailyPuzzleRefreshBadge
+        : streak > 0
+            ? '$streak ${l10n.currentStreak}'
+            : l10n.dailyChallenge;
+    final dailyBadgeIcon = isDailyRefreshing
+        ? Icons.hourglass_top_rounded
+        : streak > 0
+            ? Icons.local_fire_department_rounded
+            : Icons.calendar_today_rounded;
 
     return Scaffold(
       extendBody: true,
@@ -104,10 +128,12 @@ class HomeScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.md),
                     CrossBallHeroCard(
                       title: l10n.dailyChallenge,
-                      subtitle: isNewPlayer ? l10n.dailyChallengeEasyDesc : l10n.dailyChallengeDesc,
-                      actionLabel: l10n.continueButton,
-                      badge: streak > 0 ? '$streak ${l10n.currentStreak}' : l10n.dailyChallenge,
-                      badgeIcon: streak > 0 ? Icons.local_fire_department_rounded : Icons.calendar_today_rounded,
+                      subtitle: dailySubtitle,
+                      actionLabel: isDailyRefreshing
+                          ? l10n.dailyPuzzleRefreshCheckAgain
+                          : l10n.continueButton,
+                      badge: dailyBadge,
+                      badgeIcon: dailyBadgeIcon,
                       onTap: () {
                         cbDebug('Daily', 'home → open daily puzzle');
                         context.push('${AppRoutes.puzzle}?mode=daily');
@@ -128,7 +154,15 @@ class HomeScreen extends ConsumerWidget {
                       ...liveOps.activeEvents.map(
                         (event) => LiveOpsEventCard(
                           event: event,
+                          isLocked: event.isLocked,
+                          lockedBadge: event.isLocked ? l10n.eventLockedBadge : null,
                           onTap: () {
+                            if (event.isLocked) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(l10n.eventLockedMessage)),
+                              );
+                              return;
+                            }
                             if (event.eventType == 'tournament') {
                               context.push(AppRoutes.tournament);
                             } else {

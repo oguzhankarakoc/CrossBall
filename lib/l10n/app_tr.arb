@@ -5,12 +5,43 @@
   "homeTitle": "CrossBall",
   "dailyChallenge": "Günlük Mücadele",
   "dailyChallengeDesc": "Günde bir bulmaca. Serini oluştur.",
+  "dailyRefreshSchedule": "Yerel saatinizle {localTime}'de güncellenir (00:00 UTC) · Sonraki: {countdown}",
+  "@dailyRefreshSchedule": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshTitle": "Bugünün bulmacası hazırlanıyor",
+  "dailyPuzzleRefreshBody": "Her gün UTC gece yarısında kulüp verilerini yenileyip yeni global ızgara oluşturuyoruz. Yeni bulmaca gelene kadar dünkü bulmaca kapalıdır.",
+  "dailyPuzzleRefreshElapsed": "Hazırlanıyor: {elapsed}",
+  "@dailyPuzzleRefreshElapsed": {
+    "placeholders": {
+      "elapsed": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshWindowHint": "Bu işlem genelde birkaç dakika sürer. Sabrınız için teşekkürler.",
+  "dailyPuzzleRefreshAutoHint": "{seconds} sn sonra otomatik tekrar kontrol edeceğiz.",
+  "@dailyPuzzleRefreshAutoHint": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "dailyPuzzleRefreshCheckAgain": "Tekrar kontrol et",
+  "dailyPuzzleRefreshRetry": "Yeniden dene",
+  "dailyPuzzleRefreshFailedTitle": "Bugünün bulmacası henüz hazır değil",
+  "dailyPuzzleRefreshFailedBody": "Yenileme sonrası bugünün bulmacası yayınlanamadı. Tekrar deneyebilirsiniz — arka planda güvenli bir yedek denemesi yapılır.",
+  "dailyPuzzleRefreshHomeSubtitle": "Yeni bulmaca yolda — 00:00 UTC yenilemesi devam ediyor.",
+  "dailyPuzzleRefreshHomeHint": "Bugünün bulmacası hazırlanıyor…",
+  "dailyPuzzleRefreshBadge": "Yenileniyor",
   "friendChallenge": "Arkadaş Mücadelesi",
   "friendChallengeDesc": "Link paylaş ve async yarış.",
   "practice": "Antrenman",
   "practiceDesc": "Günde 5 antrenman. Sonraki oturumlar için reklam izle.",
   "stats": "İstatistikler",
   "activeEvents": "Aktif Etkinlikler",
+  "eventLockedBadge": "Yakında",
+  "eventLockedMessage": "Bu etkinlik için özel kulüp ızgaraları henüz hazır değil. Takipte kal!",
   "communityGoals": "Topluluk Hedefleri",
   "maintenanceNotice": "Bakım",
   "maintenanceNoticeBody": "Bazı hizmetler sınırlı olabilir. Bulmaca oynamaya devam edebilirsiniz.",

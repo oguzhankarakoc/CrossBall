@@ -5,12 +5,43 @@
   "homeTitle": "CrossBall",
   "dailyChallenge": "Tägliche Herausforderung",
   "dailyChallengeDesc": "Ein Rätsel pro Tag. Baue deine Serie auf.",
+  "dailyRefreshSchedule": "Aktualisierung um {localTime} Ortszeit (00:00 UTC) · Nächstes in {countdown}",
+  "@dailyRefreshSchedule": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshTitle": "Das heutige Rätsel wird vorbereitet",
+  "dailyPuzzleRefreshBody": "Jeden Tag um Mitternacht UTC aktualisieren wir die Vereine und erstellen ein neues globales Gitter. Das Rätsel von gestern ist geschlossen, bis das neue bereit ist.",
+  "dailyPuzzleRefreshElapsed": "Vorbereitung seit {elapsed}",
+  "@dailyPuzzleRefreshElapsed": {
+    "placeholders": {
+      "elapsed": {"type": "String"}
+    }
+  },
+  "dailyPuzzleRefreshWindowHint": "Das dauert meist nur wenige Minuten. Danke für deine Geduld.",
+  "dailyPuzzleRefreshAutoHint": "Wir prüfen automatisch erneut in {seconds} s.",
+  "@dailyPuzzleRefreshAutoHint": {
+    "placeholders": {
+      "seconds": {"type": "int"}
+    }
+  },
+  "dailyPuzzleRefreshCheckAgain": "Erneut prüfen",
+  "dailyPuzzleRefreshRetry": "Nochmal versuchen",
+  "dailyPuzzleRefreshFailedTitle": "Das heutige Rätsel ist noch nicht bereit",
+  "dailyPuzzleRefreshFailedBody": "Nach dem Refresh konnte das heutige Rätsel nicht veröffentlicht werden. Versuche es erneut — im Hintergrund starten wir einen sicheren Fallback.",
+  "dailyPuzzleRefreshHomeSubtitle": "Neues Rätsel unterwegs — Refresh um 00:00 UTC läuft.",
+  "dailyPuzzleRefreshHomeHint": "Heutiges Rätsel wird vorbereitet…",
+  "dailyPuzzleRefreshBadge": "Aktualisierung",
   "friendChallenge": "Freundes-Herausforderung",
   "friendChallengeDesc": "Link teilen und async wetteifern.",
   "practice": "Übung",
   "practiceDesc": "5 Trainingseinheiten pro Tag. Werbung für die nächste Runde.",
   "stats": "Statistiken",
   "activeEvents": "Aktive Events",
+  "eventLockedBadge": "Demnächst",
+  "eventLockedMessage": "Themen-Gitter für dieses Event sind noch nicht verfügbar.",
   "communityGoals": "Community-Ziele",
   "maintenanceNotice": "Wartung",
   "maintenanceNoticeBody": "Einige Dienste können eingeschränkt sein. Rätsel spielen geht weiter.",

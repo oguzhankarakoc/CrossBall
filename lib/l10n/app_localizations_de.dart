@@ -24,6 +24,56 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dailyChallengeDesc => 'Ein Rätsel pro Tag. Baue deine Serie auf.';
 
   @override
+  String dailyRefreshSchedule(String localTime, String countdown) {
+    return 'Aktualisierung um $localTime Ortszeit (00:00 UTC) · Nächstes in $countdown';
+  }
+
+  @override
+  String get dailyPuzzleRefreshTitle => 'Das heutige Rätsel wird vorbereitet';
+
+  @override
+  String get dailyPuzzleRefreshBody =>
+      'Jeden Tag um Mitternacht UTC aktualisieren wir die Vereine und erstellen ein neues globales Gitter. Das Rätsel von gestern ist geschlossen, bis das neue bereit ist.';
+
+  @override
+  String dailyPuzzleRefreshElapsed(String elapsed) {
+    return 'Vorbereitung seit $elapsed';
+  }
+
+  @override
+  String get dailyPuzzleRefreshWindowHint =>
+      'Das dauert meist nur wenige Minuten. Danke für deine Geduld.';
+
+  @override
+  String dailyPuzzleRefreshAutoHint(int seconds) {
+    return 'Wir prüfen automatisch erneut in $seconds s.';
+  }
+
+  @override
+  String get dailyPuzzleRefreshCheckAgain => 'Erneut prüfen';
+
+  @override
+  String get dailyPuzzleRefreshRetry => 'Nochmal versuchen';
+
+  @override
+  String get dailyPuzzleRefreshFailedTitle =>
+      'Das heutige Rätsel ist noch nicht bereit';
+
+  @override
+  String get dailyPuzzleRefreshFailedBody =>
+      'Nach dem Refresh konnte das heutige Rätsel nicht veröffentlicht werden. Versuche es erneut — im Hintergrund starten wir einen sicheren Fallback.';
+
+  @override
+  String get dailyPuzzleRefreshHomeSubtitle =>
+      'Neues Rätsel unterwegs — Refresh um 00:00 UTC läuft.';
+
+  @override
+  String get dailyPuzzleRefreshHomeHint => 'Heutiges Rätsel wird vorbereitet…';
+
+  @override
+  String get dailyPuzzleRefreshBadge => 'Aktualisierung';
+
+  @override
   String get friendChallenge => 'Freundes-Herausforderung';
 
   @override
@@ -41,6 +91,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get activeEvents => 'Aktive Events';
+
+  @override
+  String get eventLockedBadge => 'Demnächst';
+
+  @override
+  String get eventLockedMessage =>
+      'Themen-Gitter für dieses Event sind noch nicht verfügbar.';
 
   @override
   String get communityGoals => 'Community-Ziele';
