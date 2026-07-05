@@ -127,45 +127,98 @@ def _player_row(player: dict) -> dict:
     }
 
 
+def _existing_from_db_row(row) -> dict:
+    existing_id, ext_id, name, nat, pos, ikey = row
+    return {
+        'id': str(existing_id),
+        'external_id': ext_id,
+        'name': name,
+        'nationality_code': nat,
+        'primary_position': pos,
+        'identity_key': ikey,
+    }
+
+
 def _find_existing_player(cur, player: dict) -> dict | None:
     row = _player_row(player)
+
+    if row['external_id']:
+        cur.execute(
+            """
+            SELECT id, external_id, name, nationality_code, primary_position, identity_key
+            FROM players
+            WHERE external_id = %s
+            """,
+            (row['external_id'],),
+        )
+        hit = cur.fetchone()
+        if hit:
+            return _existing_from_db_row(hit)
+
     cur.execute(
         """
         SELECT id, external_id, name, nationality_code, primary_position, identity_key
         FROM players
-        WHERE external_id = %s
-           OR identity_key = %s
+        WHERE identity_key = %s
         """,
-        (row['external_id'], row['identity_key']),
+        (row['identity_key'],),
     )
-    for existing in cur.fetchall():
-        existing_id, ext_id, name, nat, pos, ikey = existing
-        if row['external_id'] and ext_id == row['external_id']:
-            return {
-                'id': str(existing_id),
-                'external_id': ext_id,
-                'name': name,
-                'nationality_code': nat,
-                'primary_position': pos,
-                'identity_key': ikey,
-            }
-        if names_likely_same_person(name, row['name']) or ikey == row['identity_key']:
-            return {
-                'id': str(existing_id),
-                'external_id': ext_id,
-                'name': name,
-                'nationality_code': nat,
-                'primary_position': pos,
-                'identity_key': ikey,
-            }
+    for hit in cur.fetchall():
+        existing = _existing_from_db_row(hit)
+        if names_likely_same_person(existing['name'], row['name']):
+            return existing
     return None
 
 
-def _update_player_record(cur, player_id: str, existing: dict, incoming: dict) -> None:
+def _merge_player_into_owner(cur, drop_id: str, keep_id: str) -> None:
+    """Move careers and stats from drop_id to keep_id, then delete drop_id."""
+    if drop_id == keep_id:
+        return
+    _reassign_player_references(cur, drop_id, keep_id)
+    cur.execute('DELETE FROM players WHERE id = %s', (drop_id,))
+
+
+def _update_player_record(cur, player_id: str, existing: dict, incoming: dict) -> str:
     merged_name = pick_preferred_name(existing['name'], incoming['name'])
+    merged_external = pick_preferred_external_id(
+        existing.get('external_id'),
+        incoming.get('external_id'),
+    )
+
+    if merged_external:
+        cur.execute(
+            """
+            SELECT id FROM players
+            WHERE external_id = %s AND id <> %s
+            LIMIT 1
+            """,
+            (merged_external, player_id),
+        )
+        conflict = cur.fetchone()
+        if conflict:
+            owner_id = str(conflict[0])
+            _merge_player_into_owner(cur, player_id, owner_id)
+            player_id = owner_id
+            cur.execute(
+                """
+                SELECT id, external_id, name, nationality_code, primary_position, identity_key
+                FROM players
+                WHERE id = %s
+                """,
+                (player_id,),
+            )
+            row = cur.fetchone()
+            if row:
+                existing = _existing_from_db_row(row)
+                merged_name = pick_preferred_name(existing['name'], incoming['name'])
+                merged_external = pick_preferred_external_id(
+                    existing.get('external_id'),
+                    incoming.get('external_id'),
+                )
+
     merged = {
         'id': player_id,
-        'external_id': pick_preferred_external_id(existing.get('external_id'), incoming.get('external_id')),
+        'external_id': merged_external,
         'name': merged_name,
         'normalized_name': normalize_name(merged_name),
         'identity_key': incoming.get('identity_key') or player_identity_key(merged_name),
@@ -192,6 +245,7 @@ def _update_player_record(cur, player_id: str, existing: dict, incoming: dict) -
         """,
         merged,
     )
+    return player_id
 
 
 def _insert_careers(cur, player_id: str, careers: list[dict]) -> None:
@@ -230,8 +284,7 @@ def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
             existing = _find_existing_player(cur, incoming)
 
             if existing:
-                player_id = existing['id']
-                _update_player_record(cur, player_id, existing, incoming)
+                player_id = _update_player_record(cur, existing['id'], existing, incoming)
             else:
                 cur.execute(
                     """

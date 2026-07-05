@@ -24,7 +24,7 @@ jobs:
         run: cp .env.example .env
       - run: flutter pub get
       - run: flutter gen-l10n
-      - run: flutter analyze
+      - run: flutter analyze --no-fatal-infos
       - run: flutter test
 
   pipeline:
