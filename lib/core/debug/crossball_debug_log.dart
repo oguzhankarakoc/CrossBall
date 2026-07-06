@@ -65,7 +65,7 @@ void cbDebugHttpResponse(
   String? uri,
 }) {
   cbDebug(tag, label, {
-    if (uri != null) 'uri': uri,
+    'uri': ?uri,
     'status': statusCode,
     'elapsedMs': elapsedMs,
     'bodyPreview': _bodyPreview(body),

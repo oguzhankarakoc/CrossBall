@@ -238,7 +238,7 @@ class PuzzleApiService {
             'player_id': playerId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
-            if (responseTimeMs != null) 'response_time_ms': responseTimeMs,
+            'response_time_ms': ?responseTimeMs,
           }),
         );
         if (response.statusCode == 200) {
@@ -546,7 +546,7 @@ class PuzzleApiService {
       try {
         final headers = {
           ..._headers,
-          if (userUuid != null) 'x-user-uuid': userUuid,
+          'x-user-uuid': ?userUuid,
         };
         final response = await _http.post(
           Uri.parse('$_baseUrl/functions/v1/request-hint'),
@@ -557,8 +557,8 @@ class PuzzleApiService {
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
             'hint_type': _hintTypeToApi(hintType),
-            if (adToken != null) 'ad_token': adToken,
-            if (userUuid != null) 'user_uuid': userUuid,
+            'ad_token': ?adToken,
+            'user_uuid': ?userUuid,
           }),
         );
         if (response.statusCode == 200) {

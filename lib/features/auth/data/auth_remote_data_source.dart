@@ -43,11 +43,11 @@ class AuthRemoteDataSource {
 
     final body = <String, dynamic>{
       'user_uuid': userUuid,
-      if (onboardingComplete != null) 'onboarding_complete': onboardingComplete,
-      if (locale != null) 'locale': locale,
-      if (themePreference != null) 'theme_preference': themePreference,
-      if (timezoneOffsetMinutes != null) 'timezone_offset_minutes': timezoneOffsetMinutes,
-      if (pushOptIn != null) 'push_opt_in': pushOptIn,
+      'onboarding_complete': ?onboardingComplete,
+      'locale': ?locale,
+      'theme_preference': ?themePreference,
+      'timezone_offset_minutes': ?timezoneOffsetMinutes,
+      'push_opt_in': ?pushOptIn,
     };
 
     if (clearDisplayName) {
@@ -124,8 +124,8 @@ class AuthRemoteDataSource {
         'user_uuid': userUuid,
         'platform': platform,
         'product_id': productId,
-        if (verificationData != null) 'verification_data': verificationData,
-        if (source != null) 'source': source,
+        'verification_data': ?verificationData,
+        'source': ?source,
       }),
     );
 

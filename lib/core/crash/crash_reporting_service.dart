@@ -34,7 +34,7 @@ class AnalyticsCrashReportingService implements CrashReportingService {
         'app_error',
         properties: {
           'message': error.toString(),
-          if (reason != null) 'reason': reason,
+          'reason': ?reason,
           'stack': stack.toString().split('\n').take(8).join('\n'),
           'platform': defaultTargetPlatform.name,
         },

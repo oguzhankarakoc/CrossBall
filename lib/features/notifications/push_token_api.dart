@@ -30,9 +30,9 @@ class PushTokenApi {
         'user_uuid': userUuid,
         'token': token,
         'platform': platform,
-        if (locale != null) 'locale': locale,
-        if (pushOptIn != null) 'push_opt_in': pushOptIn,
-        if (appVersion != null) 'app_version': appVersion,
+        'locale': ?locale,
+        'push_opt_in': ?pushOptIn,
+        'app_version': ?appVersion,
       }),
     );
 
