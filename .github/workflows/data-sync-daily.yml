@@ -50,7 +50,7 @@ jobs:
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
       - name: Apply database migrations
-        run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh 028
+        run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh 028 029
 
       - name: Run scheduled API-Football sync
         run: chmod +x scripts/run_scheduled_sync.sh && ./scripts/run_scheduled_sync.sh

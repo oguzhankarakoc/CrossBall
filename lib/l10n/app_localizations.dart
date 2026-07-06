@@ -682,6 +682,30 @@ abstract class AppLocalizations {
   /// **'Premium: reveal another career club'**
   String get hintCareerClub;
 
+  /// No description provided for @hintNationalityPremium.
+  String get hintNationalityPremium;
+
+  /// No description provided for @hintPositionPremium.
+  String get hintPositionPremium;
+
+  /// No description provided for @hintFirstLetterPremium.
+  String get hintFirstLetterPremium;
+
+  /// No description provided for @hintCareerLeaguePremium.
+  String get hintCareerLeaguePremium;
+
+  /// No description provided for @hintRetiredStatusPremium.
+  String get hintRetiredStatusPremium;
+
+  /// No description provided for @unlockPlayerSuggestionsAd.
+  String get unlockPlayerSuggestionsAd;
+
+  /// No description provided for @unlockPlayerSuggestionsPremium.
+  String get unlockPlayerSuggestionsPremium;
+
+  /// No description provided for @searchCompetitiveEmpty.
+  String get searchCompetitiveEmpty;
+
   /// No description provided for @practiceLimitReached.
   ///
   /// In en, this message translates to:

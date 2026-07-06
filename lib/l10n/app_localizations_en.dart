@@ -322,6 +322,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintCareerClub => 'Premium: reveal another career club';
 
   @override
+  String get hintNationalityPremium => 'Reveal nationality hint';
+
+  @override
+  String get hintPositionPremium => 'Reveal position hint';
+
+  @override
+  String get hintFirstLetterPremium => 'Reveal first letter hint';
+
+  @override
+  String get hintCareerLeaguePremium => 'Reveal career league hint';
+
+  @override
+  String get hintRetiredStatusPremium => 'Reveal active/retired hint';
+
+  @override
+  String get unlockPlayerSuggestionsAd => 'Watch ad to see player suggestions';
+
+  @override
+  String get unlockPlayerSuggestionsPremium => 'Show player suggestions';
+
+  @override
+  String get searchCompetitiveEmpty =>
+      'Type a player name — suggestions stay hidden until you unlock help.';
+
+  @override
   String get practiceLimitReached =>
       'Daily training limit reached. Come back tomorrow or upgrade to Premium.';
 

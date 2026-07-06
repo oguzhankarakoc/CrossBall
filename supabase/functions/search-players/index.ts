@@ -46,16 +46,86 @@ function playerCompletenessScore(player: EnrichedPlayer): number {
   return score
 }
 
+function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPlayer {
+  const primary =
+    playerCompletenessScore(a) >= playerCompletenessScore(b) ? a : b
+  const secondary = primary === a ? b : a
+  const clubs = [...new Set([...(primary.clubs_preview ?? []), ...(secondary.clubs_preview ?? [])])]
+  return {
+    ...primary,
+    nationality_code: primary.nationality_code ?? secondary.nationality_code ?? null,
+    primary_position: primary.primary_position ?? secondary.primary_position ?? null,
+    clubs_preview: clubs.slice(0, 4),
+    popularity_score: Math.max(primary.popularity_score, secondary.popularity_score),
+    is_cell_relevant: primary.is_cell_relevant || secondary.is_cell_relevant,
+  }
+}
+
 function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
   const best = new Map<string, EnrichedPlayer>()
   for (const player of players) {
     const key = playerIdentityKey(player.name)
     const existing = best.get(key)
-    if (!existing || playerCompletenessScore(player) > playerCompletenessScore(existing)) {
+    if (!existing) {
       best.set(key, player)
+    } else {
+      best.set(key, mergeEnrichedPlayers(existing, player))
     }
   }
   return [...best.values()]
+}
+
+async function fillMissingPlayerMetadata(
+  supabase: ReturnType<typeof createClient>,
+  players: RawPlayer[],
+): Promise<RawPlayer[]> {
+  const needsFill = players.filter((p) => !p.nationality_code || !p.primary_position)
+  if (needsFill.length === 0) return players
+
+  const ids = needsFill.map((p) => p.id)
+  const { data: identityRows } = await supabase
+    .from('players')
+    .select('id, identity_key, nationality_code, primary_position')
+    .in('id', ids)
+
+  const identityKeys = [
+    ...new Set(
+      (identityRows ?? [])
+        .map((row) => row.identity_key as string | null)
+        .filter((key): key is string => Boolean(key)),
+    ),
+  ]
+  if (identityKeys.length === 0) return players
+
+  const { data: siblings } = await supabase
+    .from('players')
+    .select('identity_key, nationality_code, primary_position')
+    .in('identity_key', identityKeys)
+
+  const bestByKey = new Map<string, { nat?: string | null; pos?: string | null }>()
+  for (const row of siblings ?? []) {
+    const key = row.identity_key as string
+    const current = bestByKey.get(key) ?? {}
+    if (row.nationality_code && !current.nat) current.nat = row.nationality_code as string
+    if (row.primary_position && !current.pos) current.pos = row.primary_position as string
+    bestByKey.set(key, current)
+  }
+
+  const idToKey = new Map<string, string>()
+  for (const row of identityRows ?? []) {
+    if (row.identity_key) idToKey.set(row.id as string, row.identity_key as string)
+  }
+
+  return players.map((player) => {
+    const key = idToKey.get(player.id)
+    const fill = key ? bestByKey.get(key) : undefined
+    if (!fill) return player
+    return {
+      ...player,
+      nationality_code: player.nationality_code ?? fill.nat ?? null,
+      primary_position: player.primary_position ?? fill.pos ?? null,
+    }
+  })
 }
 
 function scorePlayer(player: EnrichedPlayer, normalized: string): number {
@@ -259,7 +329,8 @@ Deno.serve(async (req) => {
       })
 
       const raw = ((intersectionRows ?? []) as RawPlayer[]).slice(0, limit)
-      const suggested = await enrichPlayers(supabase, raw, rowClubId, colClubId)
+      const filled = await fillMissingPlayerMetadata(supabase, raw)
+      const suggested = await enrichPlayers(supabase, filled, rowClubId, colClubId)
 
       return new Response(
         JSON.stringify({
@@ -279,7 +350,8 @@ Deno.serve(async (req) => {
         .limit(limit)
 
       const raw = (popular ?? []).map((p: { players: RawPlayer }) => p.players)
-      const results = await enrichPlayers(supabase, raw, rowClubId, colClubId)
+      const filledPopular = await fillMissingPlayerMetadata(supabase, raw)
+      const results = await enrichPlayers(supabase, filledPopular, rowClubId, colClubId)
 
       let suggested: EnrichedPlayer[] = []
       if (rowClubId && colClubId) {
@@ -287,9 +359,11 @@ Deno.serve(async (req) => {
           p_row_club_id: rowClubId,
           p_col_club_id: colClubId,
         })
+        const intersectionRaw = ((intersectionRows ?? []) as RawPlayer[]).slice(0, Math.min(limit, 12))
+        const filledIntersection = await fillMissingPlayerMetadata(supabase, intersectionRaw)
         suggested = await enrichPlayers(
           supabase,
-          ((intersectionRows ?? []) as RawPlayer[]).slice(0, Math.min(limit, 12)),
+          filledIntersection,
           rowClubId,
           colClubId,
         )
@@ -313,9 +387,13 @@ Deno.serve(async (req) => {
       .ilike('normalized_name', `%${normalized}%`)
       .limit(Math.min(limit * 3, 60))
 
-    const enriched = await enrichPlayers(
+    const filledResults = await fillMissingPlayerMetadata(
       supabase,
       (rawResults ?? []) as RawPlayer[],
+    )
+    const enriched = await enrichPlayers(
+      supabase,
+      filledResults,
       rowClubId,
       colClubId,
     )

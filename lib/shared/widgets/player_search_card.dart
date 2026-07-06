@@ -48,6 +48,10 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
     final flag = CountryFlags.emoji(player.nationalityCode);
     final country = CountryFlags.name(player.nationalityCode);
     final position = PositionLabels.abbreviate(player.primaryPosition);
+    final hasNationality =
+        player.nationalityCode != null && player.nationalityCode!.trim().isNotEmpty;
+    final hasPosition =
+        player.primaryPosition != null && player.primaryPosition!.trim().isNotEmpty;
     final careerPreview = player.clubsPreview.take(4).join(', ');
 
     return AnimatedOpacity(
@@ -125,22 +129,28 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
                                 ],
                               ),
                               const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Text(flag, style: const TextStyle(fontSize: 14)),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      '$country • $position',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: colors.textSecondary,
-                                          ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                              if (hasNationality || hasPosition)
+                                Row(
+                                  children: [
+                                    if (hasNationality) ...[
+                                      Text(flag, style: const TextStyle(fontSize: 14)),
+                                      const SizedBox(width: 4),
+                                    ],
+                                    Expanded(
+                                      child: Text(
+                                        [
+                                          if (hasNationality) country,
+                                          if (hasPosition) position,
+                                        ].join(' • '),
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                              color: colors.textSecondary,
+                                            ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
+                                  ],
+                                ),
                               if (careerPreview.isNotEmpty) ...[
                                 const SizedBox(height: AppSpacing.sm),
                                 Text(

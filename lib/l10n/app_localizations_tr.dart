@@ -323,6 +323,31 @@ class AppLocalizationsTr extends AppLocalizations {
   String get hintCareerClub => 'Premium: kariyerden bir kulüp daha';
 
   @override
+  String get hintNationalityPremium => 'Milliyet ipucunu göster';
+
+  @override
+  String get hintPositionPremium => 'Pozisyon ipucunu göster';
+
+  @override
+  String get hintFirstLetterPremium => 'İlk harf ipucunu göster';
+
+  @override
+  String get hintCareerLeaguePremium => 'Lig ipucunu göster';
+
+  @override
+  String get hintRetiredStatusPremium => 'Aktif/emekli ipucunu göster';
+
+  @override
+  String get unlockPlayerSuggestionsAd => 'Oyuncu önerileri için reklam izle';
+
+  @override
+  String get unlockPlayerSuggestionsPremium => 'Oyuncu önerilerini göster';
+
+  @override
+  String get searchCompetitiveEmpty =>
+      'Oyuncu adı yaz — öneriler yardım açılana kadar gizli kalır.';
+
+  @override
   String get practiceLimitReached =>
       'Bugünkü antrenman hakkın bitti. Yarın tekrar dene veya Premium\'a yükselt.';
 

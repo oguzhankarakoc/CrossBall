@@ -18,6 +18,7 @@ class SearchApiService {
     String query, {
     int limit = 20,
     SearchContext? context,
+    bool competitive = false,
   }) async {
     if (AppConfig.isSupabaseConfigured) {
       try {
@@ -25,8 +26,12 @@ class SearchApiService {
           'q': query,
           'limit': limit.toString(),
         };
-        if (context?.rowClubId != null) params['row_club_id'] = context!.rowClubId!;
-        if (context?.colClubId != null) params['col_club_id'] = context!.colClubId!;
+        if (!competitive && context?.rowClubId != null) {
+          params['row_club_id'] = context!.rowClubId!;
+        }
+        if (!competitive && context?.colClubId != null) {
+          params['col_club_id'] = context!.colClubId!;
+        }
 
         final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/search-players')
             .replace(queryParameters: params);
@@ -206,8 +211,9 @@ class SearchRepositoryImpl implements SearchRepository {
     String query, {
     int limit = 20,
     SearchContext? context,
+    bool competitive = false,
   }) =>
-      _api.search(query, limit: limit, context: context);
+      _api.search(query, limit: limit, context: context, competitive: competitive);
 
   @override
   Future<List<Player>> getRecentPicks() async {

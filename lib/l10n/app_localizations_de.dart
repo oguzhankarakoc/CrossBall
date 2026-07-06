@@ -323,6 +323,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get hintCareerClub => 'Premium: weiteren Verein aus Karriere';
 
   @override
+  String get hintNationalityPremium => 'Nationalitätshinweis anzeigen';
+
+  @override
+  String get hintPositionPremium => 'Positionshinweis anzeigen';
+
+  @override
+  String get hintFirstLetterPremium => 'Ersten Buchstaben anzeigen';
+
+  @override
+  String get hintCareerLeaguePremium => 'Karriere-Liga anzeigen';
+
+  @override
+  String get hintRetiredStatusPremium => 'Aktiv/Retired anzeigen';
+
+  @override
+  String get unlockPlayerSuggestionsAd => 'Werbung für Spielervorschläge ansehen';
+
+  @override
+  String get unlockPlayerSuggestionsPremium => 'Spielervorschläge anzeigen';
+
+  @override
+  String get searchCompetitiveEmpty =>
+      'Spielername eingeben — Vorschläge bleiben versteckt, bis du Hilfe freischaltest.';
+
+  @override
   String get practiceLimitReached =>
       'Tägliches Trainingslimit erreicht. Morgen wieder oder Premium upgraden.';
 

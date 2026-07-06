@@ -521,6 +521,8 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         params: widget.params,
         rowClub: puzzle.rowClubAt(row),
         colClub: puzzle.colClubAt(col),
+        cellKey: cellKey,
+        suggestionsUnlocked: game.suggestionsUnlockedByCell[cellKey] ?? false,
         revealedHints: game.hintsRevealed[cellKey] ?? const [],
         isPremium: ref.read(isPremiumProvider),
       ),

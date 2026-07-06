@@ -21,6 +21,8 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
     required this.params,
     required this.rowClub,
     required this.colClub,
+    required this.cellKey,
+    this.suggestionsUnlocked = false,
     this.revealedHints = const [],
     this.isPremium = false,
   });
@@ -28,6 +30,8 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
   final PuzzleGameParams params;
   final Club rowClub;
   final Club colClub;
+  final String cellKey;
+  final bool suggestionsUnlocked;
   final List<String> revealedHints;
   final bool isPremium;
 
@@ -45,6 +49,8 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   bool _loading = false;
   bool _browseLoading = true;
   bool _hintLoading = false;
+  bool _unlockLoading = false;
+  bool _suggestionsUnlocked = false;
   late List<String> _hints;
 
   SearchContext get _searchContext => SearchContext(
@@ -76,6 +82,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   void initState() {
     super.initState();
     _hints = List<String>.from(widget.revealedHints);
+    _suggestionsUnlocked = widget.suggestionsUnlocked;
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
     _loadBrowseData();
@@ -84,13 +91,41 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   Future<void> _loadBrowseData() async {
     final repo = ref.read(searchRepositoryProvider);
     final recent = await repo.getRecentPicks();
-    final suggested = await repo.getSuggestedForCell(_searchContext);
     if (mounted) {
       setState(() {
         _recentPicks = recent;
-        _suggested = suggested;
         _browseLoading = false;
       });
+    }
+    if (_suggestionsUnlocked) {
+      await _loadSuggestions();
+    }
+  }
+
+  Future<void> _loadSuggestions() async {
+    final suggested =
+        await ref.read(searchRepositoryProvider).getSuggestedForCell(_searchContext);
+    if (mounted) {
+      setState(() => _suggested = suggested);
+    }
+  }
+
+  Future<void> _unlockSuggestions() async {
+    if (_unlockLoading || _suggestionsUnlocked) return;
+    setState(() => _unlockLoading = true);
+    final unlocked = await ref
+        .read(puzzleGameProvider(widget.params).notifier)
+        .unlockPlayerSuggestions();
+    if (mounted) {
+      setState(() {
+        _unlockLoading = false;
+        if (unlocked) {
+          _suggestionsUnlocked = true;
+        }
+      });
+      if (unlocked) {
+        await _loadSuggestions();
+      }
     }
   }
 
@@ -118,6 +153,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     final response = await ref.read(searchRepositoryProvider).search(
           query,
           context: _searchContext,
+          competitive: !_suggestionsUnlocked,
         );
     final latency = DateTime.now().difference(start).inMilliseconds;
     if (mounted) {
@@ -281,6 +317,38 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                         ),
                       ),
                     ),
+                  if (!_suggestionsUnlocked)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.md,
+                        0,
+                        AppSpacing.md,
+                        AppSpacing.sm,
+                      ),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.tonalIcon(
+                          onPressed: _unlockLoading ? null : _unlockSuggestions,
+                          icon: _unlockLoading
+                              ? SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.lime),
+                                )
+                              : Icon(
+                                  widget.isPremium
+                                      ? Icons.auto_awesome_rounded
+                                      : Icons.play_circle_outline_rounded,
+                                  color: colors.lime,
+                                ),
+                          label: Text(
+                            widget.isPremium
+                                ? l10n.unlockPlayerSuggestionsPremium
+                                : l10n.unlockPlayerSuggestionsAd,
+                          ),
+                        ),
+                      ),
+                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: TextField(
@@ -368,7 +436,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                 ),
                               ),
                             ],
-                            if (_suggested.isNotEmpty) ...[
+                            if (_suggestionsUnlocked && _suggested.isNotEmpty) ...[
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(
                                   AppSpacing.lg,
@@ -392,7 +460,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                 ),
                               ),
                             ],
-                            if (_recentPicks.isEmpty && _suggested.isEmpty)
+                            if (_recentPicks.isEmpty && !_suggestionsUnlocked)
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.xl,
@@ -407,7 +475,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                     ),
                                     const SizedBox(height: AppSpacing.lg),
                                     Text(
-                                      l10n.searchPlayer,
+                                      l10n.searchCompetitiveEmpty,
                                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                             color: colors.textSecondary,
                                           ),
@@ -424,6 +492,20 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                       textAlign: TextAlign.center,
                                     ),
                                   ],
+                                ),
+                              ),
+                            if (_recentPicks.isEmpty && _suggestionsUnlocked && _suggested.isEmpty)
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: AppSpacing.xl,
+                                  vertical: AppSpacing.lg,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    l10n.noPlayersFound,
+                                    style: TextStyle(color: colors.textSecondary),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
                               ),
                           ],
@@ -460,15 +542,26 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     );
   }
 
-  String _hintLabel(HintType type, AppLocalizations l10n) => switch (type) {
-        HintType.nationality => l10n.hintNationality,
-        HintType.position => l10n.hintPosition,
-        HintType.firstLetter => l10n.hintFirstLetter,
-        HintType.careerLeague => l10n.hintCareerLeague,
-        HintType.retiredStatus => l10n.hintRetiredStatus,
-        HintType.careerClub =>
-          widget.isPremium ? l10n.hintCareerClub : l10n.hintCareerClubTaste,
+  String _hintLabel(HintType type, AppLocalizations l10n) {
+    if (widget.isPremium) {
+      return switch (type) {
+        HintType.nationality => l10n.hintNationalityPremium,
+        HintType.position => l10n.hintPositionPremium,
+        HintType.firstLetter => l10n.hintFirstLetterPremium,
+        HintType.careerLeague => l10n.hintCareerLeaguePremium,
+        HintType.retiredStatus => l10n.hintRetiredStatusPremium,
+        HintType.careerClub => l10n.hintCareerClub,
       };
+    }
+    return switch (type) {
+      HintType.nationality => l10n.hintNationality,
+      HintType.position => l10n.hintPosition,
+      HintType.firstLetter => l10n.hintFirstLetter,
+      HintType.careerLeague => l10n.hintCareerLeague,
+      HintType.retiredStatus => l10n.hintRetiredStatus,
+      HintType.careerClub => l10n.hintCareerClubTaste,
+    };
+  }
 }
 
 class AnswerResultSheet extends StatelessWidget {

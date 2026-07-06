@@ -95,6 +95,7 @@ abstract interface class SearchRepository {
     String query, {
     int limit = 20,
     SearchContext? context,
+    bool competitive = false,
   });
   Future<List<Player>> getRecentPicks();
   Future<List<Player>> getPopularPicks({int limit = 10, SearchContext? context});
