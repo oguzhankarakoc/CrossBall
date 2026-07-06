@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
+import '../../auth/data/auth_remote_data_source.dart';
 import '../../auth/presentation/auth_providers.dart';
 import '../../premium/premium_service.dart';
 
@@ -28,19 +31,47 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
 
   Future<void> _purchase() async {
     setState(() => _loading = true);
+    final l10n = AppLocalizations.of(context)!;
     try {
       final profile = await ref.read(userProfileProvider.future);
       final success = await ref.read(premiumServiceProvider).purchasePremium(profile.userUuid);
+      if (!mounted) return;
       if (success) {
         ref.invalidate(userProfileProvider);
         ref.read(analyticsProvider).track('premium_conversion');
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(AppLocalizations.of(context)!.premiumActivated)),
-          );
-          Navigator.pop(context);
-        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.premiumActivated)),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              AppConfig.isIapEnabled
+                  ? l10n.premiumPurchaseUnavailable
+                  : l10n.premiumDevNotConfigured,
+            ),
+          ),
+        );
       }
+    } on SyncUserException catch (e) {
+      if (!mounted) return;
+      final message = switch (e.errorCode) {
+        'verification_failed' => l10n.premiumVerificationFailed,
+        'invalid_product' => l10n.premiumPurchaseUnavailable,
+        _ => l10n.premiumPurchaseFailed,
+      };
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      final message = e.code == 'storekit_duplicate_product_object'
+          ? l10n.premiumPurchasePending
+          : l10n.premiumPurchaseFailed;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }

@@ -826,6 +826,36 @@ abstract class AppLocalizations {
   /// **'Premium active'**
   String get premiumActive;
 
+  /// No description provided for @premiumPurchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not activate Premium. Please try again.'**
+  String get premiumPurchaseFailed;
+
+  /// No description provided for @premiumVerificationFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase could not be verified. Try Restore Purchases or contact support.'**
+  String get premiumVerificationFailed;
+
+  /// No description provided for @premiumPurchaseUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium is not available in the store yet. Check App Store setup or try again later.'**
+  String get premiumPurchaseUnavailable;
+
+  /// No description provided for @premiumDevNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Dev premium is not enabled on the server. Set IAP_SKIP_VERIFY=true in Supabase, or use IAP_ENABLED=true with StoreKit.'**
+  String get premiumDevNotConfigured;
+
+  /// No description provided for @premiumPurchasePending.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing your pending App Store purchase. Try again in a moment or tap Restore Purchases.'**
+  String get premiumPurchasePending;
+
   /// No description provided for @restorePurchases.
   ///
   /// In en, this message translates to:

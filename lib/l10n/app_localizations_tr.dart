@@ -408,6 +408,26 @@ class AppLocalizationsTr extends AppLocalizations {
   String get premiumActive => 'Premium aktif';
 
   @override
+  String get premiumPurchaseFailed =>
+      'Premium etkinleştirilemedi. Lütfen tekrar deneyin.';
+
+  @override
+  String get premiumVerificationFailed =>
+      'Satın alma doğrulanamadı. Satın Alımları Geri Yükle\'yi deneyin veya destekle iletişime geçin.';
+
+  @override
+  String get premiumPurchaseUnavailable =>
+      'Premium mağazada henüz kullanılamıyor. App Store kurulumunu kontrol edin.';
+
+  @override
+  String get premiumDevNotConfigured =>
+      'Sunucuda geliştirici premium kapalı. Supabase\'de IAP_SKIP_VERIFY=true ayarlayın veya IAP_ENABLED=true ile StoreKit kullanın.';
+
+  @override
+  String get premiumPurchasePending =>
+      'Bekleyen App Store satın alımı tamamlanıyor. Biraz bekleyip tekrar deneyin veya Satın Alımları Geri Yükle\'ye basın.';
+
+  @override
   String get restorePurchases => 'Satın alımları geri yükle';
 
   @override

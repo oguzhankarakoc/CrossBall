@@ -162,15 +162,18 @@ class PuzzleApiService {
     final uri = Uri.parse('$_baseUrl/functions/v1/daily-puzzle?status_only=true');
     cbDebug('Daily', 'HTTP GET rollout status', uri.toString());
 
+    final stopwatch = Stopwatch()..start();
     final response = await _http
         .get(uri, headers: _headers)
         .timeout(const Duration(seconds: 15));
+    stopwatch.stop();
 
     cbDebugHttpResponse(
       'Daily',
       'daily-puzzle status',
       uri: uri.toString(),
       statusCode: response.statusCode,
+      elapsedMs: stopwatch.elapsedMilliseconds,
       body: response.body,
     );
 

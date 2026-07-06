@@ -406,6 +406,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumActive => 'Premium active';
 
   @override
+  String get premiumPurchaseFailed =>
+      'Could not activate Premium. Please try again.';
+
+  @override
+  String get premiumVerificationFailed =>
+      'Purchase could not be verified. Try Restore Purchases or contact support.';
+
+  @override
+  String get premiumPurchaseUnavailable =>
+      'Premium is not available in the store yet. Check App Store setup or try again later.';
+
+  @override
+  String get premiumDevNotConfigured =>
+      'Dev premium is not enabled on the server. Set IAP_SKIP_VERIFY=true in Supabase, or use IAP_ENABLED=true with StoreKit.';
+
+  @override
+  String get premiumPurchasePending =>
+      'Finishing your pending App Store purchase. Try again in a moment or tap Restore Purchases.';
+
+  @override
   String get restorePurchases => 'Restore purchases';
 
   @override

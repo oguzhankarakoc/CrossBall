@@ -310,10 +310,12 @@ def cmd_ensure_daily() -> None:
                     (puzzle_id, 'pipeline'),
                 )
             except Exception as exc:
-                cur.execute(
-                    "SELECT public.fail_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
-                    (str(exc)[:500], 'pipeline'),
-                )
+                conn.rollback()
+                with conn.cursor() as fail_cur:
+                    fail_cur.execute(
+                        "SELECT public.fail_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
+                        (str(exc)[:500], 'pipeline'),
+                    )
                 conn.commit()
                 raise
         conn.commit()

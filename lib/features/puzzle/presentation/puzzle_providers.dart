@@ -338,7 +338,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         if (!_isTrainingMode &&
             e is PuzzleFetchException &&
             (e.isGenerationInProgress || e.isGenerationFailed)) {
-          ref.invalidate(dailyPuzzleRolloutProvider);
+          _ref.invalidate(dailyPuzzleRolloutProvider);
         }
       }
       final message = e is PuzzleFetchException

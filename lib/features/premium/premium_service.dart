@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
@@ -31,6 +32,7 @@ class PremiumServiceImpl implements PremiumService {
   bool _isPremium = false;
   String? _pendingUserUuid;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
+  Completer<bool>? _purchaseCompleter;
 
   @override
   bool get isPremiumActive => _isPremium;
@@ -50,7 +52,7 @@ class PremiumServiceImpl implements PremiumService {
     final available = await _iap.isAvailable();
     if (!available) return;
 
-    _subscription = _iap.purchaseStream.listen(
+    _subscription ??= _iap.purchaseStream.listen(
       _onPurchaseUpdate,
       onError: (Object e) => debugPrint('IAP stream error: $e'),
     );
@@ -60,31 +62,51 @@ class PremiumServiceImpl implements PremiumService {
     for (final purchase in purchases) {
       if (purchase.productID != _productId) continue;
 
-      if (purchase.status == PurchaseStatus.purchased ||
-          purchase.status == PurchaseStatus.restored) {
-        final userUuid = _pendingUserUuid;
-        if (userUuid != null) {
-          await _verifyWithBackend(
-            userUuid: userUuid,
-            verificationData: purchase.verificationData.serverVerificationData,
-            source: purchase.verificationData.source,
-          );
-        }
-        if (purchase.pendingCompletePurchase) {
-          await _iap.completePurchase(purchase);
-        }
-      } else if (purchase.status == PurchaseStatus.error) {
-        debugPrint('IAP error: ${purchase.error}');
+      switch (purchase.status) {
+        case PurchaseStatus.purchased:
+        case PurchaseStatus.restored:
+          final userUuid = _pendingUserUuid;
+          final verified = userUuid != null
+              ? await _verifyWithBackend(
+                  userUuid: userUuid,
+                  verificationData:
+                      purchase.verificationData.serverVerificationData,
+                  source: purchase.verificationData.source,
+                )
+              : false;
+          await _completeStorePurchase(purchase);
+          _resolvePurchaseFlow(verified);
+        case PurchaseStatus.error:
+        case PurchaseStatus.canceled:
+          debugPrint('IAP ${purchase.status}: ${purchase.error}');
+          await _completeStorePurchase(purchase);
+          _resolvePurchaseFlow(false);
+        case PurchaseStatus.pending:
+          break;
       }
     }
   }
 
-  Future<void> _verifyWithBackend({
+  Future<void> _completeStorePurchase(PurchaseDetails purchase) async {
+    if (purchase.pendingCompletePurchase) {
+      await _iap.completePurchase(purchase);
+    }
+  }
+
+  void _resolvePurchaseFlow(bool success) {
+    final completer = _purchaseCompleter;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete(success);
+    }
+    _purchaseCompleter = null;
+  }
+
+  Future<bool> _verifyWithBackend({
     required String userUuid,
     String? verificationData,
     String? source,
   }) async {
-    if (AppConfig.forceFreeTier) return;
+    if (AppConfig.forceFreeTier) return false;
 
     try {
       await _remote.verifyPremium(
@@ -96,8 +118,47 @@ class PremiumServiceImpl implements PremiumService {
       );
       _isPremium = true;
       _statusController.add(true);
+      return true;
     } on SyncUserException catch (e) {
       debugPrint('verify-premium failed: $e');
+      return false;
+    }
+  }
+
+  bool _isDuplicateProductError(PlatformException error) {
+    return error.code == 'storekit_duplicate_product_object';
+  }
+
+  Completer<bool> _beginPurchaseWait() {
+    final existing = _purchaseCompleter;
+    if (existing != null && !existing.isCompleted) {
+      existing.complete(false);
+    }
+    final completer = Completer<bool>();
+    _purchaseCompleter = completer;
+    return completer;
+  }
+
+  Future<bool> _waitForPurchaseResult(Completer<bool> completer) {
+    return completer.future.timeout(
+      const Duration(minutes: 3),
+      onTimeout: () {
+        _resolvePurchaseFlow(false);
+        return false;
+      },
+    );
+  }
+
+  Future<bool> _startStorePurchase(PurchaseParam param) async {
+    try {
+      return await _iap.buyNonConsumable(purchaseParam: param);
+    } on PlatformException catch (e) {
+      if (_isDuplicateProductError(e)) {
+        debugPrint('IAP pending transaction detected — restoring to finish it');
+        await _iap.restorePurchases();
+        return true;
+      }
+      rethrow;
     }
   }
 
@@ -107,15 +168,22 @@ class PremiumServiceImpl implements PremiumService {
 
     if (!AppConfig.isIapEnabled) {
       if (AppConfig.forceFreeTier) return false;
-      await _remote.verifyPremium(
-        userUuid: userUuid,
-        platform: 'dev',
-        productId: _productId,
-      );
-      _isPremium = true;
-      _statusController.add(true);
-      return true;
+      try {
+        await _remote.verifyPremium(
+          userUuid: userUuid,
+          platform: 'dev',
+          productId: _productId,
+        );
+        _isPremium = true;
+        _statusController.add(true);
+        return true;
+      } on SyncUserException catch (e) {
+        debugPrint('verify-premium (dev) failed: $e');
+        return false;
+      }
     }
+
+    await initialize();
 
     final available = await _iap.isAvailable();
     if (!available) return false;
@@ -125,17 +193,46 @@ class PremiumServiceImpl implements PremiumService {
       return false;
     }
 
+    final completer = _beginPurchaseWait();
     final product = response.productDetails.first;
     final param = PurchaseParam(productDetails: product);
-    return _iap.buyNonConsumable(purchaseParam: param);
+
+    try {
+      final started = await _startStorePurchase(param);
+      if (!started) {
+        _resolvePurchaseFlow(false);
+        return false;
+      }
+      return _waitForPurchaseResult(completer);
+    } on PlatformException catch (e) {
+      debugPrint('IAP purchase start failed: $e');
+      _resolvePurchaseFlow(false);
+      return false;
+    }
   }
 
   @override
   Future<bool> restorePurchases(String userUuid) async {
     _pendingUserUuid = userUuid;
     if (!AppConfig.isIapEnabled) return _isPremium;
+
+    await initialize();
+
+    final completer = _beginPurchaseWait();
     await _iap.restorePurchases();
-    return _isPremium;
+
+    try {
+      return await completer.future.timeout(
+        const Duration(seconds: 15),
+        onTimeout: () {
+          _purchaseCompleter = null;
+          return _isPremium;
+        },
+      );
+    } catch (_) {
+      _purchaseCompleter = null;
+      return _isPremium;
+    }
   }
 
   void dispose() {

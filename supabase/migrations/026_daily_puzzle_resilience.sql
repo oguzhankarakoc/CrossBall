@@ -224,7 +224,7 @@ BEGIN
   END LOOP;
 
   BEGIN
-    RETURN public.generate_daily_puzzle_fast(p_date, 3, 3, 200);
+    RETURN public.generate_daily_puzzle_fast(p_date, 3::SMALLINT, 3, 200);
   EXCEPTION
     WHEN unique_violation THEN
       SELECT id INTO v_id
@@ -240,7 +240,7 @@ BEGIN
   END;
 
   BEGIN
-    RETURN public.generate_daily_puzzle_fast(p_date, 3, 1, 300);
+    RETURN public.generate_daily_puzzle_fast(p_date, 3::SMALLINT, 1, 300);
   EXCEPTION
     WHEN unique_violation THEN
       SELECT id INTO v_id
