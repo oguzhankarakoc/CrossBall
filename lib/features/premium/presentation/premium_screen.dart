@@ -20,13 +20,23 @@ class PremiumScreen extends ConsumerStatefulWidget {
 
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   bool _loading = false;
+  String? _priceLabel;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(analyticsProvider).track('premium_viewed');
+      _loadStorePrice();
     });
+  }
+
+  Future<void> _loadStorePrice() async {
+    if (!AppConfig.isIapEnabled) return;
+    final product =
+        await ref.read(premiumServiceProvider).fetchPremiumProduct();
+    if (!mounted || product == null) return;
+    setState(() => _priceLabel = product.price);
   }
 
   Future<void> _purchase() async {
@@ -113,6 +123,16 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
                 if (isPremium)
                   Text(l10n.premiumActive, style: TextStyle(color: colors.accent))
                 else ...[
+                  if (_priceLabel != null) ...[
+                    Text(
+                      _priceLabel!,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            color: colors.accent,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(

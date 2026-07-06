@@ -1,0 +1,52 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [
+      {
+        "locale" : "en_US",
+        "policyText" : "",
+        "policyURL" : ""
+      }
+    ]
+  },
+  "identifier" : "CrossBallIAP",
+  "inAppPurchases" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : false,
+      "internalID" : "6740000001",
+      "localizations" : [
+        {
+          "description" : "Unlimited practice, 4×4 grid, no ads, timeline mode, and premium stats.",
+          "displayName" : "CrossBall Premium",
+          "locale" : "en_US"
+        },
+        {
+          "description" : "Sınırsız antrenman, 4×4 grid, reklamsız, timeline modu ve premium istatistikler.",
+          "displayName" : "CrossBall Premium",
+          "locale" : "tr"
+        }
+      ],
+      "productID" : "crossball_premium",
+      "referenceName" : "CrossBall Premium",
+      "type" : "NonConsumable"
+    }
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_failTransactionsEnabled" : false,
+    "_storeKitErrors" : [
+
+    ],
+    "_storeKitErrorsEnabled" : false
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 4,
+    "minor" : 0
+  }
+}

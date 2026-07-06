@@ -12,6 +12,7 @@ import '../auth/presentation/auth_providers.dart';
 
 abstract interface class PremiumService {
   Future<void> initialize();
+  Future<ProductDetails?> fetchPremiumProduct();
   Future<bool> purchasePremium(String userUuid);
   Future<bool> restorePurchases(String userUuid);
   bool get isPremiumActive;
@@ -56,6 +57,26 @@ class PremiumServiceImpl implements PremiumService {
       _onPurchaseUpdate,
       onError: (Object e) => debugPrint('IAP stream error: $e'),
     );
+
+    await _flushPendingTransactions();
+  }
+
+  String? _verificationPayload(PurchaseDetails purchase) {
+    final server = purchase.verificationData.serverVerificationData.trim();
+    if (server.isNotEmpty) return server;
+    final local = purchase.verificationData.localVerificationData.trim();
+    if (local.isNotEmpty) return local;
+    final purchaseId = purchase.purchaseID?.trim();
+    if (purchaseId != null && purchaseId.isNotEmpty) return purchaseId;
+    return null;
+  }
+
+  Future<void> _flushPendingTransactions() async {
+    try {
+      await _iap.restorePurchases();
+    } catch (e) {
+      debugPrint('IAP pending restore on init: $e');
+    }
   }
 
   Future<void> _onPurchaseUpdate(List<PurchaseDetails> purchases) async {
@@ -69,8 +90,7 @@ class PremiumServiceImpl implements PremiumService {
           final verified = userUuid != null
               ? await _verifyWithBackend(
                   userUuid: userUuid,
-                  verificationData:
-                      purchase.verificationData.serverVerificationData,
+                  verificationData: _verificationPayload(purchase),
                   source: purchase.verificationData.source,
                 )
               : false;
@@ -160,6 +180,17 @@ class PremiumServiceImpl implements PremiumService {
       }
       rethrow;
     }
+  }
+
+  Future<ProductDetails?> fetchPremiumProduct() async {
+    if (!AppConfig.isIapEnabled) return null;
+    await initialize();
+    final response = await _iap.queryProductDetails({_productId});
+    if (response.notFoundIDs.isNotEmpty || response.productDetails.isEmpty) {
+      debugPrint('IAP product not found: $_productId notFound=${response.notFoundIDs}');
+      return null;
+    }
+    return response.productDetails.first;
   }
 
   @override

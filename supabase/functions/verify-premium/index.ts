@@ -54,8 +54,7 @@ Deno.serve(async (req) => {
       verified = true
       verifyPlatform = 'dev'
     } else if (verificationData.length > 0) {
-      // Phase 0: persist receipt for manual / future automated validation.
-      // Production must set IAP_SKIP_VERIFY=false and wire Apple/Google APIs.
+      // Phase 0: persist receipt / transaction id for manual / future automated validation.
       const strictVerify = Deno.env.get('IAP_STRICT_VERIFY') === 'true'
       if (strictVerify) {
         return new Response(JSON.stringify({ error: 'receipt_validation_not_configured' }), {
