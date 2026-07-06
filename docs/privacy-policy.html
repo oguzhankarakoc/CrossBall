@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CrossBall Privacy Policy</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b1410;
+      --card: #142018;
+      --text: #e8f0ea;
+      --muted: #9bb0a3;
+      --accent: #7cfc4a;
+      --border: #2a4034;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+    }
+    h1, h2 { line-height: 1.25; }
+    h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
+    .meta { color: var(--muted); font-size: 0.95rem; margin-bottom: 2rem; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.35rem;
+      margin-bottom: 1rem;
+    }
+    h2 { font-size: 1.1rem; margin: 0 0 0.75rem; color: var(--accent); }
+    ul { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+    li { margin: 0.35rem 0; }
+    a { color: var(--accent); }
+    footer { margin-top: 2rem; color: var(--muted); font-size: 0.9rem; }
+    .contact { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>CrossBall Privacy Policy</h1>
+    <p class="meta">Last updated: July 6, 2026</p>
+
+    <section>
+      <h2>Overview</h2>
+      <p>
+        CrossBall (“we”, “our”, or “the app”) is a football puzzle game. This policy explains what
+        information the app collects, how we use it, and your choices. CrossBall is designed to work
+        without a traditional account: you receive an anonymous identifier on your device.
+      </p>
+    </section>
+
+    <section>
+      <h2>Information we collect</h2>
+      <ul>
+        <li><strong>Anonymous user ID</strong> — a random UUID stored on your device and synced to our backend (Supabase) to save progress, stats, premium status, and settings.</li>
+        <li><strong>Gameplay data</strong> — puzzle scores, streaks, missions, leaderboard entries, and in-app preferences (language, theme, notification opt-in).</li>
+        <li><strong>Device push token</strong> — only if you enable notifications and remote push is configured; used to deliver optional reminders.</li>
+        <li><strong>Purchase information</strong> — if you buy CrossBall Premium, Apple processes payment. We receive product and verification data to activate premium features on your anonymous profile.</li>
+        <li><strong>Analytics events</strong> — if enabled, anonymized usage events (e.g. puzzle completed, hints used) may be sent to PostHog (EU hosting when configured).</li>
+        <li><strong>Advertising data</strong> — if ads are enabled, Google AdMob may collect device/ad identifiers. On iOS we request App Tracking Transparency permission before personalized ads.</li>
+        <li><strong>Local notifications</strong> — daily streak reminders are scheduled on your device; no server push is required for this feature.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>How we use information</h2>
+      <ul>
+        <li>Provide and sync game features (daily puzzle, practice, challenges, stats).</li>
+        <li>Validate in-app purchases and restore premium access.</li>
+        <li>Improve stability and product quality through optional analytics.</li>
+        <li>Show optional ads and rewarded ads (e.g. hints, extra practice) when ads are enabled.</li>
+        <li>Send optional local or remote notifications you opt into.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Third-party services</h2>
+      <ul>
+        <li><strong>Supabase</strong> — database and API hosting for game data.</li>
+        <li><strong>Apple App Store</strong> — in-app purchase processing.</li>
+        <li><strong>Google AdMob</strong> — optional advertising (when enabled in production).</li>
+        <li><strong>PostHog</strong> — optional product analytics (when configured).</li>
+        <li><strong>API-Football</strong> — server-side football data only; no personal data is sent from your device to this provider.</li>
+      </ul>
+      <p>Each provider processes data under its own privacy policy.</p>
+    </section>
+
+    <section>
+      <h2>Tracking &amp; your choices</h2>
+      <ul>
+        <li>You can disable push reminders in app Settings.</li>
+        <li>On iOS, you can deny App Tracking Transparency; ads may be less personalized.</li>
+        <li>Premium removes ads between practice sessions and unlocks ad-free hint options where applicable.</li>
+        <li>Uninstalling the app removes local data; server-side anonymous progress may remain until deletion is requested.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Children</h2>
+      <p>
+        CrossBall is not directed at children under 13. We do not knowingly collect personal
+        information from children. If you believe a child has provided personal data, contact us
+        and we will delete it.
+      </p>
+    </section>
+
+    <section>
+      <h2>Data retention &amp; security</h2>
+      <p>
+        We retain anonymous gameplay data while you use the app. Data is transmitted over HTTPS.
+        No system is 100% secure; we use reasonable measures to protect information.
+      </p>
+    </section>
+
+    <section>
+      <h2>Your rights</h2>
+      <p>
+        Depending on your region, you may request access, correction, or deletion of data linked to
+        your anonymous ID. Contact us with your user UUID (shown in app debug/support if needed) or
+        device details to help locate your record.
+      </p>
+    </section>
+
+    <section>
+      <h2>Changes</h2>
+      <p>
+        We may update this policy. The “Last updated” date will change. Continued use of the app
+        after changes means you accept the updated policy.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <p class="contact">
+        <!-- Replace with your support email before App Store submission -->
+        Email: <a href="mailto:oguzhankarakoc@gmail.com">oguzhankarakoc@gmail.com</a>
+      </p>
+      <p>GitHub: <a href="https://github.com/oguzhankarakoc/CrossBall">oguzhankarakoc/CrossBall</a></p>
+    </section>
+
+    <footer>
+      <p>© 2026 CrossBall. This page is provided for App Store and user transparency requirements.</p>
+    </footer>
+  </main>
+</body>
+</html>
