@@ -59,13 +59,14 @@ class PuzzleGrid extends StatelessWidget {
           borderRadius: AppRadius.lgBorder,
           color: isDark
               ? colors.surfaceElevated.withValues(alpha: 0.9)
-              : colors.surface.withValues(alpha: 0.96),
+              : colors.surface,
           border: Border.all(
             color: isDark
                 ? Colors.white.withValues(alpha: 0.12)
-                : colors.primary.withValues(alpha: 0.2),
+                : colors.primary.withValues(alpha: 0.45),
+            width: isDark ? 1 : 1.5,
           ),
-          boxShadow: AppElevation.cardShadow(isDark),
+          boxShadow: AppElevation.cardShadow(isDark, tint: colors.primary),
         ),
         child: Padding(
           padding: const EdgeInsets.all(gridPadding),
@@ -249,7 +250,7 @@ class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixi
                         ? colors.lime.withValues(alpha: 0.12 + glow)
                         : isDark
                             ? Colors.white.withValues(alpha: 0.06)
-                            : colors.background,
+                            : colors.surfaceElevated,
                 borderRadius: AppRadius.lgBorder,
                 border: Border.all(
                   color: solved
@@ -258,7 +259,7 @@ class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixi
                           ? colors.lime.withValues(alpha: 0.85)
                           : isDark
                               ? Colors.white.withValues(alpha: 0.1)
-                              : colors.primary.withValues(alpha: 0.25),
+                              : colors.primary.withValues(alpha: 0.4),
                   width: widget.isSelected ? 2 : 1.5,
                   strokeAlign: BorderSide.strokeAlignInside,
                 ),
@@ -320,7 +321,9 @@ class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixi
                         )
                       : Icon(
                           Icons.add_rounded,
-                          color: colors.primary.withValues(alpha: 0.5),
+                          color: isDark
+                              ? colors.primary.withValues(alpha: 0.5)
+                              : colors.primary.withValues(alpha: 0.85),
                           size: 24,
                         ),
             ),

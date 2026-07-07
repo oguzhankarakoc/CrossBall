@@ -142,8 +142,11 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
           )
         : '';
 
-    final showGameplayBanner =
-        !game.isLoading && game.error == null && game.puzzle != null;
+    final isPremium = ref.watch(isPremiumProvider);
+    final showGameplayBanner = !isPremium &&
+        !game.isLoading &&
+        game.error == null &&
+        game.puzzle != null;
 
     return Scaffold(
       appBar: CrossBallAppBar(

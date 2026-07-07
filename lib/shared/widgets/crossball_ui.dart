@@ -116,40 +116,44 @@ class CrossBallAppBar extends StatelessWidget implements PreferredSizeWidget {
     final colors = context.cb;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return ClipRect(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: AppBar(
-          leading: leading,
-          title: Text(
-            title.toUpperCase(),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  letterSpacing: 1.2,
-                  fontWeight: FontWeight.w800,
-                  color: colors.primary,
-                  fontSize: 15,
-                ),
-          ),
-          actions: actions,
-          backgroundColor: colors.surface.withValues(alpha: isDark ? 0.72 : 0.88),
-          surfaceTintColor: Colors.transparent,
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(1),
-            child: Container(
-              height: 1,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    colors.primary.withValues(alpha: 0.35),
-                    colors.lime.withValues(alpha: 0.2),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
+    final appBar = AppBar(
+      leading: leading,
+      title: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              letterSpacing: 1.2,
+              fontWeight: FontWeight.w800,
+              color: colors.primary,
+              fontSize: 15,
+            ),
+      ),
+      actions: actions,
+      backgroundColor: colors.surface.withValues(alpha: isDark ? 0.72 : 0.96),
+      surfaceTintColor: Colors.transparent,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(
+          height: 1,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.transparent,
+                colors.primary.withValues(alpha: 0.35),
+                colors.lime.withValues(alpha: 0.2),
+                Colors.transparent,
+              ],
             ),
           ),
         ),
+      ),
+    );
+
+    if (!isDark) return appBar;
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+        child: appBar,
       ),
     );
   }

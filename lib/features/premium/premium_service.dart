@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 
 import '../../core/config/app_config.dart';
+import '../../core/debug/dev_premium_override.dart';
 import '../auth/data/auth_remote_data_source.dart';
 import '../auth/presentation/auth_providers.dart';
 
@@ -281,6 +282,19 @@ final premiumServiceProvider = Provider<PremiumService>((ref) {
 
 final isPremiumProvider = Provider<bool>((ref) {
   if (AppConfig.forceFreeTier) return false;
+
+  final devEnabled = ref.watch(devToolsEnabledProvider).valueOrNull;
+  if (devEnabled == true) {
+    switch (ref.watch(devPremiumModeProvider)) {
+      case DevPremiumMode.forceFree:
+        return false;
+      case DevPremiumMode.forcePremium:
+        return true;
+      case DevPremiumMode.auto:
+        break;
+    }
+  }
+
   final profile = ref.watch(userProfileProvider).valueOrNull;
   final iapPremium = ref.watch(_iapPremiumActiveProvider).valueOrNull ?? false;
   return profile?.isPremium == true || iapPremium;

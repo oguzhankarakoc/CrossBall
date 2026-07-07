@@ -53,38 +53,86 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
   @override
   void initState() {
     super.initState();
-    _loadAd();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _syncAd());
   }
 
-  void _loadAd() {
-    final ads = ref.read(adsServiceProvider);
-    _banner = ads.createBanner(widget.placement);
-    _banner?.load().then((_) {
-      if (mounted) {
-        setState(() => _loaded = true);
-        ref.read(analyticsProvider).track('ad_impression', properties: {
-          'placement': widget.placement.name,
-          'format': 'banner',
-        });
+  @override
+  void didUpdateWidget(covariant BannerAdWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _syncAd();
+  }
+
+  void _disposeBanner() {
+    _banner?.dispose();
+    _banner = null;
+    _loaded = false;
+  }
+
+  void _syncAd() {
+    final isPremium = ref.read(isPremiumProvider);
+    if (isPremium || !AppConfig.isAdMobEnabled) {
+      if (_banner != null) {
+        setState(_disposeBanner);
       }
+      return;
+    }
+
+    if (_banner != null) return;
+
+    final ads = ref.read(adsServiceProvider);
+    final banner = ads.createBanner(widget.placement);
+    if (banner == null) return;
+
+    _banner = banner;
+    banner.load().then((_) {
+      if (!mounted || _banner != banner) {
+        banner.dispose();
+        return;
+      }
+      setState(() => _loaded = true);
+      ref.read(analyticsProvider).track('ad_impression', properties: {
+        'placement': widget.placement.name,
+        'format': 'banner',
+      });
     });
   }
 
   @override
   void dispose() {
-    _banner?.dispose();
+    _disposeBanner();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(isPremiumProvider, (previous, next) {
+      if (previous == next) return;
+      if (next) {
+        setState(_disposeBanner);
+      } else {
+        _syncAd();
+      }
+    });
+
     if (!_loaded || _banner == null) {
-      return const SizedBox(height: 50, width: double.infinity);
+      return const SizedBox.shrink();
     }
-    return SizedBox(
-      width: _banner!.size.width.toDouble(),
-      height: _banner!.size.height.toDouble(),
-      child: AdWidget(ad: _banner!),
+
+    final width = _banner!.size.width.toDouble();
+    final height = _banner!.size.height.toDouble();
+
+    // iOS WKWebView can paint outside bounds and cover the puzzle — hard clip.
+    return ClipRect(
+      child: SizedBox(
+        width: width,
+        height: height,
+        child: OverflowBox(
+          maxWidth: width,
+          maxHeight: height,
+          alignment: Alignment.center,
+          child: AdWidget(ad: _banner!),
+        ),
+      ),
     );
   }
 }
