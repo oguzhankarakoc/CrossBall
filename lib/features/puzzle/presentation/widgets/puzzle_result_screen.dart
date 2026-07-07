@@ -235,7 +235,7 @@ class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
                   ],
                 ),
               ),
-              const BannerAdWidget(placement: AdPlacement.result),
+              const CrossBallBannerSlot(placement: AdPlacement.result),
             ],
           ),
         ),

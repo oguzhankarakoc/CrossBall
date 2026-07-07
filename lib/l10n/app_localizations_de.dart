@@ -320,7 +320,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get hintRetiredStatus => 'Werbung für Aktiv/Retired ansehen';
 
   @override
-  String get hintCareerClub => 'Premium: weiteren Verein aus Karriere';
+  String get hintCareerClub => 'Werbung für Vereinshinweis ansehen';
 
   @override
   String get hintNationalityPremium => 'Nationalitätshinweis anzeigen';
@@ -338,14 +338,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get hintRetiredStatusPremium => 'Aktiv/Retired anzeigen';
 
   @override
-  String get unlockPlayerSuggestionsAd => 'Werbung für Spielervorschläge ansehen';
-
-  @override
-  String get unlockPlayerSuggestionsPremium => 'Spielervorschläge anzeigen';
+  String get hintCareerClubPremium => 'Vereinshinweis anzeigen';
 
   @override
   String get searchCompetitiveEmpty =>
-      'Spielername eingeben — Vorschläge bleiben versteckt, bis du Hilfe freischaltest.';
+      'Spielername eingeben. Hilfe über den Hinweis-Button oben.';
 
   @override
   String get practiceLimitReached =>
@@ -656,6 +653,38 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get footballFactTitle => 'Wusstest du?';
+
+  @override
+  String get footballFactTip1 =>
+      'Seltene Namen an einer Vereins-Kreuzung bringen oft mehr Punkte — mutige Tipps schlagen offensichtliche.';
+
+  @override
+  String get footballFactTip2 =>
+      'Fußball-IQ heißt nicht nur Stars kennen, sondern versteckte Karrierepfade erinnern.';
+
+  @override
+  String get footballFactTip3 =>
+      'Vertrau deinem Gedächtnis, nicht den Logos. Ungewöhnliche Antworten öffnen die Rangliste.';
+
+  @override
+  String get footballFactTip4 =>
+      'Beliebte Namen geben selten leichte Punkte — die tiefen Tipps glänzen am meisten.';
+
+  @override
+  String get footballFactTip5 =>
+      'Jede Zelle birgt eine Fußballgeschichte. Der richtige Spieler ist die richtige Kreuzung.';
+
+  @override
+  String get footballFactTimeline1 =>
+      'Im Zeitstrahl-Modus ist das richtige Jahr der Schlüssel — lies die Karrierefolge genau.';
+
+  @override
+  String get footballFactTimeline2 =>
+      'Achte auf Transferjahre; eine Saison kann das ganze Raster ändern.';
+
+  @override
+  String get footballFactTimeline3 =>
+      'Chronologie belohnt schnelles Erinnern — ordne Vereinsstationen im Kopf.';
 
   @override
   String get tournament => 'Turnier';

@@ -160,7 +160,7 @@ class StatsScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            const BannerAdWidget(placement: AdPlacement.stats),
+            const CrossBallBannerSlot(placement: AdPlacement.stats),
           ],
         ),
       ),

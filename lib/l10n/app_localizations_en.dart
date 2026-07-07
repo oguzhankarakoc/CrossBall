@@ -319,7 +319,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintRetiredStatus => 'Watch ad for active/retired hint';
 
   @override
-  String get hintCareerClub => 'Premium: reveal another career club';
+  String get hintCareerClub => 'Watch ad for career club hint';
 
   @override
   String get hintNationalityPremium => 'Reveal nationality hint';
@@ -337,14 +337,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintRetiredStatusPremium => 'Reveal active/retired hint';
 
   @override
-  String get unlockPlayerSuggestionsAd => 'Watch ad to see player suggestions';
-
-  @override
-  String get unlockPlayerSuggestionsPremium => 'Show player suggestions';
+  String get hintCareerClubPremium => 'Reveal career club hint';
 
   @override
   String get searchCompetitiveEmpty =>
-      'Type a player name — suggestions stay hidden until you unlock help.';
+      'Type a player name to search. Use the hint button above for help.';
 
   @override
   String get practiceLimitReached =>
@@ -649,6 +646,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get footballFactTitle => 'Did you know?';
+
+  @override
+  String get footballFactTip1 =>
+      'The rarest names at a club crossing often score highest — bold picks beat obvious ones.';
+
+  @override
+  String get footballFactTip2 =>
+      'Football IQ is not just knowing stars; it is remembering the hidden career paths.';
+
+  @override
+  String get footballFactTip3 =>
+      'Trust your memory, not the badges. Uncommon answers unlock the leaderboard.';
+
+  @override
+  String get footballFactTip4 =>
+      'Popular names rarely give easy points — the deep cuts shine brightest.';
+
+  @override
+  String get footballFactTip5 =>
+      'Every cell hides a football story. The right player is the right intersection.';
+
+  @override
+  String get footballFactTimeline1 =>
+      'In timeline mode, the right year unlocks the right player — read the career order carefully.';
+
+  @override
+  String get footballFactTimeline2 =>
+      'Watch transfer years closely; one season can change the whole grid.';
+
+  @override
+  String get footballFactTimeline3 =>
+      'Chronology rewards quick recall — line up club spells in your head.';
 
   @override
   String get tournament => 'Tournament';

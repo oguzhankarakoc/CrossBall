@@ -6,7 +6,18 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 import '../../core/config/app_config.dart';
 
-enum AdPlacement { home, stats, result, interstitial, rewarded }
+enum AdPlacement {
+  /// Bottom banner above main tab bar (Home, Practice, Leaderboard, Settings).
+  shell,
+  /// Bottom banner while a puzzle grid is active.
+  gameplay,
+  /// Bottom banner on daily / training / challenge result screens.
+  result,
+  /// Bottom banner on the stats screen.
+  stats,
+  interstitial,
+  rewarded,
+}
 
 abstract interface class AdsService {
   Future<void> initialize();
@@ -62,7 +73,8 @@ class AdsServiceImpl implements AdsService {
   @override
   BannerAd? createBanner(AdPlacement placement) {
     if (!AppConfig.isAdMobEnabled || _isPremium) return null;
-    if (placement != AdPlacement.home &&
+    if (placement != AdPlacement.shell &&
+        placement != AdPlacement.gameplay &&
         placement != AdPlacement.stats &&
         placement != AdPlacement.result) {
       return null;

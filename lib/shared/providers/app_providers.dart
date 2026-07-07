@@ -98,13 +98,19 @@ final tournamentSnapshotProvider = FutureProvider<TournamentSnapshot>((ref) asyn
   return ref.watch(socialRepositoryProvider).getTournament(userUuid: profile.userUuid);
 });
 
-final footballFactProvider = FutureProvider.family<FootballFact, String>((ref, contextKey) async {
-  final localePref = ref.watch(localeProvider);
-  final localeCode = switch (localePref) {
+String resolveFootballFactLocale(AppLocale preference) {
+  final resolved = preference == AppLocale.system
+      ? AppLocaleX.deviceDefault()
+      : preference;
+  return switch (resolved) {
     AppLocale.tr => 'tr',
     AppLocale.de => 'de',
     _ => 'en',
   };
+}
+
+final footballFactProvider = FutureProvider.family<FootballFact, String>((ref, contextKey) async {
+  final localeCode = resolveFootballFactLocale(ref.watch(localeProvider));
   return ref.watch(socialRepositoryProvider).getFootballFact(
         locale: localeCode,
         context: contextKey,

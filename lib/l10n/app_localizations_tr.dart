@@ -320,7 +320,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get hintRetiredStatus => 'Aktif/emekli ipucu için reklam izle';
 
   @override
-  String get hintCareerClub => 'Premium: kariyerden bir kulüp daha';
+  String get hintCareerClub => 'Kulüp ipucu için reklam izle';
 
   @override
   String get hintNationalityPremium => 'Milliyet ipucunu göster';
@@ -338,14 +338,11 @@ class AppLocalizationsTr extends AppLocalizations {
   String get hintRetiredStatusPremium => 'Aktif/emekli ipucunu göster';
 
   @override
-  String get unlockPlayerSuggestionsAd => 'Oyuncu önerileri için reklam izle';
-
-  @override
-  String get unlockPlayerSuggestionsPremium => 'Oyuncu önerilerini göster';
+  String get hintCareerClubPremium => 'Kulüp ipucunu göster';
 
   @override
   String get searchCompetitiveEmpty =>
-      'Oyuncu adı yaz — öneriler yardım açılana kadar gizli kalır.';
+      'Oyuncu adını yazarak ara. İpuçları için yukarıdaki butonu kullan.';
 
   @override
   String get practiceLimitReached =>
@@ -651,6 +648,38 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get footballFactTitle => 'Biliyor muydun?';
+
+  @override
+  String get footballFactTip1 =>
+      'İki kulübün kesişiminde az bilinen isimler çoğu zaman daha yüksek puan getirir — cesur tahminler seni öne taşır.';
+
+  @override
+  String get footballFactTip2 =>
+      'Futbol IQ sadece yıldızları bilmek değil; gizli kariyer patikalarını hatırlamaktır.';
+
+  @override
+  String get footballFactTip3 =>
+      'Kulüp rozetlerine değil, hafızana güven. Nadir cevaplar liderlik tablosunun anahtarıdır.';
+
+  @override
+  String get footballFactTip4 =>
+      'Popüler isimler kolay puan vermez — derinlerdeki isimler parlar.';
+
+  @override
+  String get footballFactTip5 =>
+      'Her hücre bir futbol hikâyesi saklar. Doğru oyuncu, doğru kesişim noktasıdır.';
+
+  @override
+  String get footballFactTimeline1 =>
+      'Zaman çizelgesinde doğru yıl, doğru oyuncuyu bulmanın anahtarıdır — kariyer sırasını iyi oku.';
+
+  @override
+  String get footballFactTimeline2 =>
+      'Transfer yıllarına dikkat et; bir sezon farkı bazen tüm tabloyu değiştirir.';
+
+  @override
+  String get footballFactTimeline3 =>
+      'Kronoloji modunda hızlı hatırlama kazanır — kulüp dönemlerini zihninde sırala.';
 
   @override
   String get tournament => 'Turnuva';

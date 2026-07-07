@@ -51,7 +51,6 @@ class PuzzleGameState extends Equatable {
     this.error,
     this.cellStartTime,
     this.hintsRevealed = const {},
-    this.suggestionsUnlockedByCell = const {},
     this.challengeId,
     this.challengeCreatorScore,
     this.challengeResult,
@@ -72,7 +71,6 @@ class PuzzleGameState extends Equatable {
   final String? error;
   final DateTime? cellStartTime;
   final Map<String, List<String>> hintsRevealed;
-  final Map<String, bool> suggestionsUnlockedByCell;
   final String? challengeId;
   final double? challengeCreatorScore;
   final ChallengeResult? challengeResult;
@@ -101,7 +99,6 @@ class PuzzleGameState extends Equatable {
     String? error,
     DateTime? cellStartTime,
     Map<String, List<String>>? hintsRevealed,
-    Map<String, bool>? suggestionsUnlockedByCell,
     String? challengeId,
     double? challengeCreatorScore,
     ChallengeResult? challengeResult,
@@ -123,8 +120,6 @@ class PuzzleGameState extends Equatable {
         error: error,
         cellStartTime: cellStartTime ?? this.cellStartTime,
         hintsRevealed: hintsRevealed ?? this.hintsRevealed,
-        suggestionsUnlockedByCell:
-            suggestionsUnlockedByCell ?? this.suggestionsUnlockedByCell,
         challengeId: challengeId ?? this.challengeId,
         challengeCreatorScore: challengeCreatorScore ?? this.challengeCreatorScore,
         challengeResult: challengeResult ?? this.challengeResult,
@@ -146,7 +141,6 @@ class PuzzleGameState extends Equatable {
         isLoading,
         error,
         hintsRevealed,
-        suggestionsUnlockedByCell,
         challengeResult,
       ];
 }
@@ -502,33 +496,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     );
   }
 
-  Future<bool> unlockPlayerSuggestions() async {
-    final row = state.selectedRow;
-    final col = state.selectedCol;
-    if (row == null || col == null) return false;
-
-    final key = '${row}_$col';
-    if (state.suggestionsUnlockedByCell[key] == true) return true;
-
-    final isPremium = _ref.read(isPremiumProvider);
-    if (!isPremium) {
-      final rewarded = await _ref.read(adsServiceProvider).showRewarded();
-      if (!rewarded) return false;
-    }
-
-    final unlocked = Map<String, bool>.from(state.suggestionsUnlockedByCell);
-    unlocked[key] = true;
-    state = state.copyWith(
-      suggestionsUnlockedByCell: unlocked,
-      hintsUsed: state.hintsUsed + 1,
-    );
-    _ref.read(analyticsProvider).track('player_suggestions_unlocked', properties: {
-      'ad_watched': !isPremium,
-      'cell': key,
-    });
-    return true;
-  }
-
   Future<HintResult?> requestHint(HintType hintType) async {
     final puzzle = state.puzzle;
     final row = state.selectedRow;
@@ -542,13 +509,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final profile = await _ref.read(userProfileProvider.future);
 
     String? adToken;
-    if (hintType == HintType.careerClub) {
-      if (!isPremium) {
-        final tasteAvailable =
-            await _ref.read(careerHintTasteAvailableProvider.future);
-        if (!tasteAvailable) return null;
-      }
-    } else if (!isPremium) {
+    if (!isPremium) {
       final rewarded = await _ref.read(adsServiceProvider).showRewarded();
       if (!rewarded) return null;
       adToken = _uuid.v4();
@@ -578,9 +539,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     );
 
     addHint(key, result.hintValue);
-    if (hintType == HintType.careerClub && !isPremium) {
-      _ref.invalidate(careerHintTasteAvailableProvider);
-    }
     _ref.read(analyticsProvider).track('hint_used', properties: {
       'hint_type': hintType.name,
       'ad_watched': !isPremium,

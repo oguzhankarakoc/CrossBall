@@ -70,37 +70,7 @@ Deno.serve(async (req) => {
     const adToken = body.ad_token ? String(body.ad_token) : ''
     const skipAdVerify = Deno.env.get('HINT_SKIP_AD') === 'true'
 
-    if (type === 'career_club') {
-      if (!userUuid) {
-        return new Response(JSON.stringify({ error: 'premium_required' }), {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-      const { data: isPremium } = await supabase.rpc('user_is_premium', {
-        p_user_uuid: userUuid,
-      })
-      if (!isPremium) {
-        const { data: available } = await supabase.rpc('career_hint_taste_available', {
-          p_user_uuid: userUuid,
-        })
-        if (available !== true) {
-          return new Response(JSON.stringify({ error: 'premium_required' }), {
-            status: 403,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          })
-        }
-        const { data: consumed } = await supabase.rpc('consume_career_hint_taste', {
-          p_user_uuid: userUuid,
-        })
-        if (consumed !== true) {
-          return new Response(JSON.stringify({ error: 'hint_taste_used' }), {
-            status: 409,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          })
-        }
-      }
-    } else if (!skipAdVerify) {
+    if (!skipAdVerify) {
       const { data: isPremium } = userUuid
         ? await supabase.rpc('user_is_premium', { p_user_uuid: userUuid })
         : { data: false }

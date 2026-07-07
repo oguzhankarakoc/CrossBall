@@ -22,7 +22,6 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
     required this.rowClub,
     required this.colClub,
     required this.cellKey,
-    this.suggestionsUnlocked = false,
     this.revealedHints = const [],
     this.isPremium = false,
   });
@@ -31,7 +30,6 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
   final Club rowClub;
   final Club colClub;
   final String cellKey;
-  final bool suggestionsUnlocked;
   final List<String> revealedHints;
   final bool isPremium;
 
@@ -45,12 +43,9 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   Timer? _debounce;
   List<Player> _results = [];
   List<Player> _recentPicks = [];
-  List<Player> _suggested = [];
   bool _loading = false;
   bool _browseLoading = true;
   bool _hintLoading = false;
-  bool _unlockLoading = false;
-  bool _suggestionsUnlocked = false;
   late List<String> _hints;
 
   SearchContext get _searchContext => SearchContext(
@@ -82,7 +77,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   void initState() {
     super.initState();
     _hints = List<String>.from(widget.revealedHints);
-    _suggestionsUnlocked = widget.suggestionsUnlocked;
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
     _loadBrowseData();
@@ -96,36 +90,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         _recentPicks = recent;
         _browseLoading = false;
       });
-    }
-    if (_suggestionsUnlocked) {
-      await _loadSuggestions();
-    }
-  }
-
-  Future<void> _loadSuggestions() async {
-    final suggested =
-        await ref.read(searchRepositoryProvider).getSuggestedForCell(_searchContext);
-    if (mounted) {
-      setState(() => _suggested = suggested);
-    }
-  }
-
-  Future<void> _unlockSuggestions() async {
-    if (_unlockLoading || _suggestionsUnlocked) return;
-    setState(() => _unlockLoading = true);
-    final unlocked = await ref
-        .read(puzzleGameProvider(widget.params).notifier)
-        .unlockPlayerSuggestions();
-    if (mounted) {
-      setState(() {
-        _unlockLoading = false;
-        if (unlocked) {
-          _suggestionsUnlocked = true;
-        }
-      });
-      if (unlocked) {
-        await _loadSuggestions();
-      }
     }
   }
 
@@ -153,7 +117,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     final response = await ref.read(searchRepositoryProvider).search(
           query,
           context: _searchContext,
-          competitive: !_suggestionsUnlocked,
+          competitive: true,
         );
     final latency = DateTime.now().difference(start).inMilliseconds;
     if (mounted) {
@@ -171,13 +135,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
 
   HintType? get _nextHintType {
     if (_hints.length >= _hintSequence.length) return null;
-    final next = _hintSequence[_hints.length];
-    if (next == HintType.careerClub && !widget.isPremium) {
-      final tasteAvailable =
-          ref.watch(careerHintTasteAvailableProvider).valueOrNull ?? false;
-      if (!tasteAvailable) return null;
-    }
-    return next;
+    return _hintSequence[_hints.length];
   }
 
   Future<void> _requestHint() async {
@@ -317,38 +275,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                         ),
                       ),
                     ),
-                  if (!_suggestionsUnlocked)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.md,
-                        0,
-                        AppSpacing.md,
-                        AppSpacing.sm,
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.tonalIcon(
-                          onPressed: _unlockLoading ? null : _unlockSuggestions,
-                          icon: _unlockLoading
-                              ? SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: colors.lime),
-                                )
-                              : Icon(
-                                  widget.isPremium
-                                      ? Icons.auto_awesome_rounded
-                                      : Icons.play_circle_outline_rounded,
-                                  color: colors.lime,
-                                ),
-                          label: Text(
-                            widget.isPremium
-                                ? l10n.unlockPlayerSuggestionsPremium
-                                : l10n.unlockPlayerSuggestionsAd,
-                          ),
-                        ),
-                      ),
-                    ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                     child: TextField(
@@ -436,31 +362,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                 ),
                               ),
                             ],
-                            if (_suggestionsUnlocked && _suggested.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  AppSpacing.lg,
-                                  AppSpacing.md,
-                                  AppSpacing.lg,
-                                  AppSpacing.xs,
-                                ),
-                                child: Text(
-                                  l10n.suggestedForCell,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                ),
-                              ),
-                              ..._suggested.map(
-                                (player) => PlayerSearchCard(
-                                  player: player,
-                                  highlightClubs: _highlightClubs,
-                                  showRelevanceBadge: true,
-                                  onTap: () => Navigator.pop(context, player),
-                                ),
-                              ),
-                            ],
-                            if (_recentPicks.isEmpty && !_suggestionsUnlocked)
+                            if (_recentPicks.isEmpty)
                               Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.xl,
@@ -492,20 +394,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                       textAlign: TextAlign.center,
                                     ),
                                   ],
-                                ),
-                              ),
-                            if (_recentPicks.isEmpty && _suggestionsUnlocked && _suggested.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.xl,
-                                  vertical: AppSpacing.lg,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    l10n.noPlayersFound,
-                                    style: TextStyle(color: colors.textSecondary),
-                                    textAlign: TextAlign.center,
-                                  ),
                                 ),
                               ),
                           ],
@@ -543,24 +431,25 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   }
 
   String _hintLabel(HintType type, AppLocalizations l10n) {
-    if (widget.isPremium) {
-      return switch (type) {
-        HintType.nationality => l10n.hintNationalityPremium,
-        HintType.position => l10n.hintPositionPremium,
-        HintType.firstLetter => l10n.hintFirstLetterPremium,
-        HintType.careerLeague => l10n.hintCareerLeaguePremium,
-        HintType.retiredStatus => l10n.hintRetiredStatusPremium,
-        HintType.careerClub => l10n.hintCareerClub,
-      };
-    }
-    return switch (type) {
-      HintType.nationality => l10n.hintNationality,
-      HintType.position => l10n.hintPosition,
-      HintType.firstLetter => l10n.hintFirstLetter,
-      HintType.careerLeague => l10n.hintCareerLeague,
-      HintType.retiredStatus => l10n.hintRetiredStatus,
-      HintType.careerClub => l10n.hintCareerClubTaste,
-    };
+    final progress = '${_hints.length + 1}/${_hintSequence.length}';
+    final base = widget.isPremium
+        ? switch (type) {
+            HintType.nationality => l10n.hintNationalityPremium,
+            HintType.position => l10n.hintPositionPremium,
+            HintType.firstLetter => l10n.hintFirstLetterPremium,
+            HintType.careerLeague => l10n.hintCareerLeaguePremium,
+            HintType.retiredStatus => l10n.hintRetiredStatusPremium,
+            HintType.careerClub => l10n.hintCareerClubPremium,
+          }
+        : switch (type) {
+            HintType.nationality => l10n.hintNationality,
+            HintType.position => l10n.hintPosition,
+            HintType.firstLetter => l10n.hintFirstLetter,
+            HintType.careerLeague => l10n.hintCareerLeague,
+            HintType.retiredStatus => l10n.hintRetiredStatus,
+            HintType.careerClub => l10n.hintCareerClub,
+          };
+    return '$base ($progress)';
   }
 }
 

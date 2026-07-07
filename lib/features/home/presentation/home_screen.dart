@@ -13,6 +13,7 @@ import '../../../features/liveops/domain/liveops_event_extensions.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../features/social/presentation/activity_feed_card.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
+import '../../../features/social/presentation/football_fact_copy.dart';
 import '../../../features/liveops/presentation/widgets/liveops_widgets.dart';
 import '../../../features/puzzle/presentation/daily_puzzle_rollout_provider.dart';
 import '../../../l10n/app_localizations.dart';
@@ -36,7 +37,13 @@ class HomeScreen extends ConsumerWidget {
     final showTournament = ref.watch(featureFlagProvider('tournament_mode'));
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
     final activityFeed = ref.watch(activityFeedProvider).valueOrNull ?? const [];
-    final footballFact = showAiFacts ? ref.watch(footballFactProvider('intersection')).valueOrNull : null;
+    final localFact = FootballFactCopy.pickTip(l10n);
+    final footballFactText = showAiFacts
+        ? ref.watch(footballFactProvider('intersection')).maybeWhen(
+            data: (fact) => fact.isValid ? fact.text : localFact,
+            orElse: () => localFact,
+          )
+        : localFact;
     final progressionAsync = ref.watch(playerProgressionProvider);
     final progression = progressionAsync.valueOrNull;
     final missions = ref.watch(playerMissionsProvider).valueOrNull ?? const [];
@@ -140,8 +147,7 @@ class HomeScreen extends ConsumerWidget {
                       },
                     ),
                     if (season != null && season.isActive) SeasonCard(season: season),
-                    if (showAiFacts && footballFact != null && footballFact.isValid)
-                      FootballFactBanner(fact: footballFact),
+                    FootballFactBanner(text: footballFactText),
                     if (showActivityFeed && activityFeed.isNotEmpty)
                       ActivityFeedCard(events: activityFeed),
                     if (missions.isNotEmpty) ...[

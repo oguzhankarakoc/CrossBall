@@ -679,31 +679,49 @@ abstract class AppLocalizations {
   /// No description provided for @hintCareerClub.
   ///
   /// In en, this message translates to:
-  /// **'Premium: reveal another career club'**
+  /// **'Watch ad for career club hint'**
   String get hintCareerClub;
 
   /// No description provided for @hintNationalityPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal nationality hint'**
   String get hintNationalityPremium;
 
   /// No description provided for @hintPositionPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal position hint'**
   String get hintPositionPremium;
 
   /// No description provided for @hintFirstLetterPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal first letter hint'**
   String get hintFirstLetterPremium;
 
   /// No description provided for @hintCareerLeaguePremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal career league hint'**
   String get hintCareerLeaguePremium;
 
   /// No description provided for @hintRetiredStatusPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal active/retired hint'**
   String get hintRetiredStatusPremium;
 
-  /// No description provided for @unlockPlayerSuggestionsAd.
-  String get unlockPlayerSuggestionsAd;
-
-  /// No description provided for @unlockPlayerSuggestionsPremium.
-  String get unlockPlayerSuggestionsPremium;
+  /// No description provided for @hintCareerClubPremium.
+  ///
+  /// In en, this message translates to:
+  /// **'Reveal career club hint'**
+  String get hintCareerClubPremium;
 
   /// No description provided for @searchCompetitiveEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Type a player name to search. Use the hint button above for help.'**
   String get searchCompetitiveEmpty;
 
   /// No description provided for @practiceLimitReached.
@@ -1227,6 +1245,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Did you know?'**
   String get footballFactTitle;
+
+  /// No description provided for @footballFactTip1.
+  ///
+  /// In en, this message translates to:
+  /// **'The rarest names at a club crossing often score highest — bold picks beat obvious ones.'**
+  String get footballFactTip1;
+
+  /// No description provided for @footballFactTip2.
+  ///
+  /// In en, this message translates to:
+  /// **'Football IQ is not just knowing stars; it is remembering the hidden career paths.'**
+  String get footballFactTip2;
+
+  /// No description provided for @footballFactTip3.
+  ///
+  /// In en, this message translates to:
+  /// **'Trust your memory, not the badges. Uncommon answers unlock the leaderboard.'**
+  String get footballFactTip3;
+
+  /// No description provided for @footballFactTip4.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular names rarely give easy points — the deep cuts shine brightest.'**
+  String get footballFactTip4;
+
+  /// No description provided for @footballFactTip5.
+  ///
+  /// In en, this message translates to:
+  /// **'Every cell hides a football story. The right player is the right intersection.'**
+  String get footballFactTip5;
+
+  /// No description provided for @footballFactTimeline1.
+  ///
+  /// In en, this message translates to:
+  /// **'In timeline mode, the right year unlocks the right player — read the career order carefully.'**
+  String get footballFactTimeline1;
+
+  /// No description provided for @footballFactTimeline2.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch transfer years closely; one season can change the whole grid.'**
+  String get footballFactTimeline2;
+
+  /// No description provided for @footballFactTimeline3.
+  ///
+  /// In en, this message translates to:
+  /// **'Chronology rewards quick recall — line up club spells in your head.'**
+  String get footballFactTimeline3;
 
   /// No description provided for @tournament.
   ///

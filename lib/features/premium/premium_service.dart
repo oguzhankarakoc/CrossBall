@@ -182,6 +182,7 @@ class PremiumServiceImpl implements PremiumService {
     }
   }
 
+  @override
   Future<ProductDetails?> fetchPremiumProduct() async {
     if (!AppConfig.isIapEnabled) return null;
     await initialize();

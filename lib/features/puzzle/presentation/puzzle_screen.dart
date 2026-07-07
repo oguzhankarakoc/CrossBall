@@ -15,9 +15,11 @@ import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../../shared/widgets/mythic_celebration_overlay.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
+import '../../../features/social/presentation/football_fact_copy.dart';
 import '../../../features/social/presentation/career_timeline_sheet.dart';
 import '../../challenge/domain/challenge.dart';
 import '../../../features/ads/ads_service.dart';
+import '../../../features/ads/presentation/banner_ad_widget.dart';
 import '../../../features/auth/presentation/auth_providers.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../features/premium/premium_service.dart';
@@ -131,9 +133,17 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     final practiceSession = _isTrainingMode ? ref.watch(practiceSessionProvider) : null;
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
     final factContext = widget.params.mode == PuzzleMode.timeline ? 'timeline' : 'intersection';
-    final footballFact = showAiFacts
-        ? ref.watch(footballFactProvider(factContext)).valueOrNull
-        : null;
+    final footballFactText = showAiFacts
+        ? ref.watch(footballFactProvider(factContext)).maybeWhen(
+            data: (fact) => fact.isValid
+                ? fact.text
+                : FootballFactCopy.pickTip(l10n, context: factContext),
+            orElse: () => FootballFactCopy.pickTip(l10n, context: factContext),
+          )
+        : '';
+
+    final showGameplayBanner =
+        !game.isLoading && game.error == null && game.puzzle != null;
 
     return Scaffold(
       appBar: CrossBallAppBar(
@@ -293,7 +303,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                           ),
                                     ),
                                   ),
-                                if (footballFact != null && footballFact.isValid)
+                                if (showAiFacts && footballFactText.isNotEmpty)
                                   Padding(
                                     padding: const EdgeInsets.fromLTRB(
                                       AppSpacing.md,
@@ -301,7 +311,10 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                       AppSpacing.md,
                                       0,
                                     ),
-                                    child: FootballFactBanner(fact: footballFact),
+                                    child: FootballFactBanner(
+                                      text: footballFactText,
+                                      compact: true,
+                                    ),
                                   ),
                                 PuzzleTimer(startedAt: game.startedAt ?? DateTime.now()),
                                 Expanded(
@@ -342,6 +355,9 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                             ),
                           ),
       ),
+      bottomNavigationBar: showGameplayBanner
+          ? const CrossBallBannerSlot(placement: AdPlacement.gameplay)
+          : null,
     );
   }
 
@@ -522,7 +538,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         rowClub: puzzle.rowClubAt(row),
         colClub: puzzle.colClubAt(col),
         cellKey: cellKey,
-        suggestionsUnlocked: game.suggestionsUnlockedByCell[cellKey] ?? false,
         revealedHints: game.hintsRevealed[cellKey] ?? const [],
         isPremium: ref.read(isPremiumProvider),
       ),
@@ -626,6 +641,7 @@ class ChallengeResultScreen extends StatelessWidget {
           ),
         ),
       ),
+      bottomNavigationBar: const CrossBallBannerSlot(placement: AdPlacement.result),
     );
   }
 }

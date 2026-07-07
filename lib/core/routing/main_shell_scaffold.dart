@@ -33,7 +33,7 @@ class MainShellScaffold extends ConsumerWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const BannerAdWidget(placement: AdPlacement.home),
+          const CrossBallBannerSlot(placement: AdPlacement.shell),
           CrossBallQuickNav(
             currentIndex: navigationShell.currentIndex,
             onTap: _onTap,
