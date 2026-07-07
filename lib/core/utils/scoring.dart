@@ -14,19 +14,33 @@ abstract final class ScoringEngine {
     required int responseTimeMs,
     required int mistakesOnCell,
   }) {
-    final rarity = RarityCalculator.rarityScore(usagePercentage);
+    final rarityComponent =
+        RarityCalculator.rarityScore(usagePercentage) * GameConstants.rarityScoreMultiplier;
+    final core = GameConstants.baseCellScore + rarityComponent;
     final bonus = speedBonus(responseTimeMs);
     final penalty = mistakesOnCell * GameConstants.mistakePenalty;
-    return (rarity * bonus - penalty).clamp(0, double.infinity);
+    return (core * bonus - penalty).clamp(
+      GameConstants.baseCellScore * 0.5,
+      double.infinity,
+    );
   }
 
   static double calculateSessionScore({
     required List<double> cellScores,
     required int hintsUsed,
+    int completionBonus = 0,
   }) {
     final base = cellScores.fold<double>(0, (a, b) => a + b);
-    return (base - hintsUsed * GameConstants.hintScorePenalty)
+    return (base + completionBonus - hintsUsed * GameConstants.hintScorePenalty)
         .clamp(0, double.infinity);
+  }
+
+  static int completionBonusForMode(String mode, {required bool fullGrid}) {
+    if (!fullGrid) return 0;
+    return switch (mode) {
+      'daily' || 'challenge' => GameConstants.dailyCompletionBonus,
+      _ => 0,
+    };
   }
 
   static double challengeScore({

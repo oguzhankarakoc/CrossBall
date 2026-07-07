@@ -2,15 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/session_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
-import '../../auth/presentation/auth_providers.dart';
+import '../challenge_share_helper.dart';
 
 class ChallengeScreen extends ConsumerStatefulWidget {
   const ChallengeScreen({super.key, this.challengeId});
@@ -41,29 +39,19 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
     super.dispose();
   }
 
-  Future<void> _createChallenge() async {
-    final lastSession = ref.read(lastCompletedSessionProvider);
-    if (lastSession == null) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.challengeNeedSession)),
-      );
-      return;
-    }
-
+  Future<void> _createAndShareChallenge() async {
     setState(() => _loading = true);
     try {
-      final profile = await ref.read(userProfileProvider.future);
-      final challenge = await ref.read(challengeRepositoryProvider).createChallenge(
-            puzzleId: lastSession.puzzleId,
-            sessionId: lastSession.sessionId,
-            creatorScore: lastSession.score,
-            userUuid: profile.userUuid,
-          );
-      ref.read(analyticsProvider).track('challenge_created', properties: {
-        'challenge_id': challenge.id,
-      });
-      setState(() => _createdLink = challenge.shareUrl);
+      final l10n = AppLocalizations.of(context)!;
+      final challenge = await createAndShareChallenge(
+        ref: ref,
+        context: context,
+        needSessionMessage: l10n.challengeNeedSession,
+        shareFailedMessage: l10n.challengeShareFailed,
+      );
+      if (challenge != null && mounted) {
+        setState(() => _createdLink = challenge.shareUrl);
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -111,14 +99,14 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                       FilledButton(
-                        onPressed: hasSession && !_loading ? _createChallenge : null,
+                        onPressed: hasSession && !_loading ? _createAndShareChallenge : null,
                         child: _loading
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               )
-                            : Text(l10n.createChallenge),
+                            : Text(l10n.createAndShareChallenge),
                       ),
                       if (_createdLink != null) ...[
                         const SizedBox(height: AppSpacing.md),
@@ -138,29 +126,14 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                           ),
                         ),
                         const SizedBox(height: AppSpacing.sm),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () {
-                                  Clipboard.setData(ClipboardData(text: _createdLink!));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text(l10n.copied)),
-                                  );
-                                },
-                                child: Text(l10n.copyLink),
-                              ),
-                            ),
-                            const SizedBox(width: AppSpacing.sm),
-                            Expanded(
-                              child: FilledButton(
-                                onPressed: () => SharePlus.instance.share(
-                                  ShareParams(text: _createdLink!),
-                                ),
-                                child: Text(l10n.share),
-                              ),
-                            ),
-                          ],
+                        OutlinedButton(
+                          onPressed: () {
+                            Clipboard.setData(ClipboardData(text: _createdLink!));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.copied)),
+                            );
+                          },
+                          child: Text(l10n.copyLink),
                         ),
                       ],
                     ],

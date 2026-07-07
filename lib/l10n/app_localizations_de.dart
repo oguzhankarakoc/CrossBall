@@ -74,6 +74,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dailyPuzzleRefreshBadge => 'Aktualisierung';
 
   @override
+  String get dailyAlreadyCompletedTitle => 'Tagesrätsel abgeschlossen';
+
+  @override
+  String get dailyAlreadyCompletedBody =>
+      'Du hast das heutige Tagesrätsel bereits gelöst. Das nächste Gitter kommt nach der nächsten Aktualisierung.';
+
+  @override
+  String dailyAlreadyCompletedNextPuzzle(String localTime, String countdown) {
+    return 'Nächstes Rätsel gegen $localTime · noch $countdown';
+  }
+
+  @override
+  String get dailyAlreadyCompletedBadge => 'Abgeschlossen';
+
+  @override
+  String get dailyAlreadyCompletedHomeSubtitle =>
+      'Du hast das heutige Rätsel geschafft. Morgen wartet ein neues Gitter.';
+
+  @override
+  String get dailyAlreadyCompletedViewSummary => 'Zusammenfassung';
+
+  @override
   String get friendChallenge => 'Freundes-Herausforderung';
 
   @override
@@ -186,6 +208,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get createChallenge => 'Herausforderung erstellen';
+
+  @override
+  String get createAndShareChallenge => 'Herausforderung erstellen & teilen';
 
   @override
   String get createChallengeDesc =>
@@ -571,6 +596,16 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get challengeNeedSession =>
       'Schließe zuerst ein Rätsel ab, um eine Herausforderung zu erstellen.';
+
+  @override
+  String get challengeShareFailed =>
+      'Herausforderung konnte nicht erstellt werden. Bitte erneut versuchen.';
+
+  @override
+  String get weeklyDailyScores => 'Diese Woche (Tagespunkte)';
+
+  @override
+  String get noDailyScore => '—';
 
   @override
   String get challengeRematch => 'Revanche — neuen Link teilen';

@@ -309,14 +309,27 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     return cells;
   }
 
-  double _scoreFromCells(Map<String, PuzzleCell> cells, int hintsUsed) {
+  double _scoreFromCells(
+    Map<String, PuzzleCell> cells,
+    int hintsUsed, {
+    required int totalCells,
+    required bool applyCompletionBonus,
+  }) {
     final scores = cells.values
         .where((c) => c.cellScore != null)
         .map((c) => c.cellScore!)
         .toList();
+    final fullGrid = cells.values.where((c) => c.isSolved).length >= totalCells;
+    final completionBonus = applyCompletionBonus
+        ? ScoringEngine.completionBonusForMode(
+            params.mode.name,
+            fullGrid: fullGrid,
+          )
+        : 0;
     return ScoringEngine.calculateSessionScore(
       cellScores: scores,
       hintsUsed: hintsUsed,
+      completionBonus: completionBonus,
     );
   }
 
@@ -402,6 +415,19 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       UserProfile? profile;
       if (AppConfig.isSupabaseConfigured) {
         profile = await _ref.read(userProfileProvider.future);
+      }
+
+      if (params.mode == PuzzleMode.daily &&
+          profile != null &&
+          AppConfig.isSupabaseConfigured) {
+        try {
+          final stats = await _ref.read(userStatsProvider.future);
+          if (stats.dailyCompletedToday) {
+            await _clearCachedSnapshot();
+            state = state.copyWith(isLoading: false, error: 'daily_already_completed');
+            return;
+          }
+        } catch (_) {}
       }
 
       if (_isTrainingMode) {
@@ -550,7 +576,12 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       hintsRevealed = _mergeSessionHints(hintsRevealed, session.hints);
       hintsUsed = hintsRevealed.values.fold<int>(0, (sum, list) => sum + list.length);
       mistakes = session.mistakes > mistakes ? session.mistakes : mistakes;
-      totalScore = _scoreFromCells(cells, hintsUsed);
+      totalScore = _scoreFromCells(
+        cells,
+        hintsUsed,
+        totalCells: puzzle.totalCells,
+        applyCompletionBonus: true,
+      );
 
       final startedAt = session.startedAt;
       final isComplete = _isTrainingMode
@@ -638,11 +669,13 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       final message = e is PuzzleFetchException
           ? (_isTrainingMode
               ? 'practice_load_failed'
-              : e.isGenerationInProgress
-                  ? 'daily_puzzle_generating'
-                  : e.isGenerationFailed
-                      ? 'daily_puzzle_failed'
-                      : 'puzzle_load_failed')
+              : e.isDailyAlreadyCompleted
+                  ? 'daily_already_completed'
+                  : e.isGenerationInProgress
+                      ? 'daily_puzzle_generating'
+                      : e.isGenerationFailed
+                          ? 'daily_puzzle_failed'
+                          : 'puzzle_load_failed')
           : e.toString();
       cbDebug(logTag, 'loadPuzzle UI error key', {'errorKey': message});
       state = state.copyWith(isLoading: false, error: message);
@@ -749,14 +782,18 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           .map((c) => c.cellScore!)
           .toList();
 
-      final sessionScore = ScoringEngine.calculateSessionScore(
-        cellScores: allScores,
-        hintsUsed: state.hintsUsed,
-      );
-
       final allSolved =
           newCells.values.where((c) => c.isSolved).length == puzzle.totalCells;
       final isComplete = allSolved && !_isTrainingMode;
+
+      final sessionScore = ScoringEngine.calculateSessionScore(
+        cellScores: allScores,
+        hintsUsed: state.hintsUsed,
+        completionBonus: ScoringEngine.completionBonusForMode(
+          params.mode.name,
+          fullGrid: allSolved,
+        ),
+      );
 
       state = state.copyWith(
         cells: newCells,
@@ -791,9 +828,20 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   void addHint(String cellKey, HintResult hint) {
     final hints = Map<String, List<HintResult>>.from(state.hintsRevealed);
     hints.putIfAbsent(cellKey, () => []).add(hint);
+    final hintsUsed = state.hintsUsed + 1;
+    final puzzle = state.puzzle;
+    final totalScore = puzzle == null
+        ? state.totalScore
+        : _scoreFromCells(
+            state.cells,
+            hintsUsed,
+            totalCells: puzzle.totalCells,
+            applyCompletionBonus: true,
+          );
     state = state.copyWith(
-      hintsUsed: state.hintsUsed + 1,
+      hintsUsed: hintsUsed,
       hintsRevealed: hints,
+      totalScore: totalScore,
     );
     unawaited(_persistSnapshot());
   }
@@ -901,6 +949,19 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       },
     );
 
+    final authoritativeScore = await _repo.flushSessionCompletion(
+      sessionId: state.sessionId!,
+      userUuid: profile.userUuid,
+      mode: params.mode.name,
+      finishedEarly: state.finishedEarly,
+      challengeWon: challengeResult?.youWon,
+    );
+    if (authoritativeScore != null) {
+      state = state.copyWith(totalScore: authoritativeScore);
+    }
+
+    final resolvedScore = authoritativeScore ?? state.totalScore;
+
     _ref.invalidate(playerProgressionProvider);
     _ref.invalidate(playerMissionsProvider);
     _ref.invalidate(userStatsProvider);
@@ -918,7 +979,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     _ref.read(lastCompletedSessionProvider.notifier).state = CompletedSessionInfo(
       puzzleId: puzzle.id,
       sessionId: state.sessionId!,
-      score: state.totalScore,
+      score: resolvedScore,
       mistakes: state.mistakes,
       hintsUsed: state.hintsUsed,
       durationMs: durationMs,

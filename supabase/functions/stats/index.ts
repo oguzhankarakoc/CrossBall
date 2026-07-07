@@ -6,6 +6,22 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-uuid',
 }
 
+function isoDate(d: Date): string {
+  return d.toISOString().slice(0, 10)
+}
+
+function lastSevenDays(): string[] {
+  const days: string[] = []
+  const today = new Date()
+  today.setUTCHours(0, 0, 0, 0)
+  for (let offset = 6; offset >= 0; offset--) {
+    const day = new Date(today)
+    day.setUTCDate(today.getUTCDate() - offset)
+    days.push(isoDate(day))
+  }
+  return days
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -19,6 +35,9 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
+
+    const weekDays = lastSevenDays()
+    const weekStart = `${weekDays[0]}T00:00:00.000Z`
 
     const { data: user } = await supabase
       .from('users')
@@ -34,16 +53,42 @@ serve(async (req) => {
           best_streak: 0,
           total_score: 0,
           rarity_breakdown: {},
+          weekly_daily_scores: weekDays.map((date) => ({ date, score: 0 })),
+          daily_completed_today: false,
+          today_daily_score: 0,
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       )
     }
 
-    const { data: stats } = await supabase
-      .from('user_stats')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle()
+    const todayKey = weekDays[weekDays.length - 1]
+
+    const [{ data: stats }, { data: dailySessions }, { data: completedToday }] =
+      await Promise.all([
+      supabase.from('user_stats').select('*').eq('user_id', user.id).maybeSingle(),
+      supabase
+        .from('puzzle_sessions')
+        .select('final_score, completed_at, puzzles(puzzle_date)')
+        .eq('user_id', user.id)
+        .eq('mode', 'daily')
+        .eq('status', 'completed')
+        .gte('completed_at', weekStart)
+        .order('completed_at', { ascending: true }),
+      supabase.rpc('user_completed_daily_today', { p_user_uuid: userUuid }),
+    ])
+
+    const scoreByDate = new Map<string, number>()
+    for (const day of weekDays) scoreByDate.set(day, 0)
+
+    for (const row of dailySessions ?? []) {
+      const puzzleDate = (row.puzzles as { puzzle_date?: string } | null)?.puzzle_date
+      const completedAt = row.completed_at as string | null
+      const dateKey =
+        puzzleDate ??
+        (completedAt ? completedAt.slice(0, 10) : null)
+      if (!dateKey || !scoreByDate.has(dateKey)) continue
+      scoreByDate.set(dateKey, Number(row.final_score ?? 0))
+    }
 
     return new Response(
       JSON.stringify({
@@ -58,6 +103,12 @@ serve(async (req) => {
           legendary: stats?.legendary_count ?? 0,
           mythic: stats?.mythic_count ?? 0,
         },
+        weekly_daily_scores: weekDays.map((date) => ({
+          date,
+          score: scoreByDate.get(date) ?? 0,
+        })),
+        daily_completed_today: completedToday === true,
+        today_daily_score: scoreByDate.get(todayKey) ?? 0,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )

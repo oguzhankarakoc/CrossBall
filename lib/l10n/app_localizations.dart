@@ -208,6 +208,42 @@ abstract class AppLocalizations {
   /// **'Refreshing'**
   String get dailyPuzzleRefreshBadge;
 
+  /// No description provided for @dailyAlreadyCompletedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Puzzle Complete'**
+  String get dailyAlreadyCompletedTitle;
+
+  /// No description provided for @dailyAlreadyCompletedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve already finished today\'s daily puzzle. Come back after the next refresh for a new grid.'**
+  String get dailyAlreadyCompletedBody;
+
+  /// No description provided for @dailyAlreadyCompletedNextPuzzle.
+  ///
+  /// In en, this message translates to:
+  /// **'Next puzzle around {localTime} · {countdown} to go'**
+  String dailyAlreadyCompletedNextPuzzle(String localTime, String countdown);
+
+  /// No description provided for @dailyAlreadyCompletedBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed'**
+  String get dailyAlreadyCompletedBadge;
+
+  /// No description provided for @dailyAlreadyCompletedHomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished today\'s puzzle. A new grid arrives tomorrow.'**
+  String get dailyAlreadyCompletedHomeSubtitle;
+
+  /// No description provided for @dailyAlreadyCompletedViewSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'View Summary'**
+  String get dailyAlreadyCompletedViewSummary;
+
   /// No description provided for @friendChallenge.
   ///
   /// In en, this message translates to:
@@ -423,6 +459,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create Challenge'**
   String get createChallenge;
+
+  /// No description provided for @createAndShareChallenge.
+  ///
+  /// In en, this message translates to:
+  /// **'Create & Share Challenge'**
+  String get createAndShareChallenge;
 
   /// No description provided for @createChallengeDesc.
   ///
@@ -1119,6 +1161,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Complete any puzzle first to create a challenge.'**
   String get challengeNeedSession;
+
+  /// No description provided for @challengeShareFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not create the challenge. Please try again.'**
+  String get challengeShareFailed;
+
+  /// No description provided for @weeklyDailyScores.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week (Daily Scores)'**
+  String get weeklyDailyScores;
+
+  /// No description provided for @noDailyScore.
+  ///
+  /// In en, this message translates to:
+  /// **'—'**
+  String get noDailyScore;
 
   /// No description provided for @challengeRematch.
   ///

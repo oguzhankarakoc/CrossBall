@@ -17,6 +17,7 @@ import '../../../shared/widgets/mythic_celebration_overlay.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
 import '../../../features/social/presentation/football_fact_copy.dart';
 import '../../../features/social/presentation/career_timeline_sheet.dart';
+import '../../challenge/challenge_share_helper.dart';
 import '../../challenge/domain/challenge.dart';
 import '../../../features/ads/ads_service.dart';
 import '../../../features/ads/presentation/banner_ad_widget.dart';
@@ -29,6 +30,7 @@ import '../../../shared/providers/practice_session_provider.dart';
 import '../domain/puzzle.dart';
 import 'puzzle_providers.dart';
 import 'daily_puzzle_rollout_provider.dart';
+import 'widgets/daily_puzzle_completed_panel.dart';
 import 'widgets/daily_puzzle_refresh_panel.dart';
 import 'widgets/player_search_modal.dart';
 import 'widgets/puzzle_grid.dart';
@@ -126,7 +128,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         hintsUsed: game.hintsUsed,
         streak: ref.watch(userStatsProvider).valueOrNull?.currentStreak ?? 0,
         onHome: () => context.go(AppRoutes.home),
-        onShareChallenge: _createChallengeFromResult,
+        onCreateAndShareChallenge: _createAndShareChallengeFromResult,
       );
     }
 
@@ -224,6 +226,14 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                   )
                 : game.error == 'practice_ad_required'
                     ? _buildPracticeAdGate(context, l10n, colors)
+                : game.error == 'daily_already_completed'
+                    ? DailyPuzzleCompletedPanel(
+                        todayScore:
+                            ref.watch(userStatsProvider).valueOrNull?.todayDailyScore ?? 0,
+                        streak: ref.watch(userStatsProvider).valueOrNull?.currentStreak ?? 0,
+                        onHome: () => context.go(AppRoutes.home),
+                        onPractice: () => context.push('${AppRoutes.puzzle}?mode=practice'),
+                      )
                 : game.error == 'daily_puzzle_generating' ||
                         game.error == 'daily_puzzle_failed'
                     ? DailyPuzzleRefreshPanel(
@@ -453,7 +463,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       newSessionRequiresAd: needsAd,
       onNewSession: canPlayMore ? () => _startNextPracticeSession(needsAd: needsAd) : null,
       onHome: () => context.go(AppRoutes.home),
-      onShareChallenge: () {},
     );
   }
 
@@ -500,8 +509,14 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     await ref.read(puzzleGameProvider(widget.params).notifier).startNewPracticeSession();
   }
 
-  Future<void> _createChallengeFromResult() async {
-    context.push(AppRoutes.challenge);
+  Future<void> _createAndShareChallengeFromResult() async {
+    final l10n = AppLocalizations.of(context)!;
+    await createAndShareChallenge(
+      ref: ref,
+      context: context,
+      needSessionMessage: l10n.challengeNeedSession,
+      shareFailedMessage: l10n.challengeShareFailed,
+    );
   }
 
   Future<void> _createRematch(BuildContext context) async {

@@ -92,11 +92,13 @@ Deno.serve(async (req) => {
 
     if (error) {
       const msg = error.message ?? String(error)
-      const status = msg.includes('user_not_found')
-        ? 404
-        : msg.includes('puzzle_not_found')
+      const status = msg.includes('daily_already_completed')
+        ? 409
+        : msg.includes('user_not_found')
           ? 404
-          : 500
+          : msg.includes('puzzle_not_found')
+            ? 404
+            : 500
       return new Response(JSON.stringify({ error: msg }), {
         status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -34,6 +34,18 @@
   "dailyPuzzleRefreshHomeSubtitle": "Neues Rätsel unterwegs — Refresh um 00:00 UTC läuft.",
   "dailyPuzzleRefreshHomeHint": "Heutiges Rätsel wird vorbereitet…",
   "dailyPuzzleRefreshBadge": "Aktualisierung",
+  "dailyAlreadyCompletedTitle": "Tagesrätsel abgeschlossen",
+  "dailyAlreadyCompletedBody": "Du hast das heutige Tagesrätsel bereits gelöst. Das nächste Gitter kommt nach der nächsten Aktualisierung.",
+  "dailyAlreadyCompletedNextPuzzle": "Nächstes Rätsel gegen {localTime} · noch {countdown}",
+  "@dailyAlreadyCompletedNextPuzzle": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyAlreadyCompletedBadge": "Abgeschlossen",
+  "dailyAlreadyCompletedHomeSubtitle": "Du hast das heutige Rätsel geschafft. Morgen wartet ein neues Gitter.",
+  "dailyAlreadyCompletedViewSummary": "Zusammenfassung",
   "friendChallenge": "Freundes-Herausforderung",
   "friendChallengeDesc": "Link teilen und async wetteifern.",
   "practice": "Übung",
@@ -70,6 +82,7 @@
   "totalScore": "Gesamtpunktzahl",
   "rarityBreakdown": "Seltenheitsverteilung",
   "createChallenge": "Herausforderung erstellen",
+  "createAndShareChallenge": "Herausforderung erstellen & teilen",
   "createChallengeDesc": "Löse zuerst das heutige Rätsel, dann teile deinen Score.",
   "joinChallenge": "Herausforderung beitreten",
   "challengeDesc": "Fordere Freunde async heraus. Gleiches Rätsel, Scores vergleichen.",
@@ -209,6 +222,9 @@
   "mythicCelebrationBody": "Ultra-seltene Wahl — elite Fußball-IQ.",
   "challengeFromAnySession": "Teile dein zuletzt gelöstes Rätsel mit einem Freund.",
   "challengeNeedSession": "Schließe zuerst ein Rätsel ab, um eine Herausforderung zu erstellen.",
+  "challengeShareFailed": "Herausforderung konnte nicht erstellt werden. Bitte erneut versuchen.",
+  "weeklyDailyScores": "Diese Woche (Tagespunkte)",
+  "noDailyScore": "—",
   "challengeRematch": "Revanche — neuen Link teilen",
   "dailyChallengeEasyDesc": "Leichteres Rätsel zum Lernen — baue deine Serie auf.",
   "seasonPoints": "{points} SP",

@@ -34,6 +34,18 @@
   "dailyPuzzleRefreshHomeSubtitle": "Yeni bulmaca yolda — 00:00 UTC yenilemesi devam ediyor.",
   "dailyPuzzleRefreshHomeHint": "Bugünün bulmacası hazırlanıyor…",
   "dailyPuzzleRefreshBadge": "Yenileniyor",
+  "dailyAlreadyCompletedTitle": "Bugünkü Bulmaca Tamamlandı",
+  "dailyAlreadyCompletedBody": "Günlük bulmacanı bugün zaten oynadın. Yeni bulmaca için bir sonraki yenilemeyi bekle.",
+  "dailyAlreadyCompletedNextPuzzle": "Sonraki bulmaca {localTime} civarında · {countdown} kaldı",
+  "@dailyAlreadyCompletedNextPuzzle": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyAlreadyCompletedBadge": "Tamamlandı",
+  "dailyAlreadyCompletedHomeSubtitle": "Bugünün bulmacasını bitirdin. Yarın yeni bir ızgara seni bekliyor.",
+  "dailyAlreadyCompletedViewSummary": "Özeti Gör",
   "friendChallenge": "Arkadaş Mücadelesi",
   "friendChallengeDesc": "Link paylaş ve async yarış.",
   "practice": "Antrenman",
@@ -70,6 +82,7 @@
   "totalScore": "Toplam Puan",
   "rarityBreakdown": "Nadirlik Dağılımı",
   "createChallenge": "Mücadele Oluştur",
+  "createAndShareChallenge": "Mücadele Oluştur ve Paylaş",
   "createChallengeDesc": "Önce bugünün bulmacasını çöz, sonra skorunu paylaş.",
   "joinChallenge": "Mücadeleye Katıl",
   "challengeDesc": "Arkadaşlarına async meydan oku. Aynı bulmaca, skorları karşılaştır.",
@@ -209,6 +222,9 @@
   "mythicCelebrationBody": "Ultra nadir seçim — elit futbol zekası.",
   "challengeFromAnySession": "Son tamamladığın bulmacayı arkadaşınla paylaş.",
   "challengeNeedSession": "Mücadele için önce herhangi bir bulmacayı tamamla.",
+  "challengeShareFailed": "Mücadele oluşturulamadı. Tekrar deneyin.",
+  "weeklyDailyScores": "Bu Hafta (Günlük Puanlar)",
+  "noDailyScore": "—",
   "challengeRematch": "Rövanş — yeni link paylaş",
   "dailyChallengeEasyDesc": "Öğrenirken daha kolay bulmaca — serini koru.",
   "seasonPoints": "{points} SP",

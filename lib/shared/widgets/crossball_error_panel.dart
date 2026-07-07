@@ -57,6 +57,7 @@ String localizedErrorMessage(AppLocalizations l10n, String? code) {
     'puzzle_load_failed' => l10n.puzzleLoadFailed,
     'daily_puzzle_generating' => l10n.dailyPuzzleRefreshTitle,
     'daily_puzzle_failed' => l10n.dailyPuzzleRefreshFailedTitle,
+    'daily_already_completed' => l10n.dailyAlreadyCompletedTitle,
     'practice_load_failed' => l10n.practiceLoadFailed,
     'practice_limit_reached' => l10n.practiceLimitReached,
     'practice_ad_required' => l10n.practiceAdRequired,

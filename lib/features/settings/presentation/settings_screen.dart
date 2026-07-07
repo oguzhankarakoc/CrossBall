@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/debug/dev_premium_override.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/data/auth_remote_data_source.dart';
@@ -43,7 +42,7 @@ class SettingsScreen extends ConsumerWidget {
                 title: l10n.playerNickname,
                 subtitle: l10n.comingSoon,
               ),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (error, stackTrace) => const SizedBox.shrink(),
             ),
             CrossBallCard(
               icon: Icons.notifications_outlined,
@@ -71,21 +70,6 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: _localeLabel(currentLocale, l10n),
               trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
               onTap: () => _showLocalePicker(context, ref, l10n),
-            ),
-            ref.watch(devToolsEnabledProvider).when(
-              data: (enabled) {
-                if (!enabled) return const SizedBox.shrink();
-                final mode = ref.watch(devPremiumModeProvider);
-                return CrossBallCard(
-                  icon: Icons.developer_mode_outlined,
-                  title: 'Test: Premium modu',
-                  subtitle: _devPremiumLabel(mode),
-                  trailing: Icon(Icons.chevron_right, color: colors.textSecondary),
-                  onTap: () => _showDevPremiumPicker(context, ref),
-                );
-              },
-              loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
             ),
             const SizedBox(height: AppSpacing.sm),
             Padding(
@@ -220,39 +204,6 @@ class SettingsScreen extends ConsumerWidget {
         AppThemeMode.darkGold => l10n.themeDarkGoldDesc,
         AppThemeMode.lightClassic => l10n.themeLightClassicDesc,
       };
-
-  String _devPremiumLabel(DevPremiumMode mode) => switch (mode) {
-        DevPremiumMode.auto => 'Gerçek (IAP + sunucu)',
-        DevPremiumMode.forceFree => 'Zorla Free — reklamlar & limitler',
-        DevPremiumMode.forcePremium => 'Zorla Premium — reklamsız',
-      };
-
-  void _showDevPremiumPicker(BuildContext context, WidgetRef ref) {
-    _showGlassPicker(
-      context: context,
-      ref: ref,
-      children: DevPremiumMode.values.map((mode) {
-        return _PickerTile(
-          icon: switch (mode) {
-            DevPremiumMode.auto => Icons.sync_rounded,
-            DevPremiumMode.forceFree => Icons.ads_click_rounded,
-            DevPremiumMode.forcePremium => Icons.workspace_premium_rounded,
-          },
-          title: switch (mode) {
-            DevPremiumMode.auto => 'Gerçek',
-            DevPremiumMode.forceFree => 'Free tier',
-            DevPremiumMode.forcePremium => 'Premium',
-          },
-          subtitle: _devPremiumLabel(mode),
-          selected: ref.watch(devPremiumModeProvider) == mode,
-          onTap: () {
-            ref.read(devPremiumModeProvider.notifier).setMode(mode);
-            Navigator.pop(context);
-          },
-        );
-      }).toList(),
-    );
-  }
 
   void _showLocalePicker(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     _showGlassPicker(

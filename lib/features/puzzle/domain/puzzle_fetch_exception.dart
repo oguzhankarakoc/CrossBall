@@ -18,6 +18,8 @@ class PuzzleFetchException implements Exception {
 
   bool get isGenerationFailed => errorCode == 'generation_failed';
 
+  bool get isDailyAlreadyCompleted => errorCode == 'daily_already_completed';
+
   @override
   String toString() => message;
 }

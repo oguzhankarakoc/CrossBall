@@ -19,6 +19,15 @@ abstract final class GameConstants {
   static const int mistakePenalty = 15;
   static const int hintScorePenalty = 5;
 
+  /// Guaranteed floor per correct cell so common picks still earn points.
+  static const int baseCellScore = 12;
+
+  /// Extra points from rarity: (100 - usage%) * multiplier.
+  static const double rarityScoreMultiplier = 0.45;
+
+  /// Bonus for completing the full daily/challenge grid.
+  static const int dailyCompletionBonus = 30;
+
   static const int interstitialEveryNPractice = 3;
 
   static const int searchDebounceMs = 200;

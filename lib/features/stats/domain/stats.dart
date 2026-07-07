@@ -1,5 +1,23 @@
 import 'package:equatable/equatable.dart';
 
+class DailyScoreEntry extends Equatable {
+  const DailyScoreEntry({
+    required this.date,
+    required this.score,
+  });
+
+  final String date;
+  final double score;
+
+  factory DailyScoreEntry.fromJson(Map<String, dynamic> json) => DailyScoreEntry(
+        date: json['date'] as String? ?? '',
+        score: (json['score'] as num?)?.toDouble() ?? 0,
+      );
+
+  @override
+  List<Object?> get props => [date, score];
+}
+
 class UserStats extends Equatable {
   const UserStats({
     this.gamesPlayed = 0,
@@ -7,6 +25,9 @@ class UserStats extends Equatable {
     this.bestStreak = 0,
     this.totalScore = 0,
     this.rarityBreakdown = const {},
+    this.weeklyDailyScores = const [],
+    this.dailyCompletedToday = false,
+    this.todayDailyScore = 0,
   });
 
   final int gamesPlayed;
@@ -14,6 +35,9 @@ class UserStats extends Equatable {
   final int bestStreak;
   final double totalScore;
   final Map<String, int> rarityBreakdown;
+  final List<DailyScoreEntry> weeklyDailyScores;
+  final bool dailyCompletedToday;
+  final double todayDailyScore;
 
   factory UserStats.fromJson(Map<String, dynamic> json) => UserStats(
         gamesPlayed: json['games_played'] as int? ?? 0,
@@ -23,6 +47,11 @@ class UserStats extends Equatable {
         rarityBreakdown:
             (json['rarity_breakdown'] as Map<String, dynamic>? ?? {})
                 .map((k, v) => MapEntry(k, v as int)),
+        weeklyDailyScores: (json['weekly_daily_scores'] as List<dynamic>? ?? [])
+            .map((e) => DailyScoreEntry.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        dailyCompletedToday: json['daily_completed_today'] as bool? ?? false,
+        todayDailyScore: (json['today_daily_score'] as num?)?.toDouble() ?? 0,
       );
 
   Map<String, dynamic> toJson() => {
@@ -31,10 +60,15 @@ class UserStats extends Equatable {
         'best_streak': bestStreak,
         'total_score': totalScore,
         'rarity_breakdown': rarityBreakdown,
+        'weekly_daily_scores':
+            weeklyDailyScores.map((e) => {'date': e.date, 'score': e.score}).toList(),
+        'daily_completed_today': dailyCompletedToday,
+        'today_daily_score': todayDailyScore,
       };
 
   @override
-  List<Object?> get props => [gamesPlayed, currentStreak, totalScore];
+  List<Object?> get props =>
+      [gamesPlayed, currentStreak, totalScore, weeklyDailyScores, dailyCompletedToday];
 }
 
 abstract interface class StatsRepository {

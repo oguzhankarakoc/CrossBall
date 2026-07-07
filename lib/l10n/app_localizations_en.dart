@@ -74,6 +74,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dailyPuzzleRefreshBadge => 'Refreshing';
 
   @override
+  String get dailyAlreadyCompletedTitle => 'Today\'s Puzzle Complete';
+
+  @override
+  String get dailyAlreadyCompletedBody =>
+      'You\'ve already finished today\'s daily puzzle. Come back after the next refresh for a new grid.';
+
+  @override
+  String dailyAlreadyCompletedNextPuzzle(String localTime, String countdown) {
+    return 'Next puzzle around $localTime · $countdown to go';
+  }
+
+  @override
+  String get dailyAlreadyCompletedBadge => 'Completed';
+
+  @override
+  String get dailyAlreadyCompletedHomeSubtitle =>
+      'You finished today\'s puzzle. A new grid arrives tomorrow.';
+
+  @override
+  String get dailyAlreadyCompletedViewSummary => 'View Summary';
+
+  @override
   String get friendChallenge => 'Friend Challenge';
 
   @override
@@ -185,6 +207,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get createChallenge => 'Create Challenge';
+
+  @override
+  String get createAndShareChallenge => 'Create & Share Challenge';
 
   @override
   String get createChallengeDesc =>
@@ -566,6 +591,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get challengeNeedSession =>
       'Complete any puzzle first to create a challenge.';
+
+  @override
+  String get challengeShareFailed =>
+      'Could not create the challenge. Please try again.';
+
+  @override
+  String get weeklyDailyScores => 'This Week (Daily Scores)';
+
+  @override
+  String get noDailyScore => '—';
 
   @override
   String get challengeRematch => 'Rematch — share new link';

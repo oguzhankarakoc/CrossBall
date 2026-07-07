@@ -14,7 +14,7 @@ class PuzzleResultScreen extends StatefulWidget {
     required this.mistakes,
     required this.hintsUsed,
     required this.onHome,
-    required this.onShareChallenge,
+    this.onCreateAndShareChallenge,
     this.onShareResult,
     this.streak = 0,
     this.subtitle,
@@ -33,7 +33,7 @@ class PuzzleResultScreen extends StatefulWidget {
   final int hintsUsed;
   final int streak;
   final VoidCallback onHome;
-  final VoidCallback onShareChallenge;
+  final Future<void> Function()? onCreateAndShareChallenge;
   final Future<void> Function(GlobalKey cardKey)? onShareResult;
   final String? subtitle;
   final String? title;
@@ -51,6 +51,7 @@ class PuzzleResultScreen extends StatefulWidget {
 
 class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
   final _shareCardKey = GlobalKey();
+  bool _creatingChallenge = false;
 
   Future<void> _shareResult() async {
     if (widget.onShareResult != null) {
@@ -213,15 +214,37 @@ class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
                           label: Text(l10n.shareResult.toUpperCase()),
                         ),
                       ),
-                      const SizedBox(height: AppSpacing.md),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: widget.onShareChallenge,
-                          icon: const Icon(Icons.people_outline_rounded),
-                          label: Text(l10n.createChallenge.toUpperCase()),
+                      if (widget.onCreateAndShareChallenge != null) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _creatingChallenge
+                                ? null
+                                : () async {
+                                    setState(() => _creatingChallenge = true);
+                                    try {
+                                      await widget.onCreateAndShareChallenge!();
+                                    } finally {
+                                      if (mounted) {
+                                        setState(() => _creatingChallenge = false);
+                                      }
+                                    }
+                                  },
+                            icon: _creatingChallenge
+                                ? SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: colors.lime,
+                                    ),
+                                  )
+                                : const Icon(Icons.people_outline_rounded),
+                            label: Text(l10n.createAndShareChallenge.toUpperCase()),
+                          ),
                         ),
-                      ),
+                      ],
                       const SizedBox(height: AppSpacing.md),
                     ],
                     SizedBox(

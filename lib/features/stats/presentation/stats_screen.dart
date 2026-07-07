@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:intl/intl.dart';
+
 import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/rarity.dart';
@@ -10,6 +12,7 @@ import '../../../features/ads/presentation/banner_ad_widget.dart';
 import '../../../features/economy/domain/player_progression.dart';
 import '../../../features/economy/presentation/club_mastery_section.dart';
 import '../../../features/premium/premium_service.dart';
+import '../domain/stats.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/providers/app_providers.dart';
@@ -103,6 +106,14 @@ class StatsScreen extends ConsumerWidget {
                       value: stats.totalScore.toStringAsFixed(0),
                       icon: Icons.leaderboard,
                     ),
+                    if (stats.weeklyDailyScores.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.sm),
+                      _WeeklyDailyScoresSection(
+                        title: l10n.weeklyDailyScores,
+                        scores: stats.weeklyDailyScores,
+                        noPlayLabel: l10n.noDailyScore,
+                      ),
+                    ],
                     clubMasteryAsync.when(
                       loading: () => const SizedBox.shrink(),
                       error: (_, __) => const SizedBox.shrink(),
@@ -234,6 +245,66 @@ class _AchievementsSection extends StatelessWidget {
                   ),
                 ),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeeklyDailyScoresSection extends StatelessWidget {
+  const _WeeklyDailyScoresSection({
+    required this.title,
+    required this.scores,
+    required this.noPlayLabel,
+  });
+
+  final String title;
+  final List<DailyScoreEntry> scores;
+  final String noPlayLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.cb;
+    final dayFormatter = DateFormat.E(Localizations.localeOf(context).toString());
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: CrossBallGlassPanel(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            const SizedBox(height: AppSpacing.md),
+            ...scores.map((entry) {
+              final date = DateTime.tryParse(entry.date);
+              final dayLabel = date != null
+                  ? dayFormatter.format(date.toLocal())
+                  : entry.date;
+              final played = entry.score > 0;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        dayLabel,
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                    Text(
+                      played ? entry.score.toStringAsFixed(0) : noPlayLabel,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: played ? colors.lime : colors.textSecondary,
+                          ),
+                    ),
+                  ],
+                ),
+              );
+            }),
           ],
         ),
       ),

@@ -34,13 +34,25 @@ void main() {
       expect(ScoringEngine.speedBonus(150000), 0.85);
     });
 
+    test('cell score includes base points for common picks', () {
+      final score = ScoringEngine.calculateCellScore(
+        usagePercentage: 100,
+        responseTimeMs: 60000,
+        mistakesOnCell: 0,
+      );
+      expect(score, closeTo(GameConstants.baseCellScore.toDouble(), 0.01));
+    });
+
     test('cell score with rarity and speed', () {
       final score = ScoringEngine.calculateCellScore(
         usagePercentage: 4,
         responseTimeMs: 25000,
         mistakesOnCell: 0,
       );
-      expect(score, closeTo(96 * 1.3, 0.01));
+      expect(
+        score,
+        closeTo((GameConstants.baseCellScore + 96 * GameConstants.rarityScoreMultiplier) * 1.3, 0.01),
+      );
     });
 
     test('mistake penalty applied', () {
@@ -49,15 +61,30 @@ void main() {
         responseTimeMs: 60000,
         mistakesOnCell: 2,
       );
-      expect(score, closeTo(50 * 1.0 - 30, 0.01));
+      final core = GameConstants.baseCellScore + 50 * GameConstants.rarityScoreMultiplier;
+      expect(score, closeTo((core * 1.0 - 30).clamp(GameConstants.baseCellScore * 0.5, double.infinity), 0.01));
     });
 
-    test('session score aggregates cells minus hints', () {
+    test('session score aggregates cells, completion bonus, minus hints', () {
       final score = ScoringEngine.calculateSessionScore(
-        cellScores: [100, 80, 60],
-        hintsUsed: 2,
+        cellScores: [12, 12, 12],
+        hintsUsed: 1,
+        completionBonus: GameConstants.dailyCompletionBonus,
       );
-      expect(score, 240 - 2 * GameConstants.hintScorePenalty);
+      expect(
+        score,
+        36 + GameConstants.dailyCompletionBonus - GameConstants.hintScorePenalty,
+      );
+    });
+
+    test('full common daily grid still earns meaningful points', () {
+      final cellScores = List<double>.filled(9, GameConstants.baseCellScore.toDouble());
+      final score = ScoringEngine.calculateSessionScore(
+        cellScores: cellScores,
+        hintsUsed: 1,
+        completionBonus: GameConstants.dailyCompletionBonus,
+      );
+      expect(score, greaterThan(100));
     });
   });
 }

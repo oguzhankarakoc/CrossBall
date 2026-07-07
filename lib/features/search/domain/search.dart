@@ -9,6 +9,7 @@ class Player extends Equatable {
     this.clubsPreview = const [],
     this.popularityScore = 0,
     this.isCellRelevant = false,
+    this.identityKey,
   });
 
   final String id;
@@ -18,6 +19,7 @@ class Player extends Equatable {
   final List<String> clubsPreview;
   final int popularityScore;
   final bool isCellRelevant;
+  final String? identityKey;
 
   factory Player.fromJson(Map<String, dynamic> json) => Player(
         id: json['id'] as String,
@@ -30,6 +32,7 @@ class Player extends Equatable {
             [],
         popularityScore: json['popularity_score'] as int? ?? 0,
         isCellRelevant: json['is_cell_relevant'] as bool? ?? false,
+        identityKey: json['identity_key'] as String?,
       );
 
   Map<String, dynamic> toJson() => {
@@ -40,6 +43,7 @@ class Player extends Equatable {
         'clubs_preview': clubsPreview,
         'popularity_score': popularityScore,
         'is_cell_relevant': isCellRelevant,
+        if (identityKey != null) 'identity_key': identityKey,
       };
 
   @override

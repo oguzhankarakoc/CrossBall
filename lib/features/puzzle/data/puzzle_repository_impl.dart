@@ -318,9 +318,11 @@ class PuzzleApiService {
       }
 
       String detail = '';
+      String? errorCode;
       try {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         detail = body['error']?.toString() ?? '';
+        errorCode = detail.isNotEmpty ? detail : null;
       } catch (_) {}
 
       throw PuzzleFetchException(
@@ -328,6 +330,7 @@ class PuzzleApiService {
             ? 'Failed to start session: $detail'
             : 'Failed to start session (${response.statusCode})',
         statusCode: response.statusCode,
+        errorCode: errorCode,
       );
     } on PuzzleFetchException catch (e, st) {
       cbDebugError('Session', 'startSession failed', e, st);
@@ -632,11 +635,14 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   PuzzleRepositoryImpl({
     required PuzzleApiService api,
     required OfflineCache cache,
+    http.Client? httpClient,
   })  : _api = api,
-        _cache = cache;
+        _cache = cache,
+        _http = httpClient ?? http.Client();
 
   final PuzzleApiService _api;
   final OfflineCache _cache;
+  final http.Client _http;
   final _uuid = const Uuid();
 
   @override
@@ -839,7 +845,49 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   }) async {
     await _cache.queuePendingAnswer({
       'session_id': sessionId,
+      'final_score': finalScore,
       ...antiCheatMetadata,
     });
+  }
+
+  @override
+  Future<double?> flushSessionCompletion({
+    required String sessionId,
+    required String userUuid,
+    required String mode,
+    required bool finishedEarly,
+    bool? challengeWon,
+  }) async {
+    if (!AppConfig.isSupabaseConfigured) return null;
+
+    try {
+      final body = <String, dynamic>{
+        'session_id': sessionId,
+        'user_uuid': userUuid,
+        'mode': mode,
+        'finished_early': finishedEarly,
+        if (challengeWon != null) 'challenge_won': challengeWon,
+      };
+      final response = await _http.post(
+        Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
+        headers: {
+          'apikey': AppConfig.supabaseAnonKey,
+          'Content-Type': 'application/json',
+          'x-user-uuid': userUuid,
+        },
+        body: jsonEncode(body),
+      );
+      if (response.statusCode == 200) {
+        await _cache.removePendingSession(sessionId);
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final economy = decoded['economy'] as Map<String, dynamic>?;
+        final progression = economy?['progression'] as Map<String, dynamic>?;
+        if (progression != null) {
+          await _cache.cacheProgression(progression);
+        }
+        return (decoded['final_score'] as num?)?.toDouble();
+      }
+    } catch (_) {}
+    return null;
   }
 }

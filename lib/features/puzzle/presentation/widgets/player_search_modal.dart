@@ -7,6 +7,7 @@ import '../../../../core/constants/game_constants.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../core/utils/rarity.dart';
 import '../../../../l10n/app_localizations.dart';
+import '../../../../core/utils/player_identity.dart';
 import '../../../search/domain/search.dart';
 import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/widgets/crossball_ui.dart';
@@ -127,10 +128,34 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         'latency_ms': latency,
       });
       setState(() {
-        _results = response.results;
+        _results = _dedupePlayers(response.results);
         _loading = false;
       });
     }
+  }
+
+  List<Player> _dedupePlayers(List<Player> players) {
+    final best = <String, Player>{};
+    for (final player in players) {
+      final key = player.identityKey ?? playerIdentityKey(player.name);
+      final existing = best[key];
+      if (existing == null ||
+          playerCompletenessScore(
+                name: player.name,
+                nationalityCode: player.nationalityCode,
+                primaryPosition: player.primaryPosition,
+                clubsCount: player.clubsPreview.length,
+              ) >
+              playerCompletenessScore(
+                name: existing.name,
+                nationalityCode: existing.nationalityCode,
+                primaryPosition: existing.primaryPosition,
+                clubsCount: existing.clubsPreview.length,
+              )) {
+        best[key] = player;
+      }
+    }
+    return best.values.toList();
   }
 
   HintType? get _nextHintType => nextHintTypeForCount(_hints.length);

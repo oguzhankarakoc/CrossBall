@@ -51,12 +51,15 @@ class HomeScreen extends ConsumerWidget {
     final stats = ref.watch(userStatsProvider).valueOrNull;
     final rollout = ref.watch(dailyPuzzleRolloutProvider).valueOrNull;
     final isDailyRefreshing = rollout?.isBlocked ?? false;
+    final dailyCompleted = !isDailyRefreshing && (stats?.dailyCompletedToday ?? false);
     final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
     final streak = stats?.currentStreak ?? 0;
     final localeName = Localizations.localeOf(context).toString();
     final dailySubtitle = [
       if (isDailyRefreshing)
         l10n.dailyPuzzleRefreshHomeSubtitle
+      else if (dailyCompleted)
+        l10n.dailyAlreadyCompletedHomeSubtitle
       else
         isNewPlayer ? l10n.dailyChallengeEasyDesc : l10n.dailyChallengeDesc,
       if (!isDailyRefreshing)
@@ -64,14 +67,18 @@ class HomeScreen extends ConsumerWidget {
     ].join('\n');
     final dailyBadge = isDailyRefreshing
         ? l10n.dailyPuzzleRefreshBadge
-        : streak > 0
-            ? '$streak ${l10n.currentStreak}'
-            : l10n.dailyChallenge;
+        : dailyCompleted
+            ? l10n.dailyAlreadyCompletedBadge
+            : streak > 0
+                ? '$streak ${l10n.currentStreak}'
+                : l10n.dailyChallenge;
     final dailyBadgeIcon = isDailyRefreshing
         ? Icons.hourglass_top_rounded
-        : streak > 0
-            ? Icons.local_fire_department_rounded
-            : Icons.calendar_today_rounded;
+        : dailyCompleted
+            ? Icons.check_circle_outline_rounded
+            : streak > 0
+                ? Icons.local_fire_department_rounded
+                : Icons.calendar_today_rounded;
 
     return Scaffold(
       extendBody: true,
@@ -138,7 +145,9 @@ class HomeScreen extends ConsumerWidget {
                       subtitle: dailySubtitle,
                       actionLabel: isDailyRefreshing
                           ? l10n.dailyPuzzleRefreshCheckAgain
-                          : l10n.continueButton,
+                          : dailyCompleted
+                              ? l10n.dailyAlreadyCompletedViewSummary
+                              : l10n.continueButton,
                       badge: dailyBadge,
                       badgeIcon: dailyBadgeIcon,
                       onTap: () {

@@ -74,6 +74,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get dailyPuzzleRefreshBadge => 'Yenileniyor';
 
   @override
+  String get dailyAlreadyCompletedTitle => 'Bugünkü Bulmaca Tamamlandı';
+
+  @override
+  String get dailyAlreadyCompletedBody =>
+      'Günlük bulmacanı bugün zaten oynadın. Yeni bulmaca için bir sonraki yenilemeyi bekle.';
+
+  @override
+  String dailyAlreadyCompletedNextPuzzle(String localTime, String countdown) {
+    return 'Sonraki bulmaca $localTime civarında · $countdown kaldı';
+  }
+
+  @override
+  String get dailyAlreadyCompletedBadge => 'Tamamlandı';
+
+  @override
+  String get dailyAlreadyCompletedHomeSubtitle =>
+      'Bugünün bulmacasını bitirdin. Yarın yeni bir ızgara seni bekliyor.';
+
+  @override
+  String get dailyAlreadyCompletedViewSummary => 'Özeti Gör';
+
+  @override
   String get friendChallenge => 'Arkadaş Mücadelesi';
 
   @override
@@ -186,6 +208,9 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get createChallenge => 'Mücadele Oluştur';
+
+  @override
+  String get createAndShareChallenge => 'Mücadele Oluştur ve Paylaş';
 
   @override
   String get createChallengeDesc =>
@@ -567,6 +592,15 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get challengeNeedSession =>
       'Mücadele için önce herhangi bir bulmacayı tamamla.';
+
+  @override
+  String get challengeShareFailed => 'Mücadele oluşturulamadı. Tekrar deneyin.';
+
+  @override
+  String get weeklyDailyScores => 'Bu Hafta (Günlük Puanlar)';
+
+  @override
+  String get noDailyScore => '—';
 
   @override
   String get challengeRematch => 'Rövanş — yeni link paylaş';

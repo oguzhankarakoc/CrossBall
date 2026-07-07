@@ -10,6 +10,7 @@ type RawPlayer = {
   name: string
   nationality_code?: string | null
   primary_position?: string | null
+  identity_key?: string | null
 }
 
 type EnrichedPlayer = RawPlayer & {
@@ -26,15 +27,32 @@ function normalizeQuery(query: string): string {
     .trim()
 }
 
+const SURNAME_PARTICLES = new Set([
+  'de', 'da', 'do', 'dos', 'das', 'van', 'von', 'der', 'di', 'del', 'la', 'le', 'mc', 'mac',
+])
+
+function significantSurname(parts: string[]): string {
+  for (let i = parts.length - 1; i >= 0; i--) {
+    if (!SURNAME_PARTICLES.has(parts[i])) return parts[i]
+  }
+  return parts[parts.length - 1]
+}
+
 function playerIdentityKey(name: string): string {
   const normalized = normalizeQuery(name).replace(/[^a-z0-9\s]/g, '').trim()
   const parts = normalized.split(/\s+/).filter(Boolean)
   if (parts.length === 0) return normalized
-  const surname = parts[parts.length - 1]
+  const surname = significantSurname(parts)
   if (parts.length === 1) return surname
   const first = parts[0].replace(/\.$/, '')
   const token = first.charAt(0)
   return `${surname}|${token}`
+}
+
+function dedupeKeyForPlayer(player: EnrichedPlayer): string {
+  const identityKey = player.identity_key?.trim()
+  if (identityKey) return identityKey
+  return playerIdentityKey(player.name)
 }
 
 function playerCompletenessScore(player: EnrichedPlayer): number {
@@ -64,7 +82,7 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
 function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
   const best = new Map<string, EnrichedPlayer>()
   for (const player of players) {
-    const key = playerIdentityKey(player.name)
+    const key = dedupeKeyForPlayer(player)
     const existing = best.get(key)
     if (!existing) {
       best.set(key, player)
@@ -119,11 +137,12 @@ async function fillMissingPlayerMetadata(
   return players.map((player) => {
     const key = idToKey.get(player.id)
     const fill = key ? bestByKey.get(key) : undefined
-    if (!fill) return player
+    const withIdentity = key ? { ...player, identity_key: player.identity_key ?? key } : player
+    if (!fill) return withIdentity
     return {
-      ...player,
-      nationality_code: player.nationality_code ?? fill.nat ?? null,
-      primary_position: player.primary_position ?? fill.pos ?? null,
+      ...withIdentity,
+      nationality_code: withIdentity.nationality_code ?? fill.nat ?? null,
+      primary_position: withIdentity.primary_position ?? fill.pos ?? null,
     }
   })
 }
@@ -351,7 +370,8 @@ Deno.serve(async (req) => {
 
       const raw = (popular ?? []).map((p: { players: RawPlayer }) => p.players)
       const filledPopular = await fillMissingPlayerMetadata(supabase, raw)
-      const results = await enrichPlayers(supabase, filledPopular, rowClubId, colClubId)
+      const enrichedPopular = await enrichPlayers(supabase, filledPopular, rowClubId, colClubId)
+      const results = dedupePlayersByIdentity(enrichedPopular).slice(0, limit)
 
       let suggested: EnrichedPlayer[] = []
       if (rowClubId && colClubId) {
@@ -383,7 +403,7 @@ Deno.serve(async (req) => {
 
     const { data: rawResults } = await supabase
       .from('players')
-      .select('id, name, nationality_code, primary_position')
+      .select('id, name, nationality_code, primary_position, identity_key')
       .ilike('normalized_name', `%${normalized}%`)
       .limit(Math.min(limit * 3, 60))
 

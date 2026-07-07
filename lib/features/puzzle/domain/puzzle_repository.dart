@@ -45,4 +45,13 @@ abstract interface class PuzzleRepository {
     required double finalScore,
     required Map<String, dynamic> antiCheatMetadata,
   });
+
+  /// Sends completion to the server when online; returns authoritative score.
+  Future<double?> flushSessionCompletion({
+    required String sessionId,
+    required String userUuid,
+    required String mode,
+    required bool finishedEarly,
+    bool? challengeWon,
+  });
 }

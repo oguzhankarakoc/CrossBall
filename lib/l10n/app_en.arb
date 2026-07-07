@@ -34,6 +34,18 @@
   "dailyPuzzleRefreshHomeSubtitle": "New puzzle incoming — refresh in progress at 00:00 UTC.",
   "dailyPuzzleRefreshHomeHint": "Preparing today's puzzle…",
   "dailyPuzzleRefreshBadge": "Refreshing",
+  "dailyAlreadyCompletedTitle": "Today's Puzzle Complete",
+  "dailyAlreadyCompletedBody": "You've already finished today's daily puzzle. Come back after the next refresh for a new grid.",
+  "dailyAlreadyCompletedNextPuzzle": "Next puzzle around {localTime} · {countdown} to go",
+  "@dailyAlreadyCompletedNextPuzzle": {
+    "placeholders": {
+      "localTime": {"type": "String"},
+      "countdown": {"type": "String"}
+    }
+  },
+  "dailyAlreadyCompletedBadge": "Completed",
+  "dailyAlreadyCompletedHomeSubtitle": "You finished today's puzzle. A new grid arrives tomorrow.",
+  "dailyAlreadyCompletedViewSummary": "View Summary",
   "friendChallenge": "Friend Challenge",
   "friendChallengeDesc": "Share a link and compete async.",
   "practice": "Practice",
@@ -70,6 +82,7 @@
   "totalScore": "Total Score",
   "rarityBreakdown": "Rarity Breakdown",
   "createChallenge": "Create Challenge",
+  "createAndShareChallenge": "Create & Share Challenge",
   "createChallengeDesc": "Solve today's puzzle first, then share your score.",
   "joinChallenge": "Join Challenge",
   "challengeDesc": "Challenge friends asynchronously. Same puzzle, compare scores.",
@@ -214,6 +227,9 @@
   "mythicCelebrationBody": "Ultra-rare pick — elite football IQ.",
   "challengeFromAnySession": "Share your last completed puzzle with a friend.",
   "challengeNeedSession": "Complete any puzzle first to create a challenge.",
+  "challengeShareFailed": "Could not create the challenge. Please try again.",
+  "weeklyDailyScores": "This Week (Daily Scores)",
+  "noDailyScore": "—",
   "challengeRematch": "Rematch — share new link",
   "dailyChallengeEasyDesc": "Easier puzzle while you learn — build your streak.",
   "seasonPoints": "{points} SP",

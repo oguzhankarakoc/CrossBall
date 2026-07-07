@@ -135,6 +135,19 @@ class OfflineCache {
     return (jsonDecode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
   }
 
+  Future<void> removePendingSession(String sessionId) async {
+    final prefs = await _prefs;
+    final raw = prefs.getString(_keyPendingAnswers);
+    if (raw == null) return;
+    final queue = (jsonDecode(raw) as List<dynamic>).cast<Map<String, dynamic>>();
+    final filtered = queue.where((entry) => entry['session_id'] != sessionId).toList();
+    if (filtered.isEmpty) {
+      await prefs.remove(_keyPendingAnswers);
+    } else {
+      await prefs.setString(_keyPendingAnswers, jsonEncode(filtered));
+    }
+  }
+
   Future<void> invalidateDailyPuzzle() async {
     final prefs = await _prefs;
     await prefs.remove(_keyDailyPuzzle);
