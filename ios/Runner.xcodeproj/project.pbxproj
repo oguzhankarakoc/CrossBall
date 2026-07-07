@@ -284,7 +284,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export PATH=\"${SRCROOT}/scripts:$PATH\"\nexport COPYFILE_DISABLE=1\nfind \"${TARGET_BUILD_DIR}\" \"${BUILT_PRODUCTS_DIR}\" -name '*.framework' -type d 2>/dev/null | while IFS= read -r fw; do\n  xattr -cr \"$fw\" 2>/dev/null || true\ndone\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
+			shellScript = "export PATH=\"${SRCROOT}/scripts:$PATH\"\nexport COPYFILE_DISABLE=1\nfind \"${TARGET_BUILD_DIR}\" \"${BUILT_PRODUCTS_DIR}\" -name '*.framework' -type d 2>/dev/null | while IFS= read -r fw; do\n  xattr -cr \"$fw\" 2>/dev/null || true\ndone\n/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin\n/bin/sh \"${SRCROOT}/scripts/fix_objective_c_framework.sh\"";
 		};
 		9740EEB61CF901F6004384FC /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;

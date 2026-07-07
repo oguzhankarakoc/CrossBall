@@ -36,17 +36,26 @@ void main() {
     });
 
     test('addHint increments hintsUsed via notifier pattern', () {
-      const state = PuzzleGameState(hintsUsed: 1, hintsRevealed: {'0_0': ['Brazil']});
+      const state = PuzzleGameState(
+        hintsUsed: 1,
+        hintsRevealed: {
+          '0_0': [HintResult(hintType: HintType.nationality, hintValue: 'Brazil')],
+        },
+      );
       final next = state.copyWith(
         hintsUsed: state.hintsUsed + 1,
         hintsRevealed: {
           ...state.hintsRevealed,
-          '0_0': [...state.hintsRevealed['0_0']!, 'Midfielder'],
+          '0_0': [
+            ...state.hintsRevealed['0_0']!,
+            const HintResult(hintType: HintType.position, hintValue: 'Midfielder'),
+          ],
         },
       );
 
       expect(next.hintsUsed, 2);
-      expect(next.hintsRevealed['0_0'], ['Brazil', 'Midfielder']);
+      expect(next.hintsRevealed['0_0']!.length, 2);
+      expect(next.hintsRevealed['0_0']![1].hintValue, 'Midfielder');
     });
   });
 }

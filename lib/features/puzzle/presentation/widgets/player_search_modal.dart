@@ -30,7 +30,7 @@ class PlayerSearchModal extends ConsumerStatefulWidget {
   final Club rowClub;
   final Club colClub;
   final String cellKey;
-  final List<String> revealedHints;
+  final List<HintResult> revealedHints;
   final bool isPremium;
 
   @override
@@ -46,7 +46,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   bool _loading = false;
   bool _browseLoading = true;
   bool _hintLoading = false;
-  late List<String> _hints;
+  late List<HintResult> _hints;
 
   SearchContext get _searchContext => SearchContext(
         rowClubId: widget.rowClub.id,
@@ -64,22 +64,22 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         widget.colClub.name,
       };
 
-  static const _hintSequence = [
-    HintType.nationality,
-    HintType.position,
-    HintType.firstLetter,
-    HintType.careerLeague,
-    HintType.retiredStatus,
-    HintType.careerClub,
-  ];
-
   @override
   void initState() {
     super.initState();
-    _hints = List<String>.from(widget.revealedHints);
+    _hints = List<HintResult>.from(widget.revealedHints);
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
     _loadBrowseData();
+  }
+
+  @override
+  void didUpdateWidget(covariant PlayerSearchModal oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.cellKey != widget.cellKey ||
+        oldWidget.revealedHints != widget.revealedHints) {
+      _hints = List<HintResult>.from(widget.revealedHints);
+    }
   }
 
   Future<void> _loadBrowseData() async {
@@ -133,10 +133,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     }
   }
 
-  HintType? get _nextHintType {
-    if (_hints.length >= _hintSequence.length) return null;
-    return _hintSequence[_hints.length];
-  }
+  HintType? get _nextHintType => nextHintTypeForCount(_hints.length);
 
   Future<void> _requestHint() async {
     final nextType = _nextHintType;
@@ -148,7 +145,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     if (mounted) {
       setState(() {
         _hintLoading = false;
-        if (result != null) _hints.add(result.hintValue);
+        if (result != null) _hints.add(result);
       });
     }
   }
@@ -235,7 +232,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                         runSpacing: AppSpacing.sm,
                         children: _hints
                             .map(
-                              (h) => Container(
+                              (hint) => Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: AppSpacing.sm + 2,
                                   vertical: AppSpacing.xs,
@@ -246,7 +243,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                   border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
                                 ),
                                 child: Text(
-                                  h,
+                                  _hintChipLabel(hint, l10n),
                                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                                         color: colors.primary,
                                         fontWeight: FontWeight.w600,
@@ -430,8 +427,20 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     );
   }
 
+  String _hintTypeLabel(HintType type, AppLocalizations l10n) => switch (type) {
+        HintType.nationality => l10n.hintNationalityPremium,
+        HintType.position => l10n.hintPositionPremium,
+        HintType.firstLetter => l10n.hintFirstLetterPremium,
+        HintType.careerLeague => l10n.hintCareerLeaguePremium,
+        HintType.retiredStatus => l10n.hintRetiredStatusPremium,
+        HintType.careerClub => l10n.hintCareerClubPremium,
+      };
+
+  String _hintChipLabel(HintResult hint, AppLocalizations l10n) =>
+      '${_hintTypeLabel(hint.hintType, l10n)}: ${hint.hintValue}';
+
   String _hintLabel(HintType type, AppLocalizations l10n) {
-    final progress = '${_hints.length + 1}/${_hintSequence.length}';
+    final progress = '${_hints.length + 1}/${kHintSequence.length}';
     final base = widget.isPremium
         ? switch (type) {
             HintType.nationality => l10n.hintNationalityPremium,

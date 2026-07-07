@@ -17,11 +17,16 @@ import '../../features/social/data/social_repository_impl.dart';
 import '../../features/social/domain/social.dart';
 import '../../features/stats/data/stats_repository_impl.dart';
 import '../../features/stats/domain/stats.dart';
+import '../../core/cache/active_puzzle_cache.dart';
 import '../../core/cache/offline_cache.dart';
 import '../../core/network/supabase_provider.dart';
 import 'locale_provider.dart';
 
 final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
+
+final activePuzzleCacheProvider = Provider<ActivePuzzleCache>(
+  (ref) => ActivePuzzleCache(),
+);
 
 final analyticsProvider = Provider<AnalyticsService>((ref) => createAnalyticsService());
 

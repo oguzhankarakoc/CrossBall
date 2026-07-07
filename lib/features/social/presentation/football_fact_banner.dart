@@ -37,9 +37,10 @@ class FootballFactBanner extends StatelessWidget {
               ],
             ),
           ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
               Container(
                 width: 4,
                 decoration: BoxDecoration(
@@ -101,6 +102,7 @@ class FootballFactBanner extends StatelessWidget {
                 ),
               ),
             ],
+            ),
           ),
         ),
       ),

@@ -6,10 +6,13 @@ import '../constants/game_constants.dart';
 
 /// Tracks session timing, background duration, and inactivity for anti-cheat.
 class AntiCheatTracker with WidgetsBindingObserver {
-  AntiCheatTracker({required this.gridSize, VoidCallback? onSuspicious})
-      : _onSuspicious = onSuspicious {
+  AntiCheatTracker({
+    required this.gridSize,
+    DateTime? serverStartedAt,
+    VoidCallback? onSuspicious,
+  })  : _onSuspicious = onSuspicious {
     WidgetsBinding.instance.addObserver(this);
-    _startedAt = DateTime.now();
+    _startedAt = serverStartedAt ?? DateTime.now();
     _lastInteractionAt = _startedAt;
     _startInactivityTimer();
   }

@@ -1,0 +1,41 @@
+#!/bin/sh
+# App Store rejects objective_c.framework when simulator platform markers/slices leak
+# into device archives (Flutter native-assets / path_provider_foundation 2.6+).
+set -eu
+
+MIN_IOS="${IPHONEOS_DEPLOYMENT_TARGET:-13.0}"
+
+if [ -z "${TARGET_BUILD_DIR:-}" ] || [ -z "${WRAPPER_NAME:-}" ]; then
+  exit 0
+fi
+
+APP_FRAMEWORKS="${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Frameworks"
+[ -d "$APP_FRAMEWORKS" ] || exit 0
+
+find "$APP_FRAMEWORKS" -name 'objective_c.framework' -type d 2>/dev/null | while IFS= read -r framework; do
+  binary="${framework}/objective_c"
+  [ -f "$binary" ] || continue
+
+  if lipo -info "$binary" >/dev/null 2>&1; then
+    for slice in x86_64 i386; do
+      if lipo -info "$binary" 2>/dev/null | grep -q "$slice"; then
+        lipo -remove "$slice" "$binary" -output "${binary}.lipo" 2>/dev/null || true
+        if [ -f "${binary}.lipo" ]; then
+          mv "${binary}.lipo" "$binary"
+        fi
+      fi
+    done
+  fi
+
+  if xcrun vtool -show-build "$binary" 2>/dev/null | grep -q 'platform IOSSIMULATOR'; then
+    xcrun vtool -set-build-version ios "$MIN_IOS" "$MIN_IOS" -replace \
+      -output "${binary}.vtool" "$binary"
+    mv "${binary}.vtool" "$binary"
+  fi
+
+  plist="${framework}/Info.plist"
+  if [ -f "$plist" ]; then
+    /usr/libexec/PlistBuddy -c "Set :MinimumOSVersion $MIN_IOS" "$plist" 2>/dev/null || \
+      /usr/libexec/PlistBuddy -c "Add :MinimumOSVersion string $MIN_IOS" "$plist" 2>/dev/null || true
+  fi
+done

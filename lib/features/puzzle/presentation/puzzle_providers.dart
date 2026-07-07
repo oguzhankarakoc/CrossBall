@@ -1,13 +1,15 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/cache/active_puzzle_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/constants/game_constants.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
-import '../../../core/utils/rarity.dart';
 import '../../../core/utils/scoring.dart';
 import '../../../features/ads/ads_service.dart';
 import '../../../features/auth/domain/user_profile.dart';
@@ -70,7 +72,7 @@ class PuzzleGameState extends Equatable {
   final bool isLoading;
   final String? error;
   final DateTime? cellStartTime;
-  final Map<String, List<String>> hintsRevealed;
+  final Map<String, List<HintResult>> hintsRevealed;
   final String? challengeId;
   final double? challengeCreatorScore;
   final ChallengeResult? challengeResult;
@@ -98,7 +100,7 @@ class PuzzleGameState extends Equatable {
     bool? isLoading,
     String? error,
     DateTime? cellStartTime,
-    Map<String, List<String>>? hintsRevealed,
+    Map<String, List<HintResult>>? hintsRevealed,
     String? challengeId,
     double? challengeCreatorScore,
     ChallengeResult? challengeResult,
@@ -156,6 +158,226 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   bool _sessionFinalized = false;
 
   PuzzleRepository get _repo => _ref.read(puzzleRepositoryProvider);
+  ActivePuzzleCache get _activeCache => _ref.read(activePuzzleCacheProvider);
+
+  int get _gridSizeForCache =>
+      params.gridSize ?? state.puzzle?.gridSize ?? GameConstants.gridSize;
+
+  String get _todayDate => DateTime.now().toIso8601String().split('T').first;
+
+  Map<String, PuzzleCell> _cellsMapFromPuzzle(Puzzle puzzle) {
+    final cells = <String, PuzzleCell>{};
+    for (final cell in puzzle.cells) {
+      cells['${cell.row}_${cell.col}'] = cell;
+    }
+    return cells;
+  }
+
+  bool _isCachedSnapshotValid(Map<String, dynamic> snapshot) {
+    final puzzleJson = snapshot['puzzle'] as Map<String, dynamic>?;
+    if (puzzleJson == null) return false;
+    if (params.mode == PuzzleMode.daily) {
+      return puzzleJson['date'] == _todayDate;
+    }
+    if (params.mode == PuzzleMode.challenge) {
+      return snapshot['challenge_id'] == params.challengeId;
+    }
+    return true;
+  }
+
+  Map<String, PuzzleCell> _mergeCachedCells(
+    Map<String, PuzzleCell> base,
+    Map<String, dynamic> cachedCells,
+  ) {
+    final merged = Map<String, PuzzleCell>.from(base);
+    for (final entry in cachedCells.entries) {
+      final raw = entry.value as Map<String, dynamic>;
+      final existing = merged[entry.key];
+      if (existing == null) continue;
+      merged[entry.key] = existing.copyWith(
+        solvedPlayerId: raw['solved_player_id'] as String?,
+        solvedPlayerName: raw['solved_player_name'] as String?,
+        isCorrect: raw['is_correct'] as bool?,
+        usagePercentage: (raw['usage_percentage'] as num?)?.toDouble(),
+        rarityScore: (raw['rarity_score'] as num?)?.toDouble(),
+        cellScore: (raw['cell_score'] as num?)?.toDouble(),
+      );
+    }
+    return merged;
+  }
+
+  Map<String, List<HintResult>> _hintsFromJson(Map<String, dynamic>? raw) {
+    if (raw == null) return {};
+    final hints = <String, List<HintResult>>{};
+    for (final entry in raw.entries) {
+      hints[entry.key] = (entry.value as List<dynamic>)
+          .map((e) => HintResult.fromJson(e as Map<String, dynamic>))
+          .toList();
+    }
+    return hints;
+  }
+
+  Map<String, List<HintResult>> _mergeSessionHints(
+    Map<String, List<HintResult>> existing,
+    List<SessionHintProgress> serverHints,
+  ) {
+    final merged = existing.map(
+      (key, value) => MapEntry(key, List<HintResult>.from(value)),
+    );
+    for (final progress in serverHints) {
+      final key = '${progress.row}_${progress.col}';
+      final list = merged.putIfAbsent(key, () => []);
+      if (list.any((h) => h.hintType == progress.hint.hintType)) continue;
+      list.add(progress.hint);
+    }
+    for (final key in merged.keys) {
+      merged[key]!.sort(
+        (a, b) => kHintSequence
+            .indexOf(a.hintType)
+            .compareTo(kHintSequence.indexOf(b.hintType)),
+      );
+    }
+    return merged;
+  }
+
+  Map<String, PuzzleCell> _mergeSessionAnswers(
+    Map<String, PuzzleCell> cells,
+    List<SessionAnswerProgress> answers,
+  ) {
+    final merged = Map<String, PuzzleCell>.from(cells);
+    for (final answer in answers) {
+      final key = '${answer.row}_${answer.col}';
+      final cell = merged[key];
+      if (cell == null) continue;
+      final cellScore = ScoringEngine.calculateCellScore(
+        usagePercentage: answer.usagePercentage,
+        responseTimeMs: answer.responseTimeMs,
+        mistakesOnCell: 0,
+      );
+      merged[key] = cell.copyWith(
+        solvedPlayerId: answer.playerId,
+        solvedPlayerName: answer.playerName,
+        isCorrect: true,
+        usagePercentage: answer.usagePercentage,
+        rarityScore: answer.rarityScore,
+        cellScore: cellScore,
+      );
+    }
+    return merged;
+  }
+
+  Map<String, PuzzleCell> _mergeProgressIntoCells({
+    required Map<String, PuzzleCell> baseCells,
+    required List<SessionAnswerProgress> serverAnswers,
+    required String sessionId,
+    required bool sessionResumed,
+    Map<String, dynamic>? cachedSnapshot,
+  }) {
+    var cells = Map<String, PuzzleCell>.from(baseCells);
+
+    if (cachedSnapshot != null) {
+      final cachedCells = cachedSnapshot['cells'] as Map<String, dynamic>?;
+      if (cachedCells != null) {
+        cells = _mergeCachedCells(cells, cachedCells);
+      }
+    }
+
+    cells = _mergeSessionAnswers(cells, serverAnswers);
+
+    final cachedSessionId = cachedSnapshot?['session_id'] as String?;
+    final sameSession = cachedSessionId != null && cachedSessionId == sessionId;
+
+    // Keep locally persisted solves while the session is resumed. Only strip
+    // unverified solves when we know the user started a different session.
+    if (sameSession || sessionResumed || serverAnswers.isEmpty) {
+      return cells;
+    }
+
+    final serverKeys = serverAnswers.map((a) => '${a.row}_${a.col}').toSet();
+    for (final entry in cells.entries.toList()) {
+      final cell = entry.value;
+      if (cell.isSolved && !serverKeys.contains(entry.key)) {
+        cells[entry.key] = PuzzleCell(
+          id: cell.id,
+          row: cell.row,
+          col: cell.col,
+          validAnswerCount: cell.validAnswerCount,
+          difficulty: cell.difficulty,
+        );
+      }
+    }
+    return cells;
+  }
+
+  double _scoreFromCells(Map<String, PuzzleCell> cells, int hintsUsed) {
+    final scores = cells.values
+        .where((c) => c.cellScore != null)
+        .map((c) => c.cellScore!)
+        .toList();
+    return ScoringEngine.calculateSessionScore(
+      cellScores: scores,
+      hintsUsed: hintsUsed,
+    );
+  }
+
+  Future<Map<String, dynamic>?> _loadCachedSnapshot() async {
+    return _activeCache.load(
+      mode: params.mode,
+      challengeId: params.challengeId,
+      gridSize: _gridSizeForCache,
+    );
+  }
+
+  Future<void> _clearCachedSnapshot() async {
+    await _activeCache.clear(
+      mode: params.mode,
+      challengeId: params.challengeId,
+      gridSize: _gridSizeForCache,
+    );
+  }
+
+  Future<void> _persistSnapshot() async {
+    final puzzle = state.puzzle;
+    final sessionId = state.sessionId;
+    if (puzzle == null || sessionId == null || state.isComplete) return;
+
+    final cellsJson = <String, dynamic>{};
+    for (final entry in state.cells.entries) {
+      final cell = entry.value;
+      cellsJson[entry.key] = {
+        'solved_player_id': cell.solvedPlayerId,
+        'solved_player_name': cell.solvedPlayerName,
+        'is_correct': cell.isCorrect,
+        'usage_percentage': cell.usagePercentage,
+        'rarity_score': cell.rarityScore,
+        'cell_score': cell.cellScore,
+      };
+    }
+
+    final hintsJson = <String, dynamic>{};
+    for (final entry in state.hintsRevealed.entries) {
+      hintsJson[entry.key] = entry.value.map((h) => h.toJson()).toList();
+    }
+
+    await _activeCache.save(
+      mode: params.mode,
+      challengeId: params.challengeId,
+      gridSize: _gridSizeForCache,
+      snapshot: {
+        'puzzle': puzzle.toJson(),
+        'session_id': sessionId,
+        'started_at': state.startedAt?.toIso8601String(),
+        'cells': cellsJson,
+        'hints_revealed': hintsJson,
+        'mistakes': state.mistakes,
+        'hints_used': state.hintsUsed,
+        'total_score': state.totalScore,
+        'challenge_id': params.challengeId,
+        'challenge_creator_score': state.challengeCreatorScore,
+        'saved_at': DateTime.now().toIso8601String(),
+      },
+    );
+  }
 
   bool get _isTrainingMode =>
       params.mode == PuzzleMode.practice || params.mode == PuzzleMode.timeline;
@@ -228,42 +450,82 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
       Puzzle puzzle;
       double? creatorScore;
+      Map<String, dynamic>? cachedSnapshot;
+      if (!forceRefresh) {
+        cachedSnapshot = await _loadCachedSnapshot();
+        if (cachedSnapshot != null && !_isCachedSnapshotValid(cachedSnapshot)) {
+          cachedSnapshot = null;
+          await _clearCachedSnapshot();
+        }
+      } else {
+        await _clearCachedSnapshot();
+      }
 
       if (params.mode == PuzzleMode.challenge && params.challengeId != null) {
         final challenge =
             await _ref.read(challengeRepositoryProvider).getChallenge(params.challengeId!);
-        puzzle = await _repo.getChallengePuzzle(params.challengeId!);
+        if (cachedSnapshot != null && !forceRefresh) {
+          puzzle = Puzzle.fromJson(cachedSnapshot['puzzle'] as Map<String, dynamic>);
+        } else {
+          puzzle = await _repo.getChallengePuzzle(params.challengeId!);
+        }
         creatorScore = challenge.creatorScore;
       } else if (_isTrainingMode) {
-        final excludeId = excludePuzzleId ?? (forceRefresh ? state.puzzle?.id : null);
-        puzzle = await _repo.getPracticePuzzle(
-          gridSize: size,
-          userUuid: profile!.userUuid,
-          excludePuzzleId: excludeId,
-        );
-        practiceDebug('practice puzzle loaded', {
-          'puzzleId': puzzle.id,
-          'gridSize': puzzle.gridSize,
-          'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
-          'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
-        });
+        if (cachedSnapshot != null && !forceRefresh) {
+          puzzle = Puzzle.fromJson(cachedSnapshot['puzzle'] as Map<String, dynamic>);
+          practiceDebug('resuming cached practice puzzle', {
+            'puzzleId': puzzle.id,
+            'gridSize': puzzle.gridSize,
+          });
+        } else {
+          final excludeId = excludePuzzleId ?? (forceRefresh ? state.puzzle?.id : null);
+          puzzle = await _repo.getPracticePuzzle(
+            gridSize: size,
+            userUuid: profile!.userUuid,
+            excludePuzzleId: excludeId,
+          );
+          practiceDebug('practice puzzle loaded', {
+            'puzzleId': puzzle.id,
+            'gridSize': puzzle.gridSize,
+            'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+            'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
+          });
+        }
       } else {
-        cbDebug('Daily', 'fetching daily puzzle', {'userUuid': profile?.userUuid});
-        puzzle = await _repo.getDailyPuzzle(
-          forceRefresh: forceRefresh,
-          userUuid: profile?.userUuid,
-        );
-        cbDebug('Daily', 'daily puzzle loaded', {
-          'puzzleId': puzzle.id,
-          'date': puzzle.date,
-          'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
-          'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
-        });
+        if (cachedSnapshot != null && !forceRefresh) {
+          puzzle = Puzzle.fromJson(cachedSnapshot['puzzle'] as Map<String, dynamic>);
+          cbDebug('Daily', 'resuming cached daily puzzle', {
+            'puzzleId': puzzle.id,
+            'date': puzzle.date,
+          });
+        } else {
+          cbDebug('Daily', 'fetching daily puzzle', {'userUuid': profile?.userUuid});
+          puzzle = await _repo.getDailyPuzzle(
+            forceRefresh: forceRefresh,
+            userUuid: profile?.userUuid,
+          );
+          cbDebug('Daily', 'daily puzzle loaded', {
+            'puzzleId': puzzle.id,
+            'date': puzzle.date,
+            'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+            'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
+          });
+        }
       }
 
-      final cells = <String, PuzzleCell>{};
-      for (final cell in puzzle.cells) {
-        cells['${cell.row}_${cell.col}'] = cell;
+      var cells = _cellsMapFromPuzzle(puzzle);
+      var hintsRevealed = <String, List<HintResult>>{};
+      var mistakes = 0;
+      var hintsUsed = 0;
+      var totalScore = 0.0;
+
+      if (cachedSnapshot != null) {
+        hintsRevealed = _hintsFromJson(
+          cachedSnapshot['hints_revealed'] as Map<String, dynamic>?,
+        );
+        mistakes = cachedSnapshot['mistakes'] as int? ?? 0;
+        hintsUsed = cachedSnapshot['hints_used'] as int? ?? 0;
+        totalScore = (cachedSnapshot['total_score'] as num?)?.toDouble() ?? 0;
       }
 
       cbDebug(logTag, 'creating session', {
@@ -271,41 +533,73 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'mode': params.mode.name,
         'userUuid': profile?.userUuid,
       });
-      final sessionId = await _repo.createSession(
+      final session = await _repo.createSession(
         puzzleId: puzzle.id,
         mode: params.mode,
         gridSize: puzzle.gridSize,
         userUuid: profile?.userUuid,
       );
 
-      _antiCheat = AntiCheatTracker(gridSize: puzzle.gridSize);
-      final startedAt = DateTime.now();
+      cells = _mergeProgressIntoCells(
+        baseCells: cells,
+        serverAnswers: session.answers,
+        sessionId: session.sessionId,
+        sessionResumed: session.resumed,
+        cachedSnapshot: cachedSnapshot,
+      );
+      hintsRevealed = _mergeSessionHints(hintsRevealed, session.hints);
+      hintsUsed = hintsRevealed.values.fold<int>(0, (sum, list) => sum + list.length);
+      mistakes = session.mistakes > mistakes ? session.mistakes : mistakes;
+      totalScore = _scoreFromCells(cells, hintsUsed);
+
+      final startedAt = session.startedAt;
+      final isComplete = _isTrainingMode
+          ? false
+          : cells.values.where((c) => c.isSolved).length == puzzle.totalCells;
+
+      _antiCheat = AntiCheatTracker(
+        gridSize: puzzle.gridSize,
+        serverStartedAt: startedAt,
+      );
 
       _ref.read(analyticsProvider).track('puzzle_started', properties: {
         'mode': params.mode.name,
         'grid_size': puzzle.gridSize,
         'challenge_id': params.challengeId,
+        'resumed': session.resumed,
       });
 
       state = state.copyWith(
         puzzle: puzzle,
         cells: cells,
-        sessionId: sessionId,
+        sessionId: session.sessionId,
         isLoading: false,
         challengeId: params.challengeId,
         challengeCreatorScore: creatorScore,
         startedAt: startedAt,
+        hintsRevealed: hintsRevealed,
+        hintsUsed: hintsUsed,
+        mistakes: mistakes,
+        totalScore: totalScore,
+        isComplete: isComplete,
       );
+      if (isComplete) {
+        await _completeSession();
+        return;
+      }
+      await _persistSnapshot();
       if (_isTrainingMode) {
         practiceDebug('loadPuzzle success', {
           'elapsedMs': loadStarted.elapsedMilliseconds,
-          'sessionId': sessionId,
+          'sessionId': session.sessionId,
+          'resumed': session.resumed,
         });
       } else {
         cbDebug(logTag, 'loadPuzzle success', {
           'elapsedMs': loadStarted.elapsedMilliseconds,
-          'sessionId': sessionId,
+          'sessionId': session.sessionId,
           'puzzleId': puzzle.id,
+          'resumed': session.resumed,
         });
       }
     } catch (e, st) {
@@ -365,6 +659,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   Future<void> startNewPracticeSession() async {
     _sessionFinalized = false;
     final previousId = state.puzzle?.id;
+    await _clearCachedSnapshot();
     state = const PuzzleGameState(isLoading: true);
     await loadPuzzle(forceRefresh: true, excludePuzzleId: previousId);
   }
@@ -459,8 +754,9 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         hintsUsed: state.hintsUsed,
       );
 
-      final isComplete =
+      final allSolved =
           newCells.values.where((c) => c.isSolved).length == puzzle.totalCells;
+      final isComplete = allSolved && !_isTrainingMode;
 
       state = state.copyWith(
         cells: newCells,
@@ -475,9 +771,14 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'latency_ms': latencyMs,
       });
 
-      if (isComplete) await _completeSession();
+      if (isComplete) {
+        await _completeSession();
+      } else {
+        await _persistSnapshot();
+      }
     } else {
       state = state.copyWith(mistakes: state.mistakes + 1);
+      await _persistSnapshot();
       _ref.read(analyticsProvider).track('answer_submitted', properties: {
         'correct': false,
         'latency_ms': latencyMs,
@@ -487,16 +788,17 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     return result;
   }
 
-  void addHint(String cellKey, String hint) {
-    final hints = Map<String, List<String>>.from(state.hintsRevealed);
+  void addHint(String cellKey, HintResult hint) {
+    final hints = Map<String, List<HintResult>>.from(state.hintsRevealed);
     hints.putIfAbsent(cellKey, () => []).add(hint);
     state = state.copyWith(
       hintsUsed: state.hintsUsed + 1,
       hintsRevealed: hints,
     );
+    unawaited(_persistSnapshot());
   }
 
-  Future<HintResult?> requestHint(HintType hintType) async {
+  Future<HintResult?> requestHint([HintType? requestedType]) async {
     final puzzle = state.puzzle;
     final row = state.selectedRow;
     final col = state.selectedCol;
@@ -525,6 +827,8 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
     final key = '${row}_$col';
     final hintsOnCell = state.hintsRevealed[key]?.length ?? 0;
+    final hintType = requestedType ?? nextHintTypeForCount(hintsOnCell);
+    if (hintType == null) return null;
     final cell = state.cells[key];
     if (cell == null) return null;
 
@@ -538,9 +842,9 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       adToken: adToken,
     );
 
-    addHint(key, result.hintValue);
+    addHint(key, result);
     _ref.read(analyticsProvider).track('hint_used', properties: {
-      'hint_type': hintType.name,
+      'hint_type': result.hintType.name,
       'ad_watched': !isPremium,
       'hint_index': hintsOnCell + 1,
     });
@@ -566,29 +870,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       priorAchievementSlugs = prior.achievements.map((a) => a.slug).toSet();
     } catch (_) {}
 
-    var rareCount = 0;
-    var legendaryCount = 0;
-    var mythicCount = 0;
-    var correctCount = 0;
-    for (final cell in state.cells.values) {
-      if (!cell.isSolved || cell.usagePercentage == null) continue;
-      correctCount++;
-      final tier = RarityTier.fromUsagePercentage(cell.usagePercentage!);
-      switch (tier) {
-        case RarityTier.rare:
-        case RarityTier.epic:
-          rareCount++;
-        case RarityTier.legendary:
-          legendaryCount++;
-        case RarityTier.mythic:
-          mythicCount++;
-        case RarityTier.common:
-          break;
-      }
-    }
-
-    final isPerfect = state.mistakes == 0 && state.hintsUsed == 0;
-
     ChallengeResult? challengeResult;
     if (params.mode == PuzzleMode.challenge && params.challengeId != null) {
       challengeResult = await _ref.read(challengeRepositoryProvider).completeChallenge(
@@ -613,18 +894,10 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       antiCheatMetadata: {
         ...metadata,
         'user_uuid': profile.userUuid,
-        'mistakes': state.mistakes,
-        'hints_used': state.hintsUsed,
-        'total_duration_ms': durationMs,
         'mode': params.mode.name,
-        'difficulty_tier': puzzle.difficultyTier,
-        'puzzle_quality_score': puzzle.qualityScore,
-        'is_perfect': isPerfect,
-        'rare_count': rareCount,
-        'legendary_count': legendaryCount,
-        'mythic_count': mythicCount,
-        'correct_count': correctCount,
-        if (challengeResult != null) 'challenge_won': challengeResult.youWon,
+        'finished_early': state.finishedEarly,
+        if (params.mode == PuzzleMode.challenge && challengeResult != null)
+          'challenge_won': challengeResult.youWon,
       },
     );
 
@@ -673,10 +946,18 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       'hints': state.hintsUsed,
       'mode': params.mode.name,
     });
+
+    await _clearCachedSnapshot();
   }
 
   @override
   void dispose() {
+    if (state.puzzle != null &&
+        state.sessionId != null &&
+        !state.isComplete &&
+        !state.isLoading) {
+      unawaited(_persistSnapshot());
+    }
     _antiCheat?.dispose();
     super.dispose();
   }

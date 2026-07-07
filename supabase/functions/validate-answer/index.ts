@@ -34,12 +34,18 @@ Deno.serve(async (req) => {
       player_id,
       puzzle_cell_id,
       session_id,
-      response_time_ms,
     } = body
     const userUuid = req.headers.get('x-user-uuid') ?? body.user_uuid ?? ''
 
+    if (!userUuid) {
+      return new Response(JSON.stringify({ error: 'user_uuid_required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     const rl = checkRateLimit(
-      rateLimitKey(userUuid || null, clientIp(req), 'validate-answer'),
+      rateLimitKey(userUuid, clientIp(req), 'validate-answer'),
       120,
       60_000,
     )
@@ -47,8 +53,17 @@ Deno.serve(async (req) => {
       return rateLimitResponse(rl.retryAfterSec!, corsHeaders)
     }
 
-    if (!session_id || !UUID_RE.test(String(session_id))) {
-      return new Response(JSON.stringify({ error: 'invalid_session' }), {
+    if (
+      !session_id ||
+      !UUID_RE.test(String(session_id)) ||
+      !puzzle_cell_id ||
+      !UUID_RE.test(String(puzzle_cell_id)) ||
+      !player_id ||
+      !UUID_RE.test(String(player_id)) ||
+      !row_club_id ||
+      !col_club_id
+    ) {
+      return new Response(JSON.stringify({ error: 'invalid_request' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -59,49 +74,48 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const { error: sessionError } = await supabase.rpc('assert_active_session', {
+    const { error: cellError } = await supabase.rpc('assert_puzzle_cell_context', {
       p_session_id: session_id,
-      p_user_uuid: userUuid || null,
+      p_user_uuid: userUuid,
+      p_puzzle_cell_id: puzzle_cell_id,
+      p_row_club_ref: String(row_club_id),
+      p_col_club_ref: String(col_club_id),
     })
 
-    if (sessionError) {
-      const msg = sessionError.message ?? String(sessionError)
+    if (cellError) {
+      const msg = cellError.message ?? String(cellError)
+      const status = msg.includes('forbidden') || msg.includes('mismatch') ? 403 : 409
       return new Response(JSON.stringify({ error: msg }), {
-        status: msg.includes('forbidden') ? 403 : 409,
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
 
-    const validCellId = puzzle_cell_id && UUID_RE.test(String(puzzle_cell_id))
-    const validPlayerId = player_id && UUID_RE.test(String(player_id))
+    const { data: existing } = await supabase
+      .from('answers')
+      .select('id, is_correct, player_id')
+      .eq('session_id', session_id)
+      .eq('puzzle_cell_id', puzzle_cell_id)
+      .maybeSingle()
 
-    if (validCellId) {
-      const { data: existing } = await supabase
-        .from('answers')
-        .select('id, is_correct, player_id')
-        .eq('session_id', session_id)
-        .eq('puzzle_cell_id', puzzle_cell_id)
+    if (existing?.is_correct) {
+      const { data: player } = await supabase
+        .from('players')
+        .select('name')
+        .eq('id', existing.player_id)
         .maybeSingle()
 
-      if (existing?.is_correct) {
-        const { data: player } = await supabase
-          .from('players')
-          .select('name')
-          .eq('id', existing.player_id)
-          .maybeSingle()
-
-        return new Response(
-          JSON.stringify({
-            correct: true,
-            player_name: player?.name ?? '',
-            usage_percentage: 0,
-            rarity_tier: 'common',
-            rarity_score: 0,
-            already_used_in_session: true,
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-        )
-      }
+      return new Response(
+        JSON.stringify({
+          correct: true,
+          player_name: player?.name ?? '',
+          usage_percentage: 0,
+          rarity_tier: 'common',
+          rarity_score: 0,
+          already_used_in_session: true,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
     }
 
     const { data: correct, error: validateError } = await supabase.rpc(
@@ -122,7 +136,14 @@ Deno.serve(async (req) => {
     let usagePercentage = 0
     let rarityScore = 0
 
-    if (isCorrect && validCellId && validPlayerId) {
+    if (!isCorrect) {
+      await supabase.rpc('increment_session_mistakes', {
+        p_session_id: session_id,
+        p_user_uuid: userUuid,
+      }).catch(() => {/* best effort */})
+    }
+
+    if (isCorrect) {
       try {
         const { data: rarity } = await supabase
           .from('rarity_stats')
@@ -149,6 +170,18 @@ Deno.serve(async (req) => {
           p_player_id: player_id,
         }).catch(() => {/* optional RPC */})
 
+        const { data: serverResponseMs, error: timingError } = await supabase.rpc(
+          'compute_answer_response_time_ms',
+          {
+            p_session_id: session_id,
+            p_puzzle_cell_id: puzzle_cell_id,
+          },
+        )
+
+        if (timingError) {
+          console.error('compute_answer_response_time_ms failed:', timingError.message)
+        }
+
         const tier = tierFromUsage(usagePercentage)
         await supabase.from('answers').upsert(
           {
@@ -159,7 +192,7 @@ Deno.serve(async (req) => {
             usage_percentage: usagePercentage,
             rarity_tier: tier,
             rarity_score: rarityScore,
-            response_time_ms: Number(response_time_ms ?? 60000),
+            response_time_ms: Number(serverResponseMs ?? 60000),
           },
           { onConflict: 'session_id, puzzle_cell_id' },
         )

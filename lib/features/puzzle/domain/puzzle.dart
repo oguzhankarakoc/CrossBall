@@ -13,6 +13,21 @@ enum HintType {
   careerClub,
 }
 
+/// Ordered hint ladder — client and server must stay aligned.
+const kHintSequence = [
+  HintType.nationality,
+  HintType.position,
+  HintType.firstLetter,
+  HintType.careerLeague,
+  HintType.retiredStatus,
+  HintType.careerClub,
+];
+
+HintType? nextHintTypeForCount(int revealedCount) {
+  if (revealedCount >= kHintSequence.length) return null;
+  return kHintSequence[revealedCount];
+}
+
 enum SessionStatus { active, completed, abandoned, suspicious }
 
 class Club extends Equatable {
@@ -290,8 +305,122 @@ class HintResult extends Equatable {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+        'hint_type': hintTypeToApi(hintType),
+        'hint_value': hintValue,
+      };
+
+  static String hintTypeToApi(HintType type) => switch (type) {
+        HintType.nationality => 'nationality',
+        HintType.position => 'position',
+        HintType.firstLetter => 'first_letter',
+        HintType.careerLeague => 'career_league',
+        HintType.retiredStatus => 'retired_status',
+        HintType.careerClub => 'career_club',
+      };
+
   @override
   List<Object?> get props => [hintType, hintValue];
+}
+
+class SessionAnswerProgress extends Equatable {
+  const SessionAnswerProgress({
+    required this.puzzleCellId,
+    required this.row,
+    required this.col,
+    required this.playerId,
+    required this.playerName,
+    this.usagePercentage = 0,
+    this.rarityScore = 0,
+    this.responseTimeMs = 60000,
+  });
+
+  final String puzzleCellId;
+  final int row;
+  final int col;
+  final String playerId;
+  final String playerName;
+  final double usagePercentage;
+  final double rarityScore;
+  final int responseTimeMs;
+
+  factory SessionAnswerProgress.fromJson(Map<String, dynamic> json) =>
+      SessionAnswerProgress(
+        puzzleCellId: json['puzzle_cell_id'] as String,
+        row: json['row_index'] as int? ?? json['row'] as int? ?? 0,
+        col: json['col_index'] as int? ?? json['col'] as int? ?? 0,
+        playerId: json['player_id'] as String? ?? '',
+        playerName: json['player_name'] as String? ?? '',
+        usagePercentage: (json['usage_percentage'] as num?)?.toDouble() ?? 0,
+        rarityScore: (json['rarity_score'] as num?)?.toDouble() ?? 0,
+        responseTimeMs: (json['response_time_ms'] as num?)?.toInt() ?? 60000,
+      );
+
+  @override
+  List<Object?> get props => [puzzleCellId, row, col, playerId];
+}
+
+class SessionStartResult extends Equatable {
+  const SessionStartResult({
+    required this.sessionId,
+    required this.startedAt,
+    this.resumed = false,
+    this.mistakes = 0,
+    this.answers = const [],
+    this.hints = const [],
+  });
+
+  final String sessionId;
+  final DateTime startedAt;
+  final bool resumed;
+  final int mistakes;
+  final List<SessionAnswerProgress> answers;
+  final List<SessionHintProgress> hints;
+
+  factory SessionStartResult.fromJson(Map<String, dynamic> json) {
+    final answersRaw = json['answers'] as List<dynamic>? ?? [];
+    final hintsRaw = json['hints'] as List<dynamic>? ?? [];
+    return SessionStartResult(
+      sessionId: json['session_id'] as String,
+      startedAt: DateTime.parse(json['started_at'] as String),
+      resumed: json['resumed'] as bool? ?? false,
+      mistakes: (json['mistakes'] as num?)?.toInt() ?? 0,
+      answers: answersRaw
+          .map((e) => SessionAnswerProgress.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      hints: hintsRaw
+          .map((e) => SessionHintProgress.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  @override
+  List<Object?> get props => [sessionId, startedAt, resumed];
+}
+
+class SessionHintProgress extends Equatable {
+  const SessionHintProgress({
+    required this.puzzleCellId,
+    required this.row,
+    required this.col,
+    required this.hint,
+  });
+
+  final String puzzleCellId;
+  final int row;
+  final int col;
+  final HintResult hint;
+
+  factory SessionHintProgress.fromJson(Map<String, dynamic> json) =>
+      SessionHintProgress(
+        puzzleCellId: json['puzzle_cell_id'] as String,
+        row: json['row_index'] as int? ?? json['row'] as int? ?? 0,
+        col: json['col_index'] as int? ?? json['col'] as int? ?? 0,
+        hint: HintResult.fromJson(json),
+      );
+
+  @override
+  List<Object?> get props => [puzzleCellId, hint];
 }
 
 class AnswerResult extends Equatable {

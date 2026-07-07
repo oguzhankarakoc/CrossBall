@@ -34,7 +34,7 @@ abstract interface class PuzzleRepository {
     required String adToken,
     required String sessionId,
   });
-  Future<String> createSession({
+  Future<SessionStartResult> createSession({
     required String puzzleId,
     required PuzzleMode mode,
     required int gridSize,

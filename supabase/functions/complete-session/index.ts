@@ -21,17 +21,10 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const {
       session_id,
-      mistakes = 0,
-      hints_used = 0,
-      total_duration_ms = 0,
-      background_duration_ms = 0,
-      inactive_periods = 0,
-      is_suspicious = false,
       user_uuid,
-      mode = 'practice',
-      difficulty_tier = 'medium',
-      puzzle_quality_score = 85,
+      finished_early = false,
       challenge_won,
+      mode: bodyMode,
     } = body
 
     if (!session_id || !user_uuid) {
@@ -55,54 +48,7 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const { data: sessionRow, error: sessionFetchError } = await supabase
-      .from('puzzle_sessions')
-      .select('id, user_id, puzzle_id, mode, status, final_score, is_suspicious')
-      .eq('id', session_id)
-      .maybeSingle()
-
-    if (sessionFetchError || !sessionRow) {
-      return new Response(JSON.stringify({ error: 'session_not_found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const { data: userRow } = await supabase
-      .from('users')
-      .select('id')
-      .eq('user_uuid', user_uuid)
-      .maybeSingle()
-
-    if (!userRow || userRow.id !== sessionRow.user_id) {
-      return new Response(JSON.stringify({ error: 'session_forbidden' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    if (sessionRow.status === 'completed') {
-      return new Response(
-        JSON.stringify({
-          ok: true,
-          already_completed: true,
-          session_id,
-          final_score: sessionRow.final_score,
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      )
-    }
-
-    if (sessionRow.status !== 'active') {
-      return new Response(JSON.stringify({ error: 'session_not_active' }), {
-        status: 409,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    const sessionMode = sessionRow.mode ?? mode
-
-    if (sessionMode === 'daily') {
+    if (bodyMode === 'daily') {
       const { data: alreadyDaily } = await supabase.rpc('user_completed_daily_today', {
         p_user_uuid: user_uuid,
       })
@@ -114,53 +60,90 @@ Deno.serve(async (req) => {
       }
     }
 
-    const { data: scoreMetrics, error: scoreError } = await supabase.rpc(
-      'compute_session_score',
-      { p_session_id: session_id },
+    const { data: finalized, error: finalizeError } = await supabase.rpc(
+      'finalize_puzzle_session',
+      {
+        p_session_id: session_id,
+        p_user_uuid: user_uuid,
+        p_finished_early: Boolean(finished_early),
+      },
     )
 
-    if (scoreError) {
-      console.error('compute_session_score failed:', scoreError.message)
+    if (finalizeError) {
+      const msg = finalizeError.message ?? String(finalizeError)
+      const status = msg.includes('incomplete_session')
+        ? 409
+        : msg.includes('forbidden')
+          ? 403
+          : msg.includes('not_found')
+            ? 404
+            : 500
+      return new Response(JSON.stringify({ error: msg }), {
+        status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
     }
 
-    const metrics = (scoreMetrics ?? {}) as Record<string, unknown>
-    const serverHints = Number(metrics.hints_used ?? hints_used)
-    const finalScore = Number(metrics.final_score ?? 0)
-    const correctCount = Number(metrics.correct_count ?? 0)
-    const rareCount = Number(metrics.rare_count ?? 0)
-    const legendaryCount = Number(metrics.legendary_count ?? 0)
-    const mythicCount = Number(metrics.mythic_count ?? 0)
-    const isPerfect =
-      Boolean(metrics.is_perfect) && Number(mistakes) === 0 && serverHints === 0
+    const result = (finalized ?? {}) as Record<string, unknown>
 
-    const suspicious = Boolean(is_suspicious)
-    const status = suspicious ? 'suspicious' : 'completed'
+    if (result.already_completed === true) {
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          already_completed: true,
+          session_id,
+          final_score: result.final_score,
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
 
-    await supabase
+    const finalScore = Number(result.final_score ?? 0)
+    const serverHints = Number(result.hints_used ?? 0)
+    const mistakes = Number(result.mistakes ?? 0)
+    const correctCount = Number(result.correct_count ?? 0)
+    const rareCount = Number(result.rare_count ?? 0)
+    const legendaryCount = Number(result.legendary_count ?? 0)
+    const mythicCount = Number(result.mythic_count ?? 0)
+    const isPerfect = Boolean(result.is_perfect)
+    const suspicious = Boolean(result.is_suspicious)
+    const totalDurationMs = Number(result.server_duration_ms ?? 0)
+    const resolvedMode = String(result.mode ?? bodyMode ?? 'practice')
+    const integrity = (result.integrity ?? {}) as Record<string, unknown>
+    const expectedCells = Number(integrity.expected_cells ?? 0)
+    const fullGrid = expectedCells > 0 && correctCount >= expectedCells
+
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('id')
+      .eq('user_uuid', user_uuid)
+      .maybeSingle()
+
+    let puzzleMeta: { difficulty_tier?: string; quality_score?: number } | null = null
+    const { data: sessionRow } = await supabase
       .from('puzzle_sessions')
-      .update({
-        final_score: finalScore,
-        mistakes,
-        hints_used: serverHints,
-        total_duration_ms,
-        background_duration_ms,
-        inactive_periods,
-        is_suspicious: suspicious,
-        status,
-        completed_at: new Date().toISOString(),
-      })
+      .select('puzzle_id')
       .eq('id', session_id)
-      .eq('status', 'active')
+      .maybeSingle()
+
+    if (sessionRow?.puzzle_id) {
+      const { data: puzzleRow } = await supabase
+        .from('puzzles')
+        .select('difficulty_tier, quality_score')
+        .eq('id', sessionRow.puzzle_id)
+        .maybeSingle()
+      puzzleMeta = puzzleRow
+    }
 
     let economyResult: Record<string, unknown> | null = null
 
-    if (!suspicious) {
+    if (!suspicious && userRow?.id) {
       const eventType =
-        sessionMode === 'daily'
+        resolvedMode === 'daily'
           ? 'daily_completed'
-          : sessionMode === 'practice'
+          : resolvedMode === 'practice'
             ? 'practice_completed'
-            : sessionMode === 'timeline'
+            : resolvedMode === 'timeline'
               ? 'timeline_completed'
               : 'puzzle_completed'
 
@@ -168,10 +151,10 @@ Deno.serve(async (req) => {
         final_score: finalScore,
         mistakes,
         hints_used: serverHints,
-        total_duration_ms,
-        mode: sessionMode,
-        difficulty_tier,
-        puzzle_quality_score,
+        total_duration_ms: totalDurationMs,
+        mode: resolvedMode,
+        difficulty_tier: puzzleMeta?.difficulty_tier ?? 'medium',
+        puzzle_quality_score: puzzleMeta?.quality_score ?? 85,
         is_perfect: isPerfect,
         rare_count: rareCount,
         legendary_count: legendaryCount,
@@ -194,7 +177,7 @@ Deno.serve(async (req) => {
         economyResult = puzzleEconomy as Record<string, unknown>
       }
 
-      if (sessionMode === 'challenge' && typeof challenge_won === 'boolean') {
+      if (resolvedMode === 'challenge' && typeof challenge_won === 'boolean') {
         const challengeEvent = challenge_won ? 'challenge_won' : 'challenge_lost'
         const { data: challengeEconomy, error: challengeError } = await supabase.rpc(
           'gee_process_event',
@@ -223,7 +206,7 @@ Deno.serve(async (req) => {
           user_id: userRow.id,
           games_played: (stats?.games_played ?? 0) + 1,
           total_score: Number(stats?.total_score ?? 0) + finalScore,
-          total_mistakes: (stats?.total_mistakes ?? 0) + Number(mistakes),
+          total_mistakes: (stats?.total_mistakes ?? 0) + mistakes,
           hints_used: (stats?.hints_used ?? 0) + serverHints,
           current_streak: Number(economyResult?.current_streak ?? stats?.current_streak ?? 0),
           best_streak: Number(economyResult?.best_streak ?? stats?.best_streak ?? 0),
@@ -234,10 +217,10 @@ Deno.serve(async (req) => {
 
       await supabase.rpc('log_player_activity', {
         p_user_uuid: user_uuid,
-        p_event_type: `${sessionMode}_completed`,
+        p_event_type: `${resolvedMode}_completed`,
         p_payload: {
           final_score: finalScore,
-          mode: sessionMode,
+          mode: resolvedMode,
           is_perfect: isPerfect,
         },
       })
@@ -249,7 +232,12 @@ Deno.serve(async (req) => {
         (activeTournament as { ok?: boolean }).ok === true
       ) {
         const slug = (activeTournament as { slug?: string }).slug
-        if (slug && ['daily', 'practice', 'timeline'].includes(String(sessionMode))) {
+        if (
+          slug &&
+          fullGrid &&
+          !suspicious &&
+          ['daily', 'practice', 'timeline'].includes(resolvedMode)
+        ) {
           await supabase.rpc('upsert_tournament_score', {
             p_tournament_slug: slug,
             p_user_uuid: user_uuid,
@@ -260,7 +248,11 @@ Deno.serve(async (req) => {
     }
 
     let practiceQuota: Record<string, unknown> | null = null
-    if (user_uuid && (sessionMode === 'practice' || sessionMode === 'timeline') && !suspicious) {
+    if (
+      user_uuid &&
+      (resolvedMode === 'practice' || resolvedMode === 'timeline') &&
+      !suspicious
+    ) {
       const { data: quota, error: quotaError } = await supabase.rpc(
         'consume_practice_session',
         { p_user_uuid: user_uuid },
@@ -278,6 +270,7 @@ Deno.serve(async (req) => {
         session_id,
         final_score: finalScore,
         server_authoritative: true,
+        is_suspicious: suspicious,
         economy: economyResult,
         practice_quota: practiceQuota,
       }),

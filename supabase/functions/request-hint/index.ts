@@ -1,9 +1,17 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import {
+  checkRateLimit,
+  clientIp,
+  rateLimitKey,
+  rateLimitResponse,
+} from '../_shared/rate_limit.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-uuid',
 }
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 type HintType =
   | 'nationality'
@@ -12,6 +20,15 @@ type HintType =
   | 'career_league'
   | 'retired_status'
   | 'career_club'
+
+const HINT_SEQUENCE: HintType[] = [
+  'nationality',
+  'position',
+  'first_letter',
+  'career_league',
+  'retired_status',
+  'career_club',
+]
 
 type PlayerRow = {
   id: string
@@ -44,30 +61,81 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { row_club_id, col_club_id, puzzle_cell_id, session_id, hint_type } = body
+    const { row_club_id, col_club_id, puzzle_cell_id, session_id } = body
     const userUuid = req.headers.get('x-user-uuid') ?? body.user_uuid ?? ''
+
+    if (!userUuid) {
+      return new Response(JSON.stringify({ error: 'user_uuid_required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (
+      !session_id ||
+      !UUID_RE.test(String(session_id)) ||
+      !puzzle_cell_id ||
+      !UUID_RE.test(String(puzzle_cell_id)) ||
+      !row_club_id ||
+      !col_club_id
+    ) {
+      return new Response(JSON.stringify({ error: 'invalid_request' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const rl = checkRateLimit(
+      rateLimitKey(userUuid, clientIp(req), 'request-hint'),
+      40,
+      60_000,
+    )
+    if (!rl.allowed) {
+      return rateLimitResponse(rl.retryAfterSec!, corsHeaders)
+    }
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    if (session_id) {
-      const { error: sessionError } = await supabase.rpc('assert_active_session', {
-        p_session_id: session_id,
-        p_user_uuid: userUuid || null,
+    const { error: cellError } = await supabase.rpc('assert_puzzle_cell_context', {
+      p_session_id: session_id,
+      p_user_uuid: userUuid,
+      p_puzzle_cell_id: puzzle_cell_id,
+      p_row_club_ref: String(row_club_id),
+      p_col_club_ref: String(col_club_id),
+    })
+
+    if (cellError) {
+      const msg = cellError.message ?? String(cellError)
+      return new Response(JSON.stringify({ error: msg }), {
+        status: msg.includes('forbidden') || msg.includes('mismatch') ? 403 : 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
-      if (sessionError) {
-        const msg = sessionError.message ?? String(sessionError)
-        return new Response(JSON.stringify({ error: msg }), {
-          status: msg.includes('forbidden') ? 403 : 409,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
     }
 
-    const type = (hint_type as HintType) ?? 'nationality'
+    let type = (body.hint_type as HintType) ?? 'nationality'
     const adToken = body.ad_token ? String(body.ad_token) : ''
+
+    const { data: existingHints, error: hintsError } = await supabase
+      .from('session_hints')
+      .select('hint_type')
+      .eq('session_id', session_id)
+      .eq('puzzle_cell_id', puzzle_cell_id)
+      .order('created_at', { ascending: true })
+
+    if (hintsError) throw hintsError
+
+    const revealedCount = existingHints?.length ?? 0
+    const expectedType = HINT_SEQUENCE[revealedCount]
+    if (!expectedType) {
+      return new Response(JSON.stringify({ error: 'hint_limit_reached' }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+    type = expectedType
     const skipAdVerify = Deno.env.get('HINT_SKIP_AD') === 'true'
 
     if (!skipAdVerify) {

@@ -251,7 +251,7 @@ class PuzzleApiService {
     return _demoValidate(playerId, rowClubId, colClubId);
   }
 
-  Future<String> startSession({
+  Future<SessionStartResult> startSession({
     required String userUuid,
     required String puzzleId,
     required String mode,
@@ -300,11 +300,21 @@ class PuzzleApiService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         final sessionId = data['session_id'] as String?;
-        if (sessionId != null && sessionId.isNotEmpty) {
-          cbDebug('Session', 'startSession OK', {'sessionId': sessionId});
-          return sessionId;
+        final startedAtRaw = data['started_at'] as String?;
+        if (sessionId != null &&
+            sessionId.isNotEmpty &&
+            startedAtRaw != null &&
+            startedAtRaw.isNotEmpty) {
+          final result = SessionStartResult.fromJson(data);
+          cbDebug('Session', 'startSession OK', {
+            'sessionId': sessionId,
+            'resumed': result.resumed,
+            'answers': result.answers.length,
+            'hints': result.hints.length,
+          });
+          return result;
         }
-        cbDebug('Session', 'startSession missing session_id in 200 body');
+        cbDebug('Session', 'startSession missing session_id/started_at in 200 body');
       }
 
       String detail = '';
@@ -794,7 +804,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       );
 
   @override
-  Future<String> createSession({
+  Future<SessionStartResult> createSession({
     required String puzzleId,
     required PuzzleMode mode,
     required int gridSize,
@@ -815,7 +825,10 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       'supabaseConfigured': AppConfig.isSupabaseConfigured,
       'hasUserUuid': userUuid != null,
     });
-    return localId;
+    return SessionStartResult(
+      sessionId: localId,
+      startedAt: DateTime.now(),
+    );
   }
 
   @override
@@ -824,10 +837,8 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required double finalScore,
     required Map<String, dynamic> antiCheatMetadata,
   }) async {
-    if (antiCheatMetadata['is_suspicious'] == true) return;
     await _cache.queuePendingAnswer({
       'session_id': sessionId,
-      'final_score': finalScore,
       ...antiCheatMetadata,
     });
   }

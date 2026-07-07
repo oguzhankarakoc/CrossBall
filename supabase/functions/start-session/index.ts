@@ -64,6 +64,25 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('id')
+      .eq('user_uuid', userUuid)
+      .maybeSingle()
+
+    let resumed = false
+    if (userRow?.id) {
+      const { data: existingActive } = await supabase
+        .from('puzzle_sessions')
+        .select('id')
+        .eq('user_id', userRow.id)
+        .eq('puzzle_id', puzzleId)
+        .eq('mode', mode)
+        .eq('status', 'active')
+        .maybeSingle()
+      resumed = Boolean(existingActive?.id)
+    }
+
     const { data: sessionId, error } = await supabase.rpc('start_puzzle_session', {
       p_user_uuid: userUuid,
       p_puzzle_id: puzzleId,
@@ -84,10 +103,31 @@ Deno.serve(async (req) => {
       })
     }
 
-    return new Response(
-      JSON.stringify({ session_id: sessionId, ok: true }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    const { data: progress, error: progressError } = await supabase.rpc(
+      'get_session_progress',
+      {
+        p_session_id: sessionId,
+        p_user_uuid: userUuid,
+      },
     )
+
+    if (progressError || !progress) {
+      return new Response(JSON.stringify({ error: progressError?.message ?? 'progress_failed' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const payload = {
+      ...(progress as Record<string, unknown>),
+      session_id: sessionId,
+      resumed,
+      ok: true,
+    }
+
+    return new Response(JSON.stringify(payload), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
       status: 500,
