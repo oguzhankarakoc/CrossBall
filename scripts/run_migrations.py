@@ -6,9 +6,23 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 import psycopg2
 from dotenv import load_dotenv
+
+
+def _sanitize_database_url(database_url: str) -> str:
+    """Drop URI params psycopg2 doesn't accept (e.g. pgbouncer=true)."""
+    split = urlsplit(database_url)
+    if not split.query:
+        return database_url
+
+    filtered = [(k, v) for k, v in parse_qsl(split.query, keep_blank_values=True) if k != "pgbouncer"]
+    if len(filtered) == len(parse_qsl(split.query, keep_blank_values=True)):
+        return database_url
+
+    return urlunsplit((split.scheme, split.netloc, split.path, urlencode(filtered), split.fragment))
 
 
 def main() -> int:
@@ -42,7 +56,7 @@ def main() -> int:
         print("No migration files found.", file=sys.stderr)
         return 1
 
-    conn = psycopg2.connect(database_url)
+    conn = psycopg2.connect(_sanitize_database_url(database_url))
     conn.autocommit = True
     cur = conn.cursor()
 
