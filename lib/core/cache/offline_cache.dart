@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../utils/daily_puzzle_schedule.dart';
+
 import '../constants/game_constants.dart';
 
 /// Offline-first cache for daily puzzles, stats, and recent picks.
@@ -44,7 +46,7 @@ class OfflineCache {
   Future<Map<String, dynamic>?> getDailyPuzzle({String? forDate}) async {
     final prefs = await _prefs;
     final cachedDate = prefs.getString(_keyDailyPuzzleDate);
-    final today = forDate ?? DateTime.now().toIso8601String().split('T').first;
+    final today = forDate ?? DailyPuzzleSchedule.todayPuzzleDateUtc();
 
     if (cachedDate == today) {
       final raw = prefs.getString(_keyDailyPuzzle);

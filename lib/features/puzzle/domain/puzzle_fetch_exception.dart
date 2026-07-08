@@ -24,3 +24,24 @@ class PuzzleFetchException implements Exception {
   @override
   String toString() => message;
 }
+
+/// Thrown when a live hint cannot be loaded from the backend.
+class HintRequestException implements Exception {
+  const HintRequestException(
+    this.message, {
+    this.statusCode,
+    this.errorCode,
+  });
+
+  final String message;
+  final int? statusCode;
+  final String? errorCode;
+
+  bool get isAdTokenRequired =>
+      errorCode == 'ad_token_required' || errorCode == 'invalid_ad_token';
+
+  bool get isHintLimitReached => errorCode == 'hint_limit_reached';
+
+  @override
+  String toString() => message;
+}

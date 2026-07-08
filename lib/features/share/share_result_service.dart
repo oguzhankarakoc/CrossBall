@@ -7,6 +7,8 @@ import 'package:flutter/rendering.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/utils/share_helper.dart';
+
 import '../../core/theme/app_tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../../shared/widgets/crossball_ui.dart';
@@ -21,6 +23,7 @@ class ShareResultService {
     required double score,
     required int streak,
     String? challengeUrl,
+    GlobalKey? anchorKey,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final text = StringBuffer()
@@ -39,18 +42,24 @@ class ShareResultService {
         final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
         if (byteData != null) {
           final file = await _writeTempPng(byteData.buffer.asUint8List());
-          await SharePlus.instance.share(
+          await ShareHelper.share(
             ShareParams(
               text: text.toString(),
               files: [XFile(file.path)],
             ),
+            context: context,
+            anchorKey: anchorKey ?? cardKey,
           );
           return;
         }
       }
     } catch (_) {}
 
-    await SharePlus.instance.share(ShareParams(text: text.toString()));
+    await ShareHelper.share(
+      ShareParams(text: text.toString()),
+      context: context,
+      anchorKey: anchorKey,
+    );
   }
 
   static Future<File> _writeTempPng(Uint8List bytes) async {

@@ -760,6 +760,48 @@ abstract class AppLocalizations {
   /// **'Reveal career club hint'**
   String get hintCareerClubPremium;
 
+  /// No description provided for @hintChipNationality.
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get hintChipNationality;
+
+  /// No description provided for @hintChipPosition.
+  ///
+  /// In en, this message translates to:
+  /// **'Position'**
+  String get hintChipPosition;
+
+  /// No description provided for @hintChipFirstLetter.
+  ///
+  /// In en, this message translates to:
+  /// **'First letter'**
+  String get hintChipFirstLetter;
+
+  /// No description provided for @hintChipStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get hintChipStatus;
+
+  /// No description provided for @hintChipClub.
+  ///
+  /// In en, this message translates to:
+  /// **'Club'**
+  String get hintChipClub;
+
+  /// No description provided for @hintLimitReached.
+  ///
+  /// In en, this message translates to:
+  /// **'All hints for this cell are already revealed.'**
+  String get hintLimitReached;
+
+  /// No description provided for @hintUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Hint unavailable right now. Please try again.'**
+  String get hintUnavailable;
+
   /// No description provided for @searchCompetitiveEmpty.
   ///
   /// In en, this message translates to:
@@ -1107,6 +1149,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again.'**
   String get errorGeneric;
+
+  /// No description provided for @answerCellNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This cell cannot be validated right now. Refresh the puzzle and try again.'**
+  String get answerCellNotFound;
 
   /// No description provided for @errorNetwork.
   ///

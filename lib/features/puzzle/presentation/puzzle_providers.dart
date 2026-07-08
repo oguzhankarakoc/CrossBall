@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/cache/active_puzzle_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/constants/game_constants.dart';
-import '../../../core/utils/daily_puzzle_schedule.dart';
+import '../../../core/daily/daily_puzzle_contract.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
@@ -162,16 +162,192 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   final Ref _ref;
   final PuzzleGameParams params;
   final _uuid = const Uuid();
+  static final _cellIdPattern = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    caseSensitive: false,
+  );
   AntiCheatTracker? _antiCheat;
   bool _sessionFinalized = false;
+
+  bool _cellsNeedHydration(Puzzle puzzle) {
+    if (!AppConfig.isSupabaseConfigured) return false;
+    if (puzzle.cells.isEmpty) return true;
+    return puzzle.cells.any((cell) => !_cellIdPattern.hasMatch(cell.id));
+  }
+
+  String? _resolvePuzzleCellId({
+    required Puzzle puzzle,
+    required int row,
+    required int col,
+    required PuzzleCell cell,
+  }) {
+    final canonical = puzzle.cellAt(row, col);
+    if (canonical != null && _cellIdPattern.hasMatch(canonical.id)) {
+      return canonical.id;
+    }
+    if (_cellIdPattern.hasMatch(cell.id)) return cell.id;
+    return null;
+  }
+
+  Map<String, PuzzleCell> _syncCellIdsFromPuzzle(
+    Map<String, PuzzleCell> cells,
+    Puzzle puzzle,
+  ) {
+    final synced = Map<String, PuzzleCell>.from(cells);
+    for (final cell in puzzle.cells) {
+      final key = '${cell.row}_${cell.col}';
+      final existing = synced[key];
+      if (existing != null && existing.id != cell.id) {
+        synced[key] = existing.copyWith(id: cell.id);
+      }
+    }
+    return synced;
+  }
+
+  bool _cellsDifferFromPuzzle(Map<String, PuzzleCell> cells, Puzzle puzzle) {
+    for (final cell in puzzle.cells) {
+      final key = '${cell.row}_${cell.col}';
+      final stateCell = cells[key];
+      if (stateCell == null || stateCell.id != cell.id) return true;
+    }
+    return false;
+  }
+
+  Future<PuzzleCell?> _ensureCellReady({
+    required String key,
+    required int row,
+    required int col,
+  }) async {
+    final puzzle = state.puzzle;
+    if (puzzle == null) return null;
+    final cached = state.cells[key];
+    if (cached == null) return null;
+
+    final canonical = puzzle.cellAt(row, col);
+    if (canonical != null && canonical.id != cached.id) {
+      cbDebug('Session', 'syncing stale cell id before request', {
+        'key': key,
+        'cachedCellId': cached.id,
+        'canonicalCellId': canonical.id,
+        'puzzleId': puzzle.id,
+      });
+      final synced = cached.copyWith(id: canonical.id);
+      state = state.copyWith(
+        cells: {...state.cells, key: synced},
+      );
+      return synced;
+    }
+    return cached;
+  }
+
+  Map<String, PuzzleCell> _mergeCellsPreservingProgress(
+    Map<String, PuzzleCell> refreshedCells,
+  ) {
+    final merged = Map<String, PuzzleCell>.from(refreshedCells);
+    for (final entry in state.cells.entries) {
+      final existing = merged[entry.key];
+      if (existing == null) continue;
+      merged[entry.key] = existing.copyWith(
+        solvedPlayerId: entry.value.solvedPlayerId,
+        solvedPlayerName: entry.value.solvedPlayerName,
+        isCorrect: entry.value.isCorrect,
+        usagePercentage: entry.value.usagePercentage,
+        rarityScore: entry.value.rarityScore,
+        cellScore: entry.value.cellScore,
+      );
+    }
+    return merged;
+  }
+
+  Future<bool> _refreshCellsFromServer() async {
+    final puzzle = state.puzzle;
+    if (puzzle == null || !AppConfig.isSupabaseConfigured) return false;
+
+    final oldIds = puzzle.cells.map((cell) => cell.id).toList();
+    cbDebug('Session', 'force-refreshing puzzle cells after cell_not_found', {
+      'puzzleId': puzzle.id,
+      'oldCellIds': oldIds,
+    });
+
+    try {
+      final profile = await _ref.read(userProfileProvider.future);
+      Puzzle synced;
+      if (params.mode == PuzzleMode.daily) {
+        await _repo.clearDailyPuzzleCache();
+        synced = await _repo.getDailyPuzzle(
+          forceRefresh: true,
+          userUuid: profile.userUuid,
+        );
+      } else {
+        synced = await _repo.hydratePuzzleCells(puzzle);
+      }
+
+      if (synced.cells.isEmpty) {
+        cbDebugError('Session', 'cell refresh returned no cells', {
+          'puzzleId': puzzle.id,
+        });
+        return false;
+      }
+
+      final newIds = synced.cells.map((cell) => cell.id).toList();
+      final refreshedCells = _cellsMapFromPuzzle(synced);
+      final needsSync = oldIds.join(',') != newIds.join(',') ||
+          _cellsDifferFromPuzzle(state.cells, synced);
+      if (!needsSync) {
+        cbDebugError('Session', 'cell ids unchanged after refresh', {
+          'puzzleId': puzzle.id,
+          'cellIds': newIds,
+        });
+        return false;
+      }
+
+      final merged = _mergeCellsPreservingProgress(refreshedCells);
+      state = state.copyWith(
+        puzzle: Puzzle(
+          id: synced.id,
+          date: synced.date,
+          gridSize: synced.gridSize,
+          rowClubs: synced.rowClubs,
+          colClubs: synced.colClubs,
+          cells: synced.cells,
+          mode: puzzle.mode,
+          difficulty: synced.difficulty,
+          difficultyTier: synced.difficultyTier,
+          qualityScore: synced.qualityScore,
+          puzzleHash: synced.puzzleHash,
+        ),
+        cells: merged,
+      );
+      unawaited(_persistSnapshot());
+
+      cbDebug('Session', 'puzzle cells refreshed', {
+        'puzzleId': synced.id,
+        'newCellIds': newIds,
+      });
+      return true;
+    } catch (e, st) {
+      cbDebugError('Session', 'cell refresh failed', e, st);
+      return false;
+    }
+  }
+
+  bool _isCellNotFoundError(Object error) {
+    if (error is PuzzleFetchException) {
+      final code = error.errorCode ?? error.message;
+      return code.contains('cell_not_found');
+    }
+    if (error is HintRequestException) {
+      final code = error.errorCode ?? error.message;
+      return code.contains('cell_not_found');
+    }
+    return false;
+  }
 
   PuzzleRepository get _repo => _ref.read(puzzleRepositoryProvider);
   ActivePuzzleCache get _activeCache => _ref.read(activePuzzleCacheProvider);
 
   int get _gridSizeForCache =>
       params.gridSize ?? state.puzzle?.gridSize ?? GameConstants.gridSize;
-
-  String get _todayDate => DailyPuzzleSchedule.todayPuzzleDateUtc();
 
   Map<String, PuzzleCell> _cellsMapFromPuzzle(Puzzle puzzle) {
     final cells = <String, PuzzleCell>{};
@@ -182,11 +358,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   }
 
   bool _isCachedSnapshotValid(Map<String, dynamic> snapshot) {
+    if (params.mode == PuzzleMode.daily) {
+      return DailyPuzzleContract.isSnapshotForToday(snapshot);
+    }
     final puzzleJson = snapshot['puzzle'] as Map<String, dynamic>?;
     if (puzzleJson == null) return false;
-    if (params.mode == PuzzleMode.daily) {
-      return puzzleJson['date'] == _todayDate;
-    }
     if (params.mode == PuzzleMode.challenge) {
       return snapshot['challenge_id'] == params.challengeId;
     }
@@ -232,6 +408,35 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           .toList();
     }
     return hints;
+  }
+
+  bool _isStaleDemoHintSet(List<HintResult> hints) {
+    if (hints.length != kHintSequence.length) return false;
+    const staleValues = [
+      'Brazil',
+      'Midfielder',
+      'D _ _ _',
+      'Premier League',
+      'Active',
+      'Arsenal',
+    ];
+    for (var i = 0; i < hints.length; i++) {
+      if (hints[i].hintType != kHintSequence[i]) return false;
+      if (hints[i].hintValue != staleValues[i]) return false;
+    }
+    return true;
+  }
+
+  Map<String, List<HintResult>> _stripStaleDemoHints(
+    Map<String, List<HintResult>> hints,
+  ) {
+    if (!AppConfig.isSupabaseConfigured) return hints;
+    final cleaned = <String, List<HintResult>>{};
+    for (final entry in hints.entries) {
+      if (_isStaleDemoHintSet(entry.value)) continue;
+      cleaned[entry.key] = entry.value;
+    }
+    return cleaned;
   }
 
   Map<String, List<HintResult>> _mergeSessionHints(
@@ -401,6 +606,8 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       gridSize: _gridSizeForCache,
       snapshot: {
         'puzzle': puzzle.toJson(),
+        if (params.mode == PuzzleMode.daily)
+          ...DailyPuzzleContract.snapshotMetadataFor(puzzle),
         if (usageDate != null && usageDate.isNotEmpty) 'usage_date': usageDate,
         'session_id': sessionId,
         'started_at': state.startedAt?.toIso8601String(),
@@ -465,6 +672,23 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         } catch (e, st) {
           cbDebugError('Daily', 'stats pre-check failed — blocking daily load', e, st);
           state = state.copyWith(isLoading: false, error: 'puzzle_load_failed');
+          return;
+        }
+
+        // Gate: never play a stale grid while today's puzzle is still rolling out.
+        final rollout = await _ref.read(dailyPuzzleRolloutProvider.future);
+        if (DailyPuzzleContract.shouldBlockLoad(rollout)) {
+          cbDebug('Daily', 'blocked by rollout gate', {
+            'phase': rollout.phase.name,
+            'puzzleDate': rollout.puzzleDate,
+            'todayUtc': DailyPuzzleContract.todayUtc,
+          });
+          await _clearCachedSnapshot();
+          await _repo.clearDailyPuzzleCache();
+          state = state.copyWith(
+            isLoading: false,
+            error: DailyPuzzleContract.errorKeyForRollout(rollout),
+          );
           return;
         }
       }
@@ -563,10 +787,20 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         }
       } else {
         if (cachedSnapshot != null && !forceRefresh) {
-          puzzle = Puzzle.fromJson(cachedSnapshot['puzzle'] as Map<String, dynamic>);
-          cbDebug('Daily', 'resuming cached daily puzzle', {
+          cbDebug('Daily', 'resuming session — force network refresh for cell ids', {
+            'puzzleId': (cachedSnapshot['puzzle'] as Map<String, dynamic>?)?['puzzle_id'],
+          });
+          await _repo.clearDailyPuzzleCache();
+          puzzle = await _repo.getDailyPuzzle(
+            forceRefresh: true,
+            userUuid: profile?.userUuid,
+          );
+          cbDebug('Daily', 'daily puzzle refreshed for resumed session', {
             'puzzleId': puzzle.id,
             'date': puzzle.date,
+            'cellIds': puzzle.cells.map((c) => c.id).toList(),
+            'rowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+            'colClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
           });
         } else {
           cbDebug('Daily', 'fetching daily puzzle', {'userUuid': profile?.userUuid});
@@ -583,15 +817,56 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         }
       }
 
+      puzzle = await _repo.hydratePuzzleCells(puzzle);
+      if (puzzle.cells.isEmpty) {
+        cbDebugError(logTag, 'puzzle has no cells after server sync', {
+          'puzzleId': puzzle.id,
+        });
+      } else if (_cellsNeedHydration(puzzle)) {
+        cbDebugError(logTag, 'puzzle cells still invalid after hydration', {
+          'puzzleId': puzzle.id,
+          'cellIds': puzzle.cells.map((c) => c.id).toList(),
+        });
+      }
+
       var cells = _cellsMapFromPuzzle(puzzle);
       var hintsRevealed = <String, List<HintResult>>{};
       var mistakes = 0;
       var hintsUsed = 0;
       var totalScore = 0.0;
+      var forceNewSession = false;
+
+      if (cachedSnapshot != null && params.mode == PuzzleMode.daily) {
+        final cachedPuzzleJson =
+            cachedSnapshot['puzzle'] as Map<String, dynamic>?;
+        if (cachedPuzzleJson != null) {
+          final cachedPuzzle = Puzzle.fromJson(cachedPuzzleJson);
+          final cachedFingerprint =
+              cachedSnapshot['layout_fingerprint'] as String? ??
+                  cachedPuzzle.layoutFingerprint;
+          if (cachedFingerprint != puzzle.layoutFingerprint ||
+              cachedPuzzle.id != puzzle.id) {
+            cbDebug('Daily', 'puzzle layout changed — resetting session', {
+              'puzzleId': puzzle.id,
+              'cachedFingerprint': cachedFingerprint,
+              'freshFingerprint': puzzle.layoutFingerprint,
+              'cachedRowClubs': cachedPuzzle.rowClubs.map((c) => c.shortLabel).toList(),
+              'freshRowClubs': puzzle.rowClubs.map((c) => c.shortLabel).toList(),
+              'cachedColClubs': cachedPuzzle.colClubs.map((c) => c.shortLabel).toList(),
+              'freshColClubs': puzzle.colClubs.map((c) => c.shortLabel).toList(),
+            });
+            forceNewSession = true;
+            cachedSnapshot = null;
+            await _clearCachedSnapshot();
+          }
+        }
+      }
 
       if (cachedSnapshot != null) {
-        hintsRevealed = _hintsFromJson(
-          cachedSnapshot['hints_revealed'] as Map<String, dynamic>?,
+        hintsRevealed = _stripStaleDemoHints(
+          _hintsFromJson(
+            cachedSnapshot['hints_revealed'] as Map<String, dynamic>?,
+          ),
         );
         mistakes = cachedSnapshot['mistakes'] as int? ?? 0;
         hintsUsed = cachedSnapshot['hints_used'] as int? ?? 0;
@@ -602,20 +877,25 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'puzzleId': puzzle.id,
         'mode': params.mode.name,
         'userUuid': profile?.userUuid,
+        'forceNew': forceNewSession,
       });
       final session = await _repo.createSession(
         puzzleId: puzzle.id,
         mode: params.mode,
         gridSize: puzzle.gridSize,
         userUuid: profile?.userUuid,
+        forceNew: forceNewSession,
       );
 
-      cells = _mergeProgressIntoCells(
-        baseCells: cells,
-        serverAnswers: session.answers,
-        sessionId: session.sessionId,
-        sessionResumed: session.resumed,
-        cachedSnapshot: cachedSnapshot,
+      cells = _syncCellIdsFromPuzzle(
+        _mergeProgressIntoCells(
+          baseCells: cells,
+          serverAnswers: session.answers,
+          sessionId: session.sessionId,
+          sessionResumed: session.resumed,
+          cachedSnapshot: cachedSnapshot,
+        ),
+        puzzle,
       );
       hintsRevealed = _mergeSessionHints(hintsRevealed, session.hints);
       hintsUsed = hintsRevealed.values.fold<int>(0, (sum, list) => sum + list.length);
@@ -771,15 +1051,34 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   }
 
   Future<AnswerResult?> submitAnswer(Player player) async {
-    final puzzle = state.puzzle;
     final row = state.selectedRow;
     final col = state.selectedCol;
-    if (puzzle == null || row == null || col == null) return null;
+    if (state.puzzle == null || row == null || col == null) return null;
 
     _antiCheat?.recordInteraction();
     final key = '${row}_$col';
-    final cell = state.cells[key];
+    final cell = await _ensureCellReady(key: key, row: row, col: col);
     if (cell == null) return null;
+
+    final puzzle = state.puzzle!;
+    final puzzleCellId = _resolvePuzzleCellId(
+      puzzle: puzzle,
+      row: row,
+      col: col,
+      cell: cell,
+    );
+    if (puzzleCellId == null) {
+      cbDebugError('Session', 'invalid puzzle cell id for answer', {
+        'cellId': cell.id,
+        'row': row,
+        'col': col,
+        'puzzleId': puzzle.id,
+      });
+      throw const PuzzleFetchException(
+        'cell_not_found',
+        errorCode: 'cell_not_found',
+      );
+    }
 
     state = state.copyWith(validatingCellKey: key, clearSelection: true);
 
@@ -791,40 +1090,71 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         ? DateTime.now().difference(state.cellStartTime!).inMilliseconds
         : 60000;
 
-    AnswerResult result;
-    try {
-      result = await _repo.validateAnswer(
-        puzzleId: puzzle.id,
-        puzzleCellId: cell.id,
-        rowClubId: rowClub.id,
-        colClubId: colClub.id,
-        playerId: player.id,
-        sessionId: state.sessionId!,
-        userUuid: profile.userUuid,
-        responseTimeMs: responseMs,
-      );
-    } catch (e, st) {
-      cbDebugError('Session', 'validateAnswer failed', e, st);
+    AnswerResult? result;
+    var activeCell = cell;
+    var activePuzzleCellId = puzzleCellId;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        result = await _repo.validateAnswer(
+          puzzleId: puzzle.id,
+          puzzleCellId: activePuzzleCellId,
+          rowClubId: rowClub.id,
+          colClubId: colClub.id,
+          playerId: player.id,
+          sessionId: state.sessionId!,
+          userUuid: profile.userUuid,
+          responseTimeMs: responseMs,
+        );
+        break;
+      } catch (e, st) {
+        if (attempt == 0 &&
+            _isCellNotFoundError(e) &&
+            await _refreshCellsFromServer()) {
+          final refreshedCell = state.cells[key];
+          if (refreshedCell == null) {
+            state = state.copyWith(clearValidatingCell: true);
+            rethrow;
+          }
+          activeCell = refreshedCell;
+          activePuzzleCellId = _resolvePuzzleCellId(
+                puzzle: state.puzzle!,
+                row: row,
+                col: col,
+                cell: activeCell,
+              ) ??
+              activeCell.id;
+          continue;
+        }
+        cbDebugError('Session', 'validateAnswer failed', e, st);
+        state = state.copyWith(clearValidatingCell: true);
+        rethrow;
+      }
+    }
+    final answer = result;
+    if (answer == null) {
       state = state.copyWith(clearValidatingCell: true);
-      rethrow;
+      throw const PuzzleFetchException(
+        'cell_not_found',
+        errorCode: 'cell_not_found',
+      );
     }
 
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
     unawaited(_ref.read(searchRepositoryProvider).recordPick(player));
 
-    if (result.correct) {
+    if (answer.correct) {
       final cellScore = ScoringEngine.calculateCellScore(
-        usagePercentage: result.usagePercentage,
+        usagePercentage: answer.usagePercentage,
         responseTimeMs: responseMs,
         mistakesOnCell: 0,
       );
 
-      final updatedCell = cell.copyWith(
+      final updatedCell = activeCell.copyWith(
         solvedPlayerId: player.id,
-        solvedPlayerName: result.playerName,
+        solvedPlayerName: answer.playerName,
         isCorrect: true,
-        usagePercentage: result.usagePercentage,
-        rarityScore: result.rarityScore,
+        usagePercentage: answer.usagePercentage,
+        rarityScore: answer.rarityScore,
         cellScore: cellScore,
       );
 
@@ -858,7 +1188,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
       _ref.read(analyticsProvider).track('answer_submitted', properties: {
         'correct': true,
-        'rarity_tier': result.rarityTier,
+        'rarity_tier': answer.rarityTier,
         'latency_ms': latencyMs,
       });
 
@@ -888,7 +1218,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       });
     }
 
-    return result;
+    return answer;
   }
 
   void addHint(String cellKey, HintResult hint) {
@@ -944,26 +1274,80 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final hintsOnCell = state.hintsRevealed[key]?.length ?? 0;
     final hintType = requestedType ?? nextHintTypeForCount(hintsOnCell);
     if (hintType == null) return null;
-    final cell = state.cells[key];
+
+    final cell = await _ensureCellReady(key: key, row: row, col: col);
     if (cell == null) return null;
 
-    final result = await _repo.requestHint(
-      puzzleCellId: cell.id,
-      rowClubId: puzzle.rowClubAt(row).id,
-      colClubId: puzzle.colClubAt(col).id,
-      sessionId: sessionId,
-      hintType: hintType,
-      userUuid: profile.userUuid,
-      adToken: adToken,
+    final puzzleCellId = _resolvePuzzleCellId(
+      puzzle: state.puzzle!,
+      row: row,
+      col: col,
+      cell: cell,
     );
+    if (puzzleCellId == null) {
+      cbDebugError('Session', 'invalid puzzle cell id for hint', {
+        'cellId': cell.id,
+        'row': row,
+        'col': col,
+        'puzzleId': state.puzzle!.id,
+      });
+      throw const HintRequestException(
+        'invalid_puzzle_cell_id',
+        errorCode: 'invalid_puzzle_cell_id',
+      );
+    }
 
-    addHint(key, result);
+    HintResult? result;
+    var activePuzzleCellId = puzzleCellId;
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        result = await _repo.requestHint(
+          puzzleCellId: activePuzzleCellId,
+          rowClubId: puzzle.rowClubAt(row).id,
+          colClubId: puzzle.colClubAt(col).id,
+          sessionId: sessionId,
+          hintType: hintType,
+          userUuid: profile.userUuid,
+          adToken: adToken,
+        );
+        break;
+      } on HintRequestException catch (e, st) {
+        if (attempt == 0 &&
+            _isCellNotFoundError(e) &&
+            await _refreshCellsFromServer()) {
+          final refreshedCell = state.cells[key];
+          if (refreshedCell == null) {
+            cbDebugError('Session', 'requestHint failed after refresh', e, st);
+            rethrow;
+          }
+          activePuzzleCellId = _resolvePuzzleCellId(
+                puzzle: state.puzzle!,
+                row: row,
+                col: col,
+                cell: refreshedCell,
+              ) ??
+              refreshedCell.id;
+          continue;
+        }
+        cbDebugError('Session', 'requestHint failed', e, st);
+        rethrow;
+      }
+    }
+    final hint = result;
+    if (hint == null) {
+      throw const HintRequestException(
+        'cell_not_found',
+        errorCode: 'cell_not_found',
+      );
+    }
+
+    addHint(key, hint);
     _ref.read(analyticsProvider).track('hint_used', properties: {
-      'hint_type': result.hintType.name,
+      'hint_type': hint.hintType.name,
       'ad_watched': !isPremium,
       'hint_index': hintsOnCell + 1,
     });
-    return result;
+    return hint;
   }
 
   Future<void> _completeSession() async {

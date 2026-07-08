@@ -191,7 +191,17 @@ class PuzzleApiService {
         if (response.statusCode == 200) {
           return jsonDecode(response.body) as Map<String, dynamic>;
         }
-      } catch (_) {}
+        String detail = 'puzzle-by-id failed (${response.statusCode})';
+        try {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          detail = body['error']?.toString() ?? detail;
+        } catch (_) {}
+        throw PuzzleFetchException(detail, statusCode: response.statusCode);
+      } on PuzzleFetchException {
+        rethrow;
+      } catch (e) {
+        throw PuzzleFetchException('puzzle-by-id network error: $e');
+      }
     }
     return _demoPuzzle();
   }
@@ -238,6 +248,13 @@ class PuzzleApiService {
             'response_time_ms': ?responseTimeMs,
           }),
         );
+        cbDebug('Session', 'validate-answer response', {
+          'status': response.statusCode,
+          'puzzleCellId': puzzleCellId,
+          'bodyPreview': response.body.length > 200
+              ? '${response.body.substring(0, 200)}…'
+              : response.body,
+        });
         if (response.statusCode == 200) {
           return AnswerResult.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>,
@@ -263,12 +280,14 @@ class PuzzleApiService {
     required String puzzleId,
     required String mode,
     required int gridSize,
+    bool forceNew = false,
   }) async {
     cbDebug('Session', 'startSession request', {
       'mode': mode,
       'puzzleId': puzzleId,
       'gridSize': gridSize,
       'userUuid': userUuid,
+      'forceNew': forceNew,
     });
 
     final stopwatch = Stopwatch()..start();
@@ -286,6 +305,7 @@ class PuzzleApiService {
               'puzzle_id': puzzleId,
               'mode': mode,
               'grid_size': gridSize,
+              if (forceNew) 'force_new': true,
             }),
           )
           .timeout(
@@ -563,13 +583,23 @@ class PuzzleApiService {
     String? adToken,
   }) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
+      final uri = Uri.parse('$_baseUrl/functions/v1/request-hint');
+      final stopwatch = Stopwatch()..start();
       try {
         final headers = {
           ..._headers,
-          'x-user-uuid': ?userUuid,
+          if (userUuid != null) 'x-user-uuid': userUuid,
         };
+        cbDebug('Session', 'requestHint POST', {
+          'puzzleCellId': puzzleCellId,
+          'sessionId': sessionId,
+          'hintType': _hintTypeToApi(hintType),
+          'rowClubId': rowClubId,
+          'colClubId': colClubId,
+          'hasAdToken': adToken != null,
+        });
         final response = await _http.post(
-          Uri.parse('$_baseUrl/functions/v1/request-hint'),
+          uri,
           headers: headers,
           body: jsonEncode({
             'row_club_id': rowClubId,
@@ -577,18 +607,48 @@ class PuzzleApiService {
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
             'hint_type': _hintTypeToApi(hintType),
-            'ad_token': ?adToken,
-            'user_uuid': ?userUuid,
+            if (adToken != null) 'ad_token': adToken,
+            if (userUuid != null) 'user_uuid': userUuid,
           }),
+        );
+        stopwatch.stop();
+        cbDebugHttpResponse(
+          'Session',
+          'request-hint response',
+          uri: uri.toString(),
+          statusCode: response.statusCode,
+          elapsedMs: stopwatch.elapsedMilliseconds,
+          body: response.body,
         );
         if (response.statusCode == 200) {
           return HintResult.fromJson(
             jsonDecode(response.body) as Map<String, dynamic>,
           );
         }
-      } catch (_) {}
+        String detail = 'request-hint failed (${response.statusCode})';
+        String? errorCode;
+        try {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          detail = body['error']?.toString() ?? detail;
+          errorCode = detail;
+        } catch (_) {}
+        throw HintRequestException(
+          detail,
+          statusCode: response.statusCode,
+          errorCode: errorCode,
+        );
+      } on HintRequestException {
+        rethrow;
+      } catch (e, st) {
+        stopwatch.stop();
+        cbDebugError('Session', 'requestHint network error', e, st);
+        throw HintRequestException('request-hint network error: $e');
+      }
     }
-    return _demoHint(hintType);
+    return _demoHint(
+      hintType,
+      seed: '$rowClubId:$colClubId:$puzzleCellId',
+    );
   }
 
   Future<bool> grantHintAdToken({
@@ -598,9 +658,11 @@ class PuzzleApiService {
   }) async {
     if (_client == null || !AppConfig.isSupabaseConfigured) return false;
 
+    final uri = Uri.parse('$_baseUrl/functions/v1/grant-hint-ad');
+    final stopwatch = Stopwatch()..start();
     try {
       final response = await _http.post(
-        Uri.parse('$_baseUrl/functions/v1/grant-hint-ad'),
+        uri,
         headers: {
           ..._headers,
           'x-user-uuid': userUuid,
@@ -611,11 +673,22 @@ class PuzzleApiService {
           'session_id': sessionId,
         }),
       );
+      stopwatch.stop();
+      cbDebugHttpResponse(
+        'Session',
+        'grant-hint-ad response',
+        uri: uri.toString(),
+        statusCode: response.statusCode,
+        elapsedMs: stopwatch.elapsedMilliseconds,
+        body: response.body,
+      );
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
         return json['ok'] == true;
       }
-    } catch (_) {}
+    } catch (e, st) {
+      cbDebugError('Session', 'grantHintAdToken failed', e, st);
+    }
     return false;
   }
 
@@ -628,14 +701,50 @@ class PuzzleApiService {
         HintType.careerClub => 'career_club',
       };
 
-  HintResult _demoHint(HintType hintType) => switch (hintType) {
-        HintType.nationality => const HintResult(hintType: HintType.nationality, hintValue: 'Brazil'),
-        HintType.position => const HintResult(hintType: HintType.position, hintValue: 'Midfielder'),
-        HintType.firstLetter => const HintResult(hintType: HintType.firstLetter, hintValue: 'D _ _ _'),
-        HintType.careerLeague => const HintResult(hintType: HintType.careerLeague, hintValue: 'Premier League'),
-        HintType.retiredStatus => const HintResult(hintType: HintType.retiredStatus, hintValue: 'Active'),
-        HintType.careerClub => const HintResult(hintType: HintType.careerClub, hintValue: 'Arsenal'),
-      };
+  int _demoSeedIndex(String seed, int length) {
+    if (length <= 0) return 0;
+    var hash = 0;
+    for (var i = 0; i < seed.length; i++) {
+      hash = (hash * 31 + seed.codeUnitAt(i)) & 0x7fffffff;
+    }
+    return hash % length;
+  }
+
+  HintResult _demoHint(HintType hintType, {required String seed}) {
+    const nationalities = ['Brazil', 'Spain', 'France', 'Portugal', 'Italy'];
+    const positions = ['Midfielder', 'Forward', 'Defender', 'Goalkeeper'];
+    const leagues = ['Premier League', 'La Liga', 'Serie A', 'Bundesliga'];
+    const clubs = ['Arsenal', 'Chelsea', 'Barcelona', 'Bayern Munich', 'Juventus'];
+    const letters = ['D', 'M', 'P', 'S', 'C'];
+    final index = _demoSeedIndex(seed, 5);
+
+    return switch (hintType) {
+      HintType.nationality => HintResult(
+          hintType: hintType,
+          hintValue: nationalities[index % nationalities.length],
+        ),
+      HintType.position => HintResult(
+          hintType: hintType,
+          hintValue: positions[index % positions.length],
+        ),
+      HintType.firstLetter => HintResult(
+          hintType: hintType,
+          hintValue: '${letters[index % letters.length]} _ _ _',
+        ),
+      HintType.careerLeague => HintResult(
+          hintType: hintType,
+          hintValue: leagues[index % leagues.length],
+        ),
+      HintType.retiredStatus => HintResult(
+          hintType: hintType,
+          hintValue: index.isEven ? 'Active' : 'Retired',
+        ),
+      HintType.careerClub => HintResult(
+          hintType: hintType,
+          hintValue: clubs[index % clubs.length],
+        ),
+    };
+  }
 }
 
 class PuzzleRepositoryImpl implements PuzzleRepository {
@@ -651,6 +760,69 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   final OfflineCache _cache;
   final http.Client _http;
   final _uuid = const Uuid();
+
+  Future<Puzzle> _withValidatedCells(
+    Puzzle puzzle, {
+    String? userUuid,
+  }) async {
+    if (!AppConfig.isSupabaseConfigured) return puzzle;
+
+    cbDebug('Puzzle', 'syncing puzzle cells from server', {
+      'puzzleId': puzzle.id,
+      'localCellCount': puzzle.cells.length,
+      'localCellIds': puzzle.cells.map((cell) => cell.id).toList(),
+    });
+
+    Map<String, dynamic>? raw;
+    try {
+      raw = await _api.fetchPuzzleById(puzzle.id);
+    } catch (e, st) {
+      cbDebugError('Puzzle', 'puzzle-by-id failed; trying daily-puzzle fallback', e, st);
+    }
+
+    if ((raw?['cells'] as List<dynamic>? ?? []).isEmpty &&
+        puzzle.mode == PuzzleMode.daily) {
+      try {
+        raw = await _api.fetchDailyPuzzle(userUuid: userUuid);
+        cbDebug('Puzzle', 'using daily-puzzle payload for cell sync', {
+          'puzzleId': puzzle.id,
+        });
+      } catch (e, st) {
+        cbDebugError('Puzzle', 'daily-puzzle fallback failed', e, st);
+      }
+    }
+
+    final serverCells = raw?['cells'] as List<dynamic>? ?? [];
+    if (serverCells.isEmpty) {
+      throw PuzzleFetchException(
+        'No puzzle cells on server for ${puzzle.id}',
+        errorCode: 'cell_not_found',
+      );
+    }
+
+    final hydrated = Puzzle.fromJson({
+      ...puzzle.toJson(),
+      'cells': serverCells,
+    });
+    cbDebug('Puzzle', 'puzzle cells synced', {
+      'puzzleId': puzzle.id,
+      'serverCellCount': hydrated.cells.length,
+      'serverCellIds': hydrated.cells.map((cell) => cell.id).toList(),
+    });
+    return Puzzle(
+      id: puzzle.id,
+      date: puzzle.date,
+      gridSize: puzzle.gridSize,
+      rowClubs: puzzle.rowClubs,
+      colClubs: puzzle.colClubs,
+      cells: hydrated.cells,
+      mode: puzzle.mode,
+      difficulty: puzzle.difficulty,
+      difficultyTier: puzzle.difficultyTier,
+      qualityScore: puzzle.qualityScore,
+      puzzleHash: puzzle.puzzleHash,
+    );
+  }
 
   @override
   Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid}) async {
@@ -675,7 +847,10 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
             'puzzle_id': cached['puzzle_id'] ?? cached['id'],
           });
           if (valid) {
-            return Puzzle.fromJson(cached);
+            return _withValidatedCells(
+              Puzzle.fromJson(cached),
+              userUuid: userUuid,
+            );
           }
           cbDebug('Daily', 'invalid cache — invalidating (non-UUID club ids?)');
           await _cache.invalidateDailyPuzzle();
@@ -698,7 +873,10 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         await _cache.cacheDailyPuzzle(raw);
         cbDebug('Daily', 'cached fresh daily puzzle');
       }
-      return Puzzle.fromJson(raw);
+      return _withValidatedCells(
+        Puzzle.fromJson(raw),
+        userUuid: userUuid,
+      );
     } on PuzzleFetchException catch (e) {
       cbDebugError('Daily', 'getDailyPuzzle fetch failed', e);
       if (e.isGenerationInProgress || e.isGenerationFailed) {
@@ -715,27 +893,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   @override
   Future<Puzzle> getPuzzleById(String puzzleId) async {
     final raw = await _api.fetchPuzzleById(puzzleId);
-    return Puzzle.fromJson(raw);
-  }
-
-  @override
-  Future<Puzzle> getPracticePuzzle({
-    required int gridSize,
-    required String userUuid,
-    String? excludePuzzleId,
-  }) async {
-    final raw = await _api.fetchPracticePuzzle(
-      gridSize: gridSize,
-      userUuid: userUuid,
-      excludePuzzleId: excludePuzzleId,
-    );
-    try {
-      return _practiceFromRaw(raw);
-    } catch (e, st) {
-      practiceDebugError('Puzzle.fromJson failed for practice payload', e, st);
-      practiceDebug('raw keys', raw.keys.toList());
-      rethrow;
-    }
+    return _withValidatedCells(Puzzle.fromJson(raw));
   }
 
   Puzzle _practiceFromRaw(Map<String, dynamic> raw) {
@@ -751,8 +909,36 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       difficulty: puzzle.difficulty,
       difficultyTier: puzzle.difficultyTier,
       qualityScore: puzzle.qualityScore,
+      puzzleHash: puzzle.puzzleHash,
     );
   }
+
+  @override
+  Future<Puzzle> getPracticePuzzle({
+    required int gridSize,
+    required String userUuid,
+    String? excludePuzzleId,
+  }) async {
+    final raw = await _api.fetchPracticePuzzle(
+      gridSize: gridSize,
+      userUuid: userUuid,
+      excludePuzzleId: excludePuzzleId,
+    );
+    try {
+      return _withValidatedCells(_practiceFromRaw(raw));
+    } catch (e, st) {
+      practiceDebugError('Puzzle.fromJson failed for practice payload', e, st);
+      practiceDebug('raw keys', raw.keys.toList());
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Puzzle> hydratePuzzleCells(Puzzle puzzle) =>
+      _withValidatedCells(puzzle);
+
+  @override
+  Future<void> clearDailyPuzzleCache() => _cache.invalidateDailyPuzzle();
 
   @override
   Future<Puzzle> getChallengePuzzle(String challengeId) async {
@@ -822,6 +1008,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required PuzzleMode mode,
     required int gridSize,
     String? userUuid,
+    bool forceNew = false,
   }) async {
     if (AppConfig.isSupabaseConfigured && userUuid != null) {
       return _api.startSession(
@@ -829,6 +1016,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         puzzleId: puzzleId,
         mode: mode.name,
         gridSize: gridSize,
+        forceNew: forceNew,
       );
     }
     final localId = _uuid.v4();

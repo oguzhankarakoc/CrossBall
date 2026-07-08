@@ -9,6 +9,7 @@ import '../../../core/routing/app_routes.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/daily_puzzle_schedule.dart';
+import '../../../core/utils/share_helper.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
@@ -28,6 +29,7 @@ import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/session_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
 import '../domain/puzzle.dart';
+import '../domain/puzzle_fetch_exception.dart';
 import 'puzzle_providers.dart';
 import 'daily_puzzle_rollout_provider.dart';
 import 'widgets/daily_puzzle_completed_panel.dart';
@@ -463,7 +465,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       remainingSessions: remaining,
       sessionsUsed: session.completedToday,
       sessionsLimit: limit,
-      showShare: false,
       newSessionLabel: needsAd ? l10n.practiceWatchAdForNewSession : l10n.practiceNewSession,
       newSessionRequiresAd: needsAd,
       onNewSession: canPlayMore ? () => _startNextPracticeSession(needsAd: needsAd) : null,
@@ -514,13 +515,14 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     await ref.read(puzzleGameProvider(widget.params).notifier).startNewPracticeSession();
   }
 
-  Future<void> _createAndShareChallengeFromResult() async {
+  Future<void> _createAndShareChallengeFromResult(GlobalKey shareAnchorKey) async {
     final l10n = AppLocalizations.of(context)!;
     await createAndShareChallenge(
       ref: ref,
       context: context,
       needSessionMessage: l10n.challengeNeedSession,
       shareFailedMessage: l10n.challengeShareFailed,
+      shareAnchorKey: shareAnchorKey,
     );
   }
 
@@ -537,7 +539,10 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         );
 
     if (!context.mounted) return;
-    await SharePlus.instance.share(ShareParams(text: challenge.shareUrl));
+    await ShareHelper.share(
+      ShareParams(text: challenge.shareUrl),
+      context: context,
+    );
     context.go(AppRoutes.challenge);
   }
 
@@ -571,32 +576,43 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       return;
     }
 
-    final result = await notifier.submitAnswer(player);
-    if (result != null && mounted) {
-      if (result.correct &&
-          (result.rarityTier == 'mythic' ||
-              RarityTier.fromUsagePercentage(result.usagePercentage) == RarityTier.mythic)) {
-        await showMythicCelebration(context);
-      }
-      if (!mounted) return;
-
-      if (result.correct && widget.params.mode == PuzzleMode.timeline) {
-        final timeline = await ref.read(socialRepositoryProvider).getCareerTimeline(
-              playerId: player.id,
-              rowClubId: puzzle.rowClubAt(row).id,
-              colClubId: puzzle.colClubAt(col).id,
-            );
-        if (mounted && timeline.entries.isNotEmpty) {
-          await showCareerTimelineSheet(context, timeline: timeline);
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final result = await notifier.submitAnswer(player);
+      if (result != null && mounted) {
+        if (result.correct &&
+            (result.rarityTier == 'mythic' ||
+                RarityTier.fromUsagePercentage(result.usagePercentage) == RarityTier.mythic)) {
+          await showMythicCelebration(context);
         }
-      }
+        if (!mounted) return;
 
-      if (!mounted) return;
-      await showModalBottomSheet<void>(
-        context: context,
-        backgroundColor: Colors.transparent,
-        builder: (_) => AnswerResultSheet(result: result),
-      );
+        if (result.correct && widget.params.mode == PuzzleMode.timeline) {
+          final timeline = await ref.read(socialRepositoryProvider).getCareerTimeline(
+                playerId: player.id,
+                rowClubId: puzzle.rowClubAt(row).id,
+                colClubId: puzzle.colClubAt(col).id,
+              );
+          if (mounted && timeline.entries.isNotEmpty) {
+            await showCareerTimelineSheet(context, timeline: timeline);
+          }
+        }
+
+        if (!mounted) return;
+        await showModalBottomSheet<void>(
+          context: context,
+          backgroundColor: Colors.transparent,
+          builder: (_) => AnswerResultSheet(result: result),
+        );
+      }
+    } on PuzzleFetchException catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(localizedErrorMessage(l10n, e.errorCode ?? e.message)),
+          ),
+        );
+      }
     }
   }
 }

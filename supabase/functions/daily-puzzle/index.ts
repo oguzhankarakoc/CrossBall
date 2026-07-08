@@ -5,7 +5,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-uuid',
 }
 
-const ROLLOUT_WINDOW_MS = 90 * 60 * 1000
+const ROLLOUT_WINDOW_MS = 3 * 60 * 60 * 1000
 
 type RolloutStatus = {
   puzzle_date?: string

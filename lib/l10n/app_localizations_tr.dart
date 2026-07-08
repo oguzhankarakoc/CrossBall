@@ -366,6 +366,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String get hintCareerClubPremium => 'Kulüp ipucunu göster';
 
   @override
+  String get hintChipNationality => 'Milliyet';
+
+  @override
+  String get hintChipPosition => 'Pozisyon';
+
+  @override
+  String get hintChipFirstLetter => 'İlk harf';
+
+  @override
+  String get hintChipStatus => 'Durum';
+
+  @override
+  String get hintChipClub => 'Kulüp';
+
+  @override
+  String get hintLimitReached => 'Bu hücre için tüm ipuçları açıldı.';
+
+  @override
+  String get hintUnavailable =>
+      'İpucu şu an kullanılamıyor. Lütfen tekrar dene.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Oyuncu adını yazarak ara. İpuçları için yukarıdaki butonu kullan.';
 
@@ -563,6 +585,10 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Bir şeyler ters gitti. Lütfen tekrar dene.';
+
+  @override
+  String get answerCellNotFound =>
+      'Bu kare şu an doğrulanamıyor. Bulmacayı yenileyip tekrar dene.';
 
   @override
   String get errorNetwork => 'Ağ hatası. Bağlantını kontrol et.';

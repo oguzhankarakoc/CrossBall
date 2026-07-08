@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/utils/share_helper.dart';
 import '../../shared/providers/app_providers.dart';
 import '../../shared/providers/session_providers.dart';
 import '../auth/presentation/auth_providers.dart';
@@ -13,6 +14,7 @@ Future<Challenge?> createAndShareChallenge({
   required BuildContext context,
   required String needSessionMessage,
   required String shareFailedMessage,
+  GlobalKey? shareAnchorKey,
 }) async {
   final lastSession = ref.read(lastCompletedSessionProvider);
   if (lastSession == null) {
@@ -30,11 +32,15 @@ Future<Challenge?> createAndShareChallenge({
           creatorScore: lastSession.score,
           userUuid: profile.userUuid,
         );
+    await ShareHelper.share(
+      ShareParams(text: challenge.shareUrl),
+      context: context,
+      anchorKey: shareAnchorKey,
+    );
     ref.read(analyticsProvider).track('challenge_created', properties: {
       'challenge_id': challenge.id,
       'shared': true,
     });
-    await SharePlus.instance.share(ShareParams(text: challenge.shareUrl));
     return challenge;
   } catch (_) {
     if (context.mounted) {

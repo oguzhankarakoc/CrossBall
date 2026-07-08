@@ -144,6 +144,7 @@ class PuzzleCell extends Equatable {
   bool get isSolved => solvedPlayerId != null && isCorrect == true;
 
   PuzzleCell copyWith({
+    String? id,
     String? solvedPlayerId,
     String? solvedPlayerName,
     bool? isCorrect,
@@ -152,7 +153,7 @@ class PuzzleCell extends Equatable {
     double? cellScore,
   }) =>
       PuzzleCell(
-        id: id,
+        id: id ?? this.id,
         row: row,
         col: col,
         validAnswerCount: validAnswerCount,
@@ -189,6 +190,7 @@ class Puzzle extends Equatable {
     this.difficulty = 0.5,
     this.difficultyTier = 'medium',
     this.qualityScore = 85,
+    this.puzzleHash,
   });
 
   final String id;
@@ -201,6 +203,16 @@ class Puzzle extends Equatable {
   final double difficulty;
   final String difficultyTier;
   final double qualityScore;
+  final String? puzzleHash;
+
+  /// Stable fingerprint for detecting when the same puzzle_id was regenerated.
+  String get layoutFingerprint {
+    if (puzzleHash != null && puzzleHash!.isNotEmpty) return puzzleHash!;
+    final rowIds = rowClubs.map((c) => c.id).toList()..sort();
+    final colIds = colClubs.map((c) => c.id).toList()..sort();
+    final cellIds = cells.map((c) => c.id).toList()..sort();
+    return '${rowIds.join(',')}|${colIds.join(',')}|${cellIds.join(',')}';
+  }
 
   int get totalCells => gridSize * gridSize;
 
@@ -240,6 +252,7 @@ class Puzzle extends Equatable {
       difficulty: (json['difficulty'] as num?)?.toDouble() ?? 0.5,
       difficultyTier: json['difficulty_tier'] as String? ?? 'medium',
       qualityScore: (json['quality_score'] as num?)?.toDouble() ?? 85,
+      puzzleHash: json['puzzle_hash'] as String?,
     );
   }
 
@@ -263,6 +276,7 @@ class Puzzle extends Equatable {
         'difficulty': difficulty,
         'difficulty_tier': difficultyTier,
         'quality_score': qualityScore,
+        if (puzzleHash != null) 'puzzle_hash': puzzleHash,
       };
 
   Puzzle copyWith({List<PuzzleCell>? cells}) => Puzzle(
@@ -274,6 +288,9 @@ class Puzzle extends Equatable {
         cells: cells ?? this.cells,
         mode: mode,
         difficulty: difficulty,
+        difficultyTier: difficultyTier,
+        qualityScore: qualityScore,
+        puzzleHash: puzzleHash,
       );
 
   @override

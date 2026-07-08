@@ -7,8 +7,9 @@ abstract final class DailyPuzzleSchedule {
   /// UTC hour when the data-sync job runs and a new global puzzle is ensured.
   static const utcResetHour = 0;
 
-  /// Maximum time we treat the midnight refresh window as active (matches CI timeout).
-  static const rolloutWindow = Duration(minutes: 90);
+  /// Maximum time we treat the midnight refresh window as active.
+  /// GitHub Actions cron is 00:00 UTC but runners + API sync often finish ~3h later.
+  static const rolloutWindow = Duration(hours: 3);
 
   /// Start of the next UTC calendar day (= next puzzle refresh instant).
   static DateTime nextResetUtc([DateTime? now]) {

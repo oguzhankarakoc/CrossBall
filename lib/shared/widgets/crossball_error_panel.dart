@@ -64,6 +64,7 @@ String localizedErrorMessage(AppLocalizations l10n, String? code) {
     'premium_required' => l10n.premiumFeatureStats,
     'premium_grid_required' => l10n.premiumGridRequired,
     'ad_token_required' || 'invalid_ad_token' => l10n.hintAdRequired,
+    'cell_not_found' => l10n.answerCellNotFound,
     'network_error' => l10n.errorNetwork,
     'unknown_error' => l10n.errorGeneric,
     _ => l10n.errorGeneric,

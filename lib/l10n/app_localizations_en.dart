@@ -365,6 +365,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintCareerClubPremium => 'Reveal career club hint';
 
   @override
+  String get hintChipNationality => 'Nationality';
+
+  @override
+  String get hintChipPosition => 'Position';
+
+  @override
+  String get hintChipFirstLetter => 'First letter';
+
+  @override
+  String get hintChipStatus => 'Status';
+
+  @override
+  String get hintChipClub => 'Club';
+
+  @override
+  String get hintLimitReached =>
+      'All hints for this cell are already revealed.';
+
+  @override
+  String get hintUnavailable => 'Hint unavailable right now. Please try again.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Type a player name to search. Use the hint button above for help.';
 
@@ -561,6 +583,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
+  String get answerCellNotFound =>
+      'This cell cannot be validated right now. Refresh the puzzle and try again.';
 
   @override
   String get errorNetwork => 'Network error. Check your connection.';

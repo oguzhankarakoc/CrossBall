@@ -14,6 +14,7 @@ import '../../../../shared/widgets/crossball_ui.dart';
 import '../../../../shared/widgets/club_identity/club_identity_widgets.dart';
 import '../../../../shared/widgets/player_search_card.dart';
 import '../../domain/puzzle.dart';
+import '../../domain/puzzle_fetch_exception.dart';
 import '../puzzle_providers.dart';
 
 class PlayerSearchModal extends ConsumerStatefulWidget {
@@ -47,7 +48,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   bool _loading = false;
   bool _browseLoading = true;
   bool _hintLoading = false;
-  late List<HintResult> _hints;
+  String? _hintErrorKey;
 
   SearchContext get _searchContext => SearchContext(
         rowClubId: widget.rowClub.id,
@@ -68,7 +69,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   @override
   void initState() {
     super.initState();
-    _hints = List<HintResult>.from(widget.revealedHints);
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
     _loadBrowseData();
@@ -77,9 +77,8 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   @override
   void didUpdateWidget(covariant PlayerSearchModal oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.cellKey != widget.cellKey ||
-        oldWidget.revealedHints != widget.revealedHints) {
-      _hints = List<HintResult>.from(widget.revealedHints);
+    if (oldWidget.cellKey != widget.cellKey) {
+      _hintErrorKey = null;
     }
   }
 
@@ -135,43 +134,57 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   }
 
   List<Player> _dedupePlayers(List<Player> players) {
-    final best = <String, Player>{};
-    for (final player in players) {
-      final key = playerIdentityKey(player.name);
-      final existing = best[key];
-      if (existing == null ||
-          playerCompletenessScore(
-                name: player.name,
-                nationalityCode: player.nationalityCode,
-                primaryPosition: player.primaryPosition,
-                clubsCount: player.clubsPreview.length,
-              ) >
-              playerCompletenessScore(
-                name: existing.name,
-                nationalityCode: existing.nationalityCode,
-                primaryPosition: existing.primaryPosition,
-                clubsCount: existing.clubsPreview.length,
-              )) {
-        best[key] = player;
-      }
-    }
-    return best.values.toList();
+    return dedupeByPlayerIdentity<Player>(
+      items: players,
+      nameOf: (player) => player.name,
+      identityKeyOf: (player) => player.identityKey,
+      completenessScore: (player) => playerCompletenessScore(
+        name: player.name,
+        nationalityCode: player.nationalityCode,
+        primaryPosition: player.primaryPosition,
+        clubsCount: player.clubsPreview.length,
+      ),
+      merge: (primary, secondary) {
+        final clubs = {
+          ...primary.clubsPreview,
+          ...secondary.clubsPreview,
+        }.toList();
+        return Player(
+          id: primary.id,
+          name: primary.name,
+          nationalityCode: primary.nationalityCode ?? secondary.nationalityCode,
+          primaryPosition: primary.primaryPosition ?? secondary.primaryPosition,
+          clubsPreview: clubs.take(4).toList(),
+          popularityScore: primary.popularityScore > secondary.popularityScore
+              ? primary.popularityScore
+              : secondary.popularityScore,
+          isCellRelevant: primary.isCellRelevant || secondary.isCellRelevant,
+          identityKey: primary.identityKey ?? secondary.identityKey,
+        );
+      },
+    );
   }
 
-  HintType? get _nextHintType => nextHintTypeForCount(_hints.length);
+  HintType? _nextHintType(List<HintResult> hints) => nextHintTypeForCount(hints.length);
 
-  Future<void> _requestHint() async {
-    final nextType = _nextHintType;
+  Future<void> _requestHint(List<HintResult> hints) async {
+    final nextType = _nextHintType(hints);
     if (nextType == null || _hintLoading) return;
 
-    setState(() => _hintLoading = true);
-    final result =
-        await ref.read(puzzleGameProvider(widget.params).notifier).requestHint(nextType);
-    if (mounted) {
-      setState(() {
-        _hintLoading = false;
-        if (result != null) _hints.add(result);
-      });
+    setState(() {
+      _hintLoading = true;
+      _hintErrorKey = null;
+    });
+    try {
+      await ref.read(puzzleGameProvider(widget.params).notifier).requestHint(nextType);
+    } on HintRequestException catch (e) {
+      if (mounted) {
+        setState(() => _hintErrorKey = e.errorCode ?? 'hint_request_failed');
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _hintLoading = false);
+      }
     }
   }
 
@@ -189,7 +202,12 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     final colors = context.cb;
     final query = _controller.text.trim();
     final hasQuery = query.isNotEmpty;
-    final nextHint = _nextHintType;
+    final hints = ref.watch(
+      puzzleGameProvider(widget.params).select(
+        (game) => game.hintsRevealed[widget.cellKey] ?? const <HintResult>[],
+      ),
+    );
+    final nextHint = _nextHintType(hints);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.88,
@@ -249,13 +267,13 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                       ],
                     ),
                   ),
-                  if (_hints.isNotEmpty)
+                  if (hints.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
                       child: Wrap(
                         spacing: AppSpacing.sm,
                         runSpacing: AppSpacing.sm,
-                        children: _hints
+                        children: hints
                             .map(
                               (hint) => Container(
                                 padding: const EdgeInsets.symmetric(
@@ -267,16 +285,43 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                   borderRadius: AppRadius.pillBorder,
                                   border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
                                 ),
-                                child: Text(
-                                  _hintChipLabel(hint, l10n),
-                                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                        color: colors.primary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _hintIcon(hint.hintType),
+                                      size: 14,
+                                      color: colors.primary,
+                                    ),
+                                    const SizedBox(width: AppSpacing.xs),
+                                    Text(
+                                      '${_hintChipShortLabel(hint.hintType, l10n)}: ${hint.hintValue}',
+                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                            color: colors.primary,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             )
                             .toList(),
+                      ),
+                    ),
+                  if (_hintErrorKey != null)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                        AppSpacing.lg,
+                        0,
+                      ),
+                      child: Text(
+                        _hintErrorMessage(_hintErrorKey!, l10n),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: colors.error,
+                            ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   if (nextHint != null)
@@ -285,7 +330,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                       child: SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
-                          onPressed: _hintLoading ? null : _requestHint,
+                          onPressed: _hintLoading ? null : () => _requestHint(hints),
                           icon: _hintLoading
                               ? SizedBox(
                                   width: 16,
@@ -293,7 +338,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                   child: CircularProgressIndicator(strokeWidth: 2, color: colors.lime),
                                 )
                               : Icon(Icons.lightbulb_outline_rounded, color: colors.lime),
-                          label: Text(_hintLabel(nextHint, l10n)),
+                          label: Text(_hintLabel(nextHint, hints.length, l10n)),
                         ),
                       ),
                     ),
@@ -452,20 +497,33 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     );
   }
 
-  String _hintTypeLabel(HintType type, AppLocalizations l10n) => switch (type) {
-        HintType.nationality => l10n.hintNationalityPremium,
-        HintType.position => l10n.hintPositionPremium,
-        HintType.firstLetter => l10n.hintFirstLetterPremium,
-        HintType.careerLeague => l10n.hintCareerLeaguePremium,
-        HintType.retiredStatus => l10n.hintRetiredStatusPremium,
-        HintType.careerClub => l10n.hintCareerClubPremium,
+  IconData _hintIcon(HintType type) => switch (type) {
+        HintType.nationality => Icons.flag_outlined,
+        HintType.position => Icons.sports_soccer_outlined,
+        HintType.firstLetter => Icons.abc_outlined,
+        HintType.careerLeague => Icons.emoji_events_outlined,
+        HintType.retiredStatus => Icons.schedule_outlined,
+        HintType.careerClub => Icons.shield_outlined,
       };
 
-  String _hintChipLabel(HintResult hint, AppLocalizations l10n) =>
-      '${_hintTypeLabel(hint.hintType, l10n)}: ${hint.hintValue}';
+  String _hintChipShortLabel(HintType type, AppLocalizations l10n) => switch (type) {
+        HintType.nationality => l10n.hintChipNationality,
+        HintType.position => l10n.hintChipPosition,
+        HintType.firstLetter => l10n.hintChipFirstLetter,
+        HintType.careerLeague => l10n.league,
+        HintType.retiredStatus => l10n.hintChipStatus,
+        HintType.careerClub => l10n.hintChipClub,
+      };
 
-  String _hintLabel(HintType type, AppLocalizations l10n) {
-    final progress = '${_hints.length + 1}/${kHintSequence.length}';
+  String _hintErrorMessage(String errorKey, AppLocalizations l10n) => switch (errorKey) {
+        'ad_token_required' || 'invalid_ad_token' => l10n.hintAdRequired,
+        'hint_limit_reached' => l10n.hintLimitReached,
+        'cell_not_found' || 'invalid_puzzle_cell_id' => l10n.answerCellNotFound,
+        _ => l10n.hintUnavailable,
+      };
+
+  String _hintLabel(HintType type, int revealedCount, AppLocalizations l10n) {
+    final progress = '${revealedCount + 1}/${kHintSequence.length}';
     final base = widget.isPremium
         ? switch (type) {
             HintType.nationality => l10n.hintNationalityPremium,

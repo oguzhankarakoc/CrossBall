@@ -56,9 +56,26 @@ function playerIdentityKey(name: string): string {
   return `${surname}|${token}`
 }
 
-function dedupeKeyForPlayer(player: EnrichedPlayer): string {
-  // Always derive from display name — DB identity_key may be stale (e.g. Z.Ibrahimovic → zibrahimovic).
-  return playerIdentityKey(player.name)
+function playerIdentityKeys(name: string, dbIdentityKey?: string | null): string[] {
+  const keys = new Set<string>()
+  if (dbIdentityKey) keys.add(dbIdentityKey)
+  const normalized = normalizeQuery(prepareNameForIdentity(name))
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  const parts = normalized.split(/\s+/).filter(Boolean)
+  if (parts.length === 0) return [...keys]
+  const first = parts[0].replace(/\.$/, '')
+  const token = first.charAt(0)
+  for (const part of parts) {
+    if (SURNAME_PARTICLES.has(part)) continue
+    keys.add(`${part}|${token}`)
+  }
+  return [...keys]
+}
+
+function dedupeKeysForPlayer(player: EnrichedPlayer): string[] {
+  return playerIdentityKeys(player.name, player.identity_key)
 }
 
 function playerCompletenessScore(player: EnrichedPlayer): number {
@@ -77,6 +94,7 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
   const clubs = [...new Set([...(primary.clubs_preview ?? []), ...(secondary.clubs_preview ?? [])])]
   return {
     ...primary,
+    identity_key: primary.identity_key ?? secondary.identity_key ?? null,
     nationality_code: primary.nationality_code ?? secondary.nationality_code ?? null,
     primary_position: primary.primary_position ?? secondary.primary_position ?? null,
     clubs_preview: clubs.slice(0, 4),
@@ -86,17 +104,46 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
 }
 
 function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
-  const best = new Map<string, EnrichedPlayer>()
-  for (const player of players) {
-    const key = dedupeKeyForPlayer(player)
-    const existing = best.get(key)
-    if (!existing) {
-      best.set(key, player)
-    } else {
-      best.set(key, mergeEnrichedPlayers(existing, player))
+  if (players.length <= 1) return players
+
+  const parent = players.map((_, i) => i)
+  const find = (i: number): number => {
+    while (parent[i] !== i) {
+      parent[i] = parent[parent[i]]
+      i = parent[i]
+    }
+    return i
+  }
+  const union = (a: number, b: number) => {
+    const rootA = find(a)
+    const rootB = find(b)
+    if (rootA !== rootB) parent[rootB] = rootA
+  }
+
+  const keyToIndex = new Map<string, number>()
+  for (let i = 0; i < players.length; i++) {
+    for (const key of dedupeKeysForPlayer(players[i])) {
+      const existing = keyToIndex.get(key)
+      if (existing === undefined) {
+        keyToIndex.set(key, i)
+      } else {
+        union(i, existing)
+      }
     }
   }
-  return [...best.values()]
+
+  const groups = new Map<number, EnrichedPlayer[]>()
+  for (let i = 0; i < players.length; i++) {
+    const root = find(i)
+    const list = groups.get(root) ?? []
+    list.push(players[i])
+    groups.set(root, list)
+  }
+
+  return [...groups.values()].map((group) => {
+    group.sort((a, b) => playerCompletenessScore(b) - playerCompletenessScore(a))
+    return group.slice(1).reduce(mergeEnrichedPlayers, group[0])
+  })
 }
 
 async function fillMissingPlayerMetadata(

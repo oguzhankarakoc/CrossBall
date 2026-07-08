@@ -13,6 +13,17 @@ const corsHeaders = {
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+async function bestEffortRpc(
+  supabase: ReturnType<typeof createClient>,
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<void> {
+  const { error } = await supabase.rpc(fn, args)
+  if (error) {
+    console.warn(`${fn} best-effort failed:`, error.message)
+  }
+}
+
 function tierFromUsage(pct: number): string {
   if (pct > 50) return 'common'
   if (pct > 25) return 'rare'
@@ -138,10 +149,10 @@ Deno.serve(async (req) => {
     let rarityScore = 0
 
     if (!isCorrect) {
-      await supabase.rpc('increment_session_mistakes', {
+      await bestEffortRpc(supabase, 'increment_session_mistakes', {
         p_session_id: session_id,
         p_user_uuid: userUuid,
-      }).catch(() => {/* best effort */})
+      })
     } else {
       const [{ data: rarity }, { data: serverResponseMs, error: timingError }] =
         await Promise.all([
@@ -165,25 +176,24 @@ Deno.serve(async (req) => {
       rarityScore = Math.max(0, 100 - usagePercentage)
       const tier = tierFromUsage(usagePercentage)
 
-      const [{ error: upsertError }] = await Promise.all([
-        supabase.from('answers').upsert(
-          {
-            session_id,
-            puzzle_cell_id,
-            player_id,
-            is_correct: true,
-            usage_percentage: usagePercentage,
-            rarity_tier: tier,
-            rarity_score: rarityScore,
-            response_time_ms: Number(serverResponseMs ?? 60000),
-          },
-          { onConflict: 'session_id,puzzle_cell_id' },
-        ),
-        supabase.rpc('increment_rarity_stat', {
-          p_cell_id: puzzle_cell_id,
-          p_player_id: player_id,
-        }).catch(() => {/* optional RPC */}),
-      ])
+      const { error: upsertError } = await supabase.from('answers').upsert(
+        {
+          session_id,
+          puzzle_cell_id,
+          player_id,
+          is_correct: true,
+          usage_percentage: usagePercentage,
+          rarity_tier: tier,
+          rarity_score: rarityScore,
+          response_time_ms: Number(serverResponseMs ?? 60000),
+        },
+        { onConflict: 'session_id,puzzle_cell_id' },
+      )
+
+      await bestEffortRpc(supabase, 'increment_rarity_stat', {
+        p_cell_id: puzzle_cell_id,
+        p_player_id: player_id,
+      })
 
       if (upsertError) {
         console.error('answer upsert failed:', upsertError.message)

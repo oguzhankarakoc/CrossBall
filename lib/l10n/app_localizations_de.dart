@@ -366,6 +366,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get hintCareerClubPremium => 'Vereinshinweis anzeigen';
 
   @override
+  String get hintChipNationality => 'Nationalität';
+
+  @override
+  String get hintChipPosition => 'Position';
+
+  @override
+  String get hintChipFirstLetter => 'Anfangsbuchstabe';
+
+  @override
+  String get hintChipStatus => 'Status';
+
+  @override
+  String get hintChipClub => 'Verein';
+
+  @override
+  String get hintLimitReached =>
+      'Alle Hinweise für dieses Feld sind bereits aufgedeckt.';
+
+  @override
+  String get hintUnavailable =>
+      'Hinweis gerade nicht verfügbar. Bitte erneut versuchen.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Spielername eingeben. Hilfe über den Hinweis-Button oben.';
 
@@ -567,6 +590,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get errorGeneric =>
       'Etwas ist schiefgelaufen. Bitte erneut versuchen.';
+
+  @override
+  String get answerCellNotFound =>
+      'Dieses Feld kann gerade nicht geprüft werden. Puzzle aktualisieren und erneut versuchen.';
 
   @override
   String get errorNetwork => 'Netzwerkfehler. Verbindung prüfen.';

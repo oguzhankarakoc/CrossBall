@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const puzzleId = String(body.puzzle_id ?? '')
     const mode = String(body.mode ?? 'practice')
     const gridSize = Number(body.grid_size ?? 3)
+    const forceNew = Boolean(body.force_new)
 
     if (!userUuid || !UUID_RE.test(puzzleId)) {
       return new Response(JSON.stringify({ error: 'invalid_request' }), {
@@ -72,15 +73,28 @@ Deno.serve(async (req) => {
 
     let resumed = false
     if (userRow?.id) {
-      const { data: existingActive } = await supabase
-        .from('puzzle_sessions')
-        .select('id')
-        .eq('user_id', userRow.id)
-        .eq('puzzle_id', puzzleId)
-        .eq('mode', mode)
-        .eq('status', 'active')
-        .maybeSingle()
-      resumed = Boolean(existingActive?.id)
+      if (forceNew) {
+        await supabase
+          .from('puzzle_sessions')
+          .update({
+            status: 'abandoned',
+            completed_at: new Date().toISOString(),
+          })
+          .eq('user_id', userRow.id)
+          .eq('puzzle_id', puzzleId)
+          .eq('mode', mode)
+          .eq('status', 'active')
+      } else {
+        const { data: existingActive } = await supabase
+          .from('puzzle_sessions')
+          .select('id')
+          .eq('user_id', userRow.id)
+          .eq('puzzle_id', puzzleId)
+          .eq('mode', mode)
+          .eq('status', 'active')
+          .maybeSingle()
+        resumed = Boolean(existingActive?.id)
+      }
     }
 
     const { data: sessionId, error } = await supabase.rpc('start_puzzle_session', {

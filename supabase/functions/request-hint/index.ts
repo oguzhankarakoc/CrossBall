@@ -254,7 +254,7 @@ Deno.serve(async (req) => {
     }
 
     if (session_id && puzzle_cell_id) {
-      await supabase.from('session_hints').upsert(
+      const { error: hintPersistError } = await supabase.from('session_hints').upsert(
         {
           session_id,
           puzzle_cell_id,
@@ -262,7 +262,10 @@ Deno.serve(async (req) => {
           hint_value: hintValue,
         },
         { onConflict: 'session_id,puzzle_cell_id,hint_type' },
-      ).catch(() => {/* optional */})
+      )
+      if (hintPersistError) {
+        console.warn('session_hints upsert failed:', hintPersistError.message)
+      }
     }
 
     return new Response(

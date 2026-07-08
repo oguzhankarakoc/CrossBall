@@ -36,7 +36,6 @@ serve(async (req) => {
         puzzle_cells (id, row_index, col_index, valid_answer_count, difficulty)
       `)
       .eq('id', puzzleId)
-      .eq('is_published', true)
       .single()
 
     if (error) throw error

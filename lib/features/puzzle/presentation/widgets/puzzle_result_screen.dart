@@ -5,7 +5,6 @@ import '../../../ads/presentation/banner_ad_widget.dart';
 import '../../../../core/theme/app_tokens.dart';
 import '../../../../l10n/app_localizations.dart';
 import '../../../../shared/widgets/crossball_ui.dart';
-import '../../../share/share_result_service.dart';
 
 class PuzzleResultScreen extends StatefulWidget {
   const PuzzleResultScreen({
@@ -15,7 +14,6 @@ class PuzzleResultScreen extends StatefulWidget {
     required this.hintsUsed,
     required this.onHome,
     this.onCreateAndShareChallenge,
-    this.onShareResult,
     this.streak = 0,
     this.subtitle,
     this.title,
@@ -25,7 +23,6 @@ class PuzzleResultScreen extends StatefulWidget {
     this.onNewSession,
     this.newSessionLabel,
     this.newSessionRequiresAd = false,
-    this.showShare = true,
   });
 
   final double score;
@@ -33,8 +30,7 @@ class PuzzleResultScreen extends StatefulWidget {
   final int hintsUsed;
   final int streak;
   final VoidCallback onHome;
-  final Future<void> Function()? onCreateAndShareChallenge;
-  final Future<void> Function(GlobalKey cardKey)? onShareResult;
+  final Future<void> Function(GlobalKey shareAnchorKey)? onCreateAndShareChallenge;
   final String? subtitle;
   final String? title;
   final int? remainingSessions;
@@ -43,28 +39,14 @@ class PuzzleResultScreen extends StatefulWidget {
   final VoidCallback? onNewSession;
   final String? newSessionLabel;
   final bool newSessionRequiresAd;
-  final bool showShare;
 
   @override
   State<PuzzleResultScreen> createState() => _PuzzleResultScreenState();
 }
 
 class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
-  final _shareCardKey = GlobalKey();
+  final _challengeShareKey = GlobalKey();
   bool _creatingChallenge = false;
-
-  Future<void> _shareResult() async {
-    if (widget.onShareResult != null) {
-      await widget.onShareResult!(_shareCardKey);
-      return;
-    }
-    await ShareResultService.shareDailyResult(
-      context: context,
-      cardKey: _shareCardKey,
-      score: widget.score,
-      streak: widget.streak,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,18 +62,6 @@ class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   children: [
-                    Offstage(
-                      offstage: true,
-                      child: RepaintBoundary(
-                        key: _shareCardKey,
-                        child: DailyShareCard(
-                          score: widget.score,
-                          mistakes: widget.mistakes,
-                          hintsUsed: widget.hintsUsed,
-                          streak: widget.streak,
-                        ),
-                      ),
-                    ),
                     const SizedBox(height: AppSpacing.lg),
                     Center(
                       child: Container(
@@ -205,46 +175,36 @@ class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
                       ),
                       const SizedBox(height: AppSpacing.md),
                     ],
-                    if (widget.showShare) ...[
+                    if (widget.onCreateAndShareChallenge != null) ...[
                       SizedBox(
                         width: double.infinity,
                         child: FilledButton.icon(
-                          onPressed: _shareResult,
-                          icon: const Icon(Icons.ios_share_rounded),
-                          label: Text(l10n.shareResult.toUpperCase()),
+                          key: _challengeShareKey,
+                          onPressed: _creatingChallenge
+                              ? null
+                              : () async {
+                                  setState(() => _creatingChallenge = true);
+                                  try {
+                                    await widget.onCreateAndShareChallenge!(_challengeShareKey);
+                                  } finally {
+                                    if (mounted) {
+                                      setState(() => _creatingChallenge = false);
+                                    }
+                                  }
+                                },
+                          icon: _creatingChallenge
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: colors.lime,
+                                  ),
+                                )
+                              : const Icon(Icons.people_outline_rounded),
+                          label: Text(l10n.createAndShareChallenge.toUpperCase()),
                         ),
                       ),
-                      if (widget.onCreateAndShareChallenge != null) ...[
-                        const SizedBox(height: AppSpacing.md),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: _creatingChallenge
-                                ? null
-                                : () async {
-                                    setState(() => _creatingChallenge = true);
-                                    try {
-                                      await widget.onCreateAndShareChallenge!();
-                                    } finally {
-                                      if (mounted) {
-                                        setState(() => _creatingChallenge = false);
-                                      }
-                                    }
-                                  },
-                            icon: _creatingChallenge
-                                ? SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: colors.lime,
-                                    ),
-                                  )
-                                : const Icon(Icons.people_outline_rounded),
-                            label: Text(l10n.createAndShareChallenge.toUpperCase()),
-                          ),
-                        ),
-                      ],
                       const SizedBox(height: AppSpacing.md),
                     ],
                     SizedBox(

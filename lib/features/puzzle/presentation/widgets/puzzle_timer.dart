@@ -20,11 +20,20 @@ class _PuzzleTimerState extends State<PuzzleTimer> {
   @override
   void initState() {
     super.initState();
+    _elapsed = DateTime.now().difference(widget.startedAt);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       setState(() {
         _elapsed = DateTime.now().difference(widget.startedAt);
       });
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant PuzzleTimer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startedAt != widget.startedAt) {
+      _elapsed = DateTime.now().difference(widget.startedAt);
+    }
   }
 
   @override
@@ -34,9 +43,14 @@ class _PuzzleTimerState extends State<PuzzleTimer> {
   }
 
   String get _formatted {
-    final m = _elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = _elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$m:$s';
+    final totalSeconds = _elapsed.inSeconds;
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+    if (hours > 0) {
+      return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    }
+    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
   @override

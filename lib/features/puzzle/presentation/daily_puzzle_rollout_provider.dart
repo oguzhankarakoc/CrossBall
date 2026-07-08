@@ -33,12 +33,11 @@ class DailyPuzzleRolloutStatus {
   bool get isReady => phase == DailyPuzzleRolloutPhase.ready;
 
   bool get isBlocked {
-    if (phase == DailyPuzzleRolloutPhase.generating) return true;
-    if (phase == DailyPuzzleRolloutPhase.pending &&
-        DailyPuzzleSchedule.isWithinRolloutWindow()) {
-      return true;
-    }
-    return false;
+    if (puzzleDate != DailyPuzzleSchedule.todayPuzzleDateUtc()) return true;
+    if (phase == DailyPuzzleRolloutPhase.ready) return false;
+    if (phase == DailyPuzzleRolloutPhase.failed) return false;
+    // Trust server status for generating/pending/unavailable — do not play stale grids.
+    return true;
   }
 
   bool get isFailed => phase == DailyPuzzleRolloutPhase.failed;

@@ -10,6 +10,9 @@ abstract interface class PuzzleRepository {
     String? excludePuzzleId,
   });
   Future<Puzzle> getChallengePuzzle(String challengeId);
+  /// Ensures puzzle cells carry live UUID ids required by validate-answer / request-hint.
+  Future<Puzzle> hydratePuzzleCells(Puzzle puzzle);
+  Future<void> clearDailyPuzzleCache();
   Future<AnswerResult> validateAnswer({
     required String puzzleId,
     required String puzzleCellId,
@@ -39,6 +42,7 @@ abstract interface class PuzzleRepository {
     required PuzzleMode mode,
     required int gridSize,
     String? userUuid,
+    bool forceNew = false,
   });
   Future<void> completeSession({
     required String sessionId,

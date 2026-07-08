@@ -152,6 +152,7 @@ class HomeScreen extends ConsumerWidget {
                       badge: dailyBadge,
                       badgeIcon: dailyBadgeIcon,
                       onTap: () async {
+                        ref.invalidate(dailyPuzzleRolloutProvider);
                         ref.invalidate(userStatsProvider);
                         ref.invalidate(dailyCompletedTodayProvider);
                         final completed =
