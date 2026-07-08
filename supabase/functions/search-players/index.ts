@@ -38,8 +38,15 @@ function significantSurname(parts: string[]): string {
   return parts[parts.length - 1]
 }
 
+function prepareNameForIdentity(name: string): string {
+  return name.replace(/\.(?=\S)/g, '. ')
+}
+
 function playerIdentityKey(name: string): string {
-  const normalized = normalizeQuery(name).replace(/[^a-z0-9\s]/g, '').trim()
+  const normalized = normalizeQuery(prepareNameForIdentity(name))
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   const parts = normalized.split(/\s+/).filter(Boolean)
   if (parts.length === 0) return normalized
   const surname = significantSurname(parts)
@@ -50,8 +57,7 @@ function playerIdentityKey(name: string): string {
 }
 
 function dedupeKeyForPlayer(player: EnrichedPlayer): string {
-  const identityKey = player.identity_key?.trim()
-  if (identityKey) return identityKey
+  // Always derive from display name — DB identity_key may be stale (e.g. Z.Ibrahimovic → zibrahimovic).
   return playerIdentityKey(player.name)
 }
 

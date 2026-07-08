@@ -7,6 +7,7 @@ from pipeline.player_identity import (
 
 def test_player_identity_key_groups_initial_and_full_name():
     assert player_identity_key('Z. Ibrahimović') == player_identity_key('Zlatan Ibrahimović')
+    assert player_identity_key('Z.Ibrahimovic') == player_identity_key('Zlatan Ibrahimovic')
 
 
 def test_player_identity_key_distinguishes_different_first_names():
@@ -15,6 +16,7 @@ def test_player_identity_key_distinguishes_different_first_names():
 
 def test_names_likely_same_person():
     assert names_likely_same_person('Z. Ibrahimović', 'Zlatan Ibrahimović')
+    assert names_likely_same_person('Z.Ibrahimovic', 'Zlatan Ibrahimovic')
     assert not names_likely_same_person('A. Ibrahimović', 'Zlatan Ibrahimović')
 
 

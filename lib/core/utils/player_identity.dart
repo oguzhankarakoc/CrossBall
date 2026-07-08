@@ -17,9 +17,12 @@ const _surnameParticles = {
   'mac',
 };
 
+String _prepareNameForIdentity(String name) =>
+    name.replaceAll(RegExp(r'\.(?=\S)'), '. ');
+
 /// Client-side dedup key aligned with [data_pipeline/pipeline/player_identity.py].
 String playerIdentityKey(String name) {
-  final normalized = StringNormalizer.normalize(name)
+  final normalized = StringNormalizer.normalize(_prepareNameForIdentity(name))
       .replaceAll(RegExp(r'[^a-z0-9\s]'), ' ')
       .trim();
   final parts = normalized.split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();

@@ -137,7 +137,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   List<Player> _dedupePlayers(List<Player> players) {
     final best = <String, Player>{};
     for (final player in players) {
-      final key = player.identityKey ?? playerIdentityKey(player.name);
+      final key = playerIdentityKey(player.name);
       final existing = best[key];
       if (existing == null ||
           playerCompletenessScore(

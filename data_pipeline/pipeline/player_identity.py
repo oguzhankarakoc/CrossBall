@@ -14,9 +14,17 @@ def _first_name_token(first: str) -> str:
     return cleaned[0]
 
 
+_DOT_GLUE = re.compile(r'\.(?=\S)')
+
+
+def _prepare_name_for_identity(name: str) -> str:
+    """Z.Ibrahimovic → Z. Ibrahimovic before punctuation is stripped."""
+    return normalize_name(_DOT_GLUE.sub('. ', name.strip()))
+
+
 def player_identity_key(name: str) -> str:
     """Surname + first-name token — groups 'Z. Ibrahimović' with 'Zlatan Ibrahimović'."""
-    normalized = normalize_name(name)
+    normalized = _prepare_name_for_identity(name)
     parts = [part for part in normalized.split() if part]
     if not parts:
         return normalized
@@ -30,8 +38,8 @@ def names_likely_same_person(left: str, right: str) -> bool:
     if player_identity_key(left) != player_identity_key(right):
         return False
 
-    left_parts = normalize_name(left).split()
-    right_parts = normalize_name(right).split()
+    left_parts = _prepare_name_for_identity(left).split()
+    right_parts = _prepare_name_for_identity(right).split()
     if not left_parts or not right_parts:
         return False
 

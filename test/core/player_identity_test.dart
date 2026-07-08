@@ -9,6 +9,10 @@ void main() {
         playerIdentityKey('Z. Ibrahimović'),
         playerIdentityKey('Zlatan Ibrahimović'),
       );
+      expect(
+        playerIdentityKey('Z.Ibrahimovic'),
+        playerIdentityKey('Zlatan Ibrahimovic'),
+      );
     });
 
     test('uses significant surname for Portuguese names', () {
