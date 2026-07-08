@@ -95,10 +95,13 @@ SUPABASE_ANON_KEY=<from supabase status>
 | `034_merge_ronaldo_identity.sql` | Merge duplicate Cristiano Ronaldo identity rows |
 | `035_daily_completion_guard.sql` | Block new daily session after today's completion |
 | `036_security_rls_lockdown.sql` | RLS on all tables; revoke anon/authenticated table/RPC access |
+| `037_weekly_daily_leaderboard_and_scoring.sql` | Fair scoring (hints/mistakes), weekly daily leaderboard RPCs |
+| `038_daily_and_practice_day_guards.sql` | Daily replay guard + practice quota day boundary |
+| `039_player_identity_dotted_initials.sql` | Identity key fix for dotted-initial names (e.g. Z.Ibrahimovic) |
 
-Apply through `036` for full feature set + open-source security model. See [`SECURITY.md`](SECURITY.md).
+Apply through `039` for full feature set + open-source security model. See [`SECURITY.md`](SECURITY.md).
 
-### Phase deploy (021 → 036)
+### Phase deploy (021 → 039)
 
 ```bash
 ./scripts/run_migrations.sh 021
@@ -107,6 +110,7 @@ Apply through `036` for full feature set + open-source security model. See [`SEC
 ./scripts/run_migrations.sh 024
 ./scripts/run_migrations.sh 025
 ./scripts/run_migrations.sh 036   # RLS lockdown — required for open-source repo
+./scripts/run_migrations.sh 037 038 039
 ```
 
 Or all at once: `./scripts/run_migrations.sh`
@@ -196,5 +200,6 @@ SELECT public.refresh_player_club_intersections();
 | Same 6 teams every day (demo grid) | API failed → client fell back to demo; run migrations `014`–`015`, deploy `daily-puzzle`, clear app cache (v6) |
 | `ensure_daily_puzzle` HTTP 500 | Run `./scripts/run_migrations.sh 014 015`; verify `club_relationships` count > 0 |
 | `deno.land` deploy error | Use `npm:@supabase/supabase-js@2` (already in repo) |
+| `DuplicateObject: type ... already exists` on migrate | Run `./scripts/run_migrations.sh --sync-tracking` then re-run; Supabase CLI uses `011` keys while repo uses `011_game_economy_engine` |
 | DB deadlock during sync | Never run two `sync_api_football` / `apply-patches` jobs in parallel |
 | Stale club UUIDs in app | Full app restart (cache key v6 invalidates old demo puzzles) |

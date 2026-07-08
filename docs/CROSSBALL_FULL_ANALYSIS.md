@@ -395,9 +395,10 @@ Günlük tamamla → Sonuç ekranı "Create Challenge"
 | `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Backend bağlantısı |
 | `FORCE_FREE_TIER=true` | Premium devre dışı (test) |
 | `IAP_ENABLED=false` | Demo premium toggle |
-| `ADMOB_ENABLED=false` | Reklamlar kapalı |
-| `POSTHOG_API_KEY` | Analitik |
-| `ADMOB_USE_TEST_ADS` | Test reklam birimleri |
+| `ADMOB_ENABLED=false` | Reklamlar kapalı (free modda bile görünmez) |
+| `ADMOB_USE_TEST_ADS` | Test reklam birimleri (simülatör için önerilir) |
+| `ANALYTICS_ENABLED` | PostHog açık/kapalı (default `true`) |
+| `POSTHOG_API_KEY` / `POSTHOG_HOST` | Ürün analitiği (opsiyonel) |
 
 ---
 
@@ -1002,7 +1003,7 @@ Onboarding, daily 3×3, search, rarity feedback, timer, ad placement, challenge,
 | 5 | interstitialEveryNPractice | Sabit tanımlı, kullanılmıyor | Düşük |
 | 6 | Splash route `/` | Router'da var, initial route değil | Düşük |
 | 7 | Recent/suggested picks | **Shipped** (Phase 2) | — |
-| 8 | README migration range | **Güncellendi** (001–036) | — |
+| 8 | README migration range | **Güncellendi** (001–039) | — |
 | 9 | Challenge import style | Bazı edge function'lar eski deno.land import | Deploy riski |
 | 10 | Erişilebilirlik | Semantics layer yok | Orta |
 | 11 | Hardcoded EN strings | Grid SELECT, splash | Düşük |
@@ -1041,15 +1042,16 @@ Onboarding, daily 3×3, search, rarity feedback, timer, ad placement, challenge,
 ### 20.1 Deploy Checklist
 
 ```bash
-# Migrations
+# Migrations (idempotent; sync tracking if Supabase CLI was used first)
 ./scripts/run_migrations.sh
+./scripts/run_migrations.sh --sync-tracking
 
 # Edge functions
 supabase functions deploy daily-puzzle practice-puzzle practice-quota
 supabase functions deploy validate-answer search-players request-hint
-supabase functions deploy complete-session economy-profile liveops-config
+supabase functions deploy complete-session start-session economy-profile liveops-config
 supabase functions deploy challenge-create challenge-get challenge-complete
-supabase functions deploy sync-user stats register-push-token
+supabase functions deploy sync-user stats register-push-token verify-premium
 
 # Data pipeline (after ETL)
 SELECT refresh_player_club_intersections();
@@ -1065,7 +1067,7 @@ CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
 |-------|---------|
 | Production | SUPABASE_URL, SUPABASE_ANON_KEY, ADMOB keys, IAP product IDs |
 | Staging | FORCE_FREE_TIER=true, ADMOB test units |
-| Analytics | POSTHOG_API_KEY |
+| Analytics | ANALYTICS_ENABLED=true, POSTHOG_API_KEY, POSTHOG_HOST (EU: `https://eu.i.posthog.com`) |
 
 ### 20.3 Monitoring Önerileri
 
@@ -1115,4 +1117,4 @@ CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
 
 ---
 
-*Bu doküman CrossBall kod tabanının (v1.2.0, migration 036) tam analizidir. Teknik değişikliklerde güncellenmesi önerilir.*
+*Bu doküman CrossBall kod tabanının (v1.2.0, migration 039) tam analizidir. Teknik değişikliklerde güncellenmesi önerilir.*

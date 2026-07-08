@@ -426,10 +426,11 @@ Premium (`is_premium = true`) removes all ads.
 | `ad_impression` | ad_type, placement |
 | `premium_viewed` | source |
 | `onboarding_completed` | skipped |
+| `app_opened` | — (cold start) |
 | `challenge_created` | challenge_id |
 | `challenge_completed` | won |
 
-Integration: PostHog (primary) with Firebase Analytics fallback via abstraction.
+Integration: PostHog via HTTP capture (`POSTHOG_API_KEY`, `POSTHOG_HOST`, `ANALYTICS_ENABLED`). Console logging in debug builds. Firebase optional for push only.
 
 ---
 
@@ -654,7 +655,7 @@ See `docs/TESTING.md`.
 | Flutter | App Store, Google Play |
 | Supabase | Managed cloud project |
 | Edge functions | `supabase functions deploy` (npm imports via `deno.json`) |
-| Migrations | `./scripts/run_migrations.sh` (001–036, idempotent) or `supabase db push` |
+| Migrations | `./scripts/run_migrations.sh` (001–039, idempotent) or `supabase db push`; use `--sync-tracking` if CLI and script disagree |
 | Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — migrations + API-Football + light patches + daily puzzle |
 | Pipeline (weekly ETL) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh + full graph |
 | Pipeline (weekly careers) | GitHub Actions `career-enrichment-weekly.yml` — reconcile stale stints + enriched patches |
@@ -673,4 +674,4 @@ See `docs/TESTING.md`.
 
 ---
 
-*CrossBall Architecture v1.2.0 — Phases 0–5, club identity, GEE, LOE, API-Football sync, career enrichment, RLS lockdown (036)*
+*CrossBall Architecture v1.2.0 — Phases 0–5, club identity, GEE, LOE, API-Football sync, career enrichment, RLS lockdown (036), weekly daily leaderboard + fair scoring (037–039)*

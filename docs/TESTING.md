@@ -92,7 +92,7 @@ pytest tests/ -q
 - Club name canonicalization
 - Transform output shape
 - Career reconcile + gap report + enrichment deltas
-- Idempotent migration runner (`run_migrations.py`)
+- Idempotent migration runner (`run_migrations.py`) — numeric prefix matching (`011` = `011_game_economy_engine`), `--sync-tracking`, per-migration transactions
 - API-Football sync + player alias resolution
 
 ## CI pipeline
@@ -119,8 +119,8 @@ pipeline:
 - [ ] Correct answer (e.g. Lewandowski for Barcelona × Bayern) shows rarity tier
 - [ ] Wrong answer shows "Yanlış" feedback modal
 - [ ] Timer runs during background
-- [ ] Banners only on Home/Stats/Result
-- [ ] No banners during puzzle gameplay
+- [ ] Banners on Home/Stats/Result and during active puzzle (when `ADMOB_ENABLED=true`)
+- [ ] No banners when premium or `ADMOB_ENABLED=false`
 - [ ] Challenge create + share link
 - [ ] EN/TR/DE localization renders
 - [ ] Light Pitch and Dark Stadium themes switch correctly

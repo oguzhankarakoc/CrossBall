@@ -17,11 +17,22 @@ Production-grade football intersection puzzle app for iOS and Android. Name play
 ## Quick start
 
 ```bash
-cp .env.example .env          # SUPABASE_URL + SUPABASE_ANON_KEY
+cp .env.example .env          # SUPABASE_URL + SUPABASE_ANON_KEY (+ optional PostHog / AdMob)
 flutter pub get
 flutter gen-l10n
 flutter run
 ```
+
+**Key `.env` flags (see `.env.example`):**
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` / `SUPABASE_ANON_KEY` | Backend (required for online play) |
+| `ANALYTICS_ENABLED` | PostHog on/off (default `true`) |
+| `POSTHOG_API_KEY` / `POSTHOG_HOST` | Product analytics (optional) |
+| `ADMOB_ENABLED` | Ads on/off — must be `true` to see banners/interstitials |
+| `ADMOB_USE_TEST_ADS` | Google test ad units (recommended in simulator) |
+| `FORCE_FREE_TIER` | Dev override — forces free tier |
 
 **iOS (first build or after new plugins):**
 
@@ -35,7 +46,9 @@ cd ios && pod install --repo-update && cd ..
 ```bash
 # 1. Apply SQL migrations (uses DATABASE_URL in data_pipeline/.env)
 chmod +x scripts/run_migrations.sh
-./scripts/run_migrations.sh
+./scripts/run_migrations.sh              # skips already-applied (001–039)
+# If Supabase CLI was used first and script fails on duplicate types:
+./scripts/run_migrations.sh --sync-tracking
 
 # 2. Deploy edge functions (see supabase/README.md for full list)
 supabase link --project-ref YOUR_PROJECT_REF
@@ -61,7 +74,7 @@ lib/
 └── features/       # auth, puzzle, search, challenge, stats, economy, social, tournament
 assets/clubs/       # optional per-club metadata overrides (manifest.json)
 docs/               # architecture, testing, product audit
-supabase/           # migrations (001–036), edge functions, SECURITY.md
+supabase/           # migrations (001–039), edge functions, SECURITY.md
 data_pipeline/      # Python ingest, API-Football sync, career enrichment
 scripts/            # migrations, ETL, scheduled sync, career enrichment
 test/               # unit + widget tests (60+ tests)

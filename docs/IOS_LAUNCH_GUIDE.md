@@ -834,6 +834,7 @@ SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 
 # Analytics (opsiyonel)
+ANALYTICS_ENABLED=true
 POSTHOG_API_KEY=phc_...
 POSTHOG_HOST=https://eu.i.posthog.com
 

@@ -2,7 +2,7 @@
 
 **Document type:** Senior cross-functional product audit  
 **Audience:** Engineering, Product, Design, Growth, Security, QA  
-**Version audited:** 1.2.0 (Flutter client + Supabase backend, migrations 001–036)  
+**Version audited:** 1.2.0 (Flutter client + Supabase backend, migrations 001–039)  
 **Audit date:** July 2026  
 **Prepared as:** Staff Flutter · Mobile Architect · PM · UX Research · UI Design · Game Design · Security · Performance · Backend · LiveOps · Growth · Accessibility · QA · ASO
 
@@ -542,7 +542,7 @@ Cannot (today): Access service role key (not in client)
 
 | Doc | Status |
 |-----|--------|
-| ARCHITECTURE.md | Updated through migration 036 + career enrichment |
+| ARCHITECTURE.md | Updated through migration 039 + career enrichment |
 | README | Lists 4×4 premium — not implemented |
 | CROSSBALL_FULL_ANALYSIS.md | Comprehensive |
 | API contracts | Partial in ARCHITECTURE.md |

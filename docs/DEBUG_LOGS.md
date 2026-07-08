@@ -23,7 +23,7 @@
 | Dosya | Tag | Ne loglanır |
 |-------|-----|-------------|
 | `lib/main.dart` | `Config` | `.env` snapshot, Supabase init OK/fail |
-| `lib/core/debug/crossball_debug_log.dart` | `Config` | `cbDebugConfigSnapshot()` — supabaseConfigured, host, IAP, AdMob, Firebase |
+| `lib/core/debug/crossball_debug_log.dart` | `Config` | `cbDebugConfigSnapshot()` — supabase, IAP, AdMob, Firebase, PostHog (`postHogActive`) |
 
 ### Auth
 
@@ -91,6 +91,8 @@ Console'da şu sırayı takip et:
 | `Daily puzzle unavailable (404/500)` | Edge function deploy edilmemiş veya DB'de günlük bulmaca yok |
 | `Invalid daily puzzle payload` | API slug ID döndürüyor; UUID bekleniyor |
 | `start-session failed` | Migration 021+ deploy edilmemiş veya session RPC hatası |
+| `adMobEnabled: false` | `.env` içinde `ADMOB_ENABLED=true` yap; simülatörde `ADMOB_USE_TEST_ADS=true` |
+| `DuplicateObject` migration hatası | `./scripts/run_migrations.sh --sync-tracking` sonra tekrar dene |
 | `using demo puzzle` | Supabase client null — init başarısız |
 
 ---
