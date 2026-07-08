@@ -64,7 +64,8 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 Local run (no DB load):
 
 ```bash
-cd data_pipeline && python -m pipeline career-enrich --skip-api-sync
+./scripts/run_career_enrichment.sh --skip-api-sync
+# or: cd data_pipeline && python3 -m pipeline career-enrich --skip-api-sync
 ```
 
 Apply to Supabase after enrichment:

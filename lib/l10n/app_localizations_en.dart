@@ -731,4 +731,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String tournamentYourRank(int rank) {
     return 'Your rank: #$rank';
   }
+
+  @override
+  String get leaderboardWeeklyTab => 'This Week';
+
+  @override
+  String get leaderboardRatingTab => 'Rating';
+
+  @override
+  String get weeklyLeaderboardTitle => 'Weekly Daily Challenge';
+
+  @override
+  String get weeklyLeaderboardEmpty =>
+      'No daily scores this week yet. Complete today\'s puzzle to join the board.';
+
+  @override
+  String get weekResetsMonday =>
+      'Scores reset every Monday 00:00 UTC. Tie-break: fewer hints, then fewer mistakes.';
+
+  @override
+  String daysPlayedCount(int count) {
+    return '$count days played';
+  }
+
+  @override
+  String weeklyLeaderboardPenalties(int hints, int mistakes) {
+    return 'Hints $hints · Mistakes $mistakes';
+  }
 }

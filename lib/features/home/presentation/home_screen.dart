@@ -151,7 +151,10 @@ class HomeScreen extends ConsumerWidget {
                       badge: dailyBadge,
                       badgeIcon: dailyBadgeIcon,
                       onTap: () {
-                        cbDebug('Daily', 'home → open daily puzzle');
+                        cbDebug('Daily', 'home → open daily puzzle', {
+                          'dailyCompleted': dailyCompleted,
+                        });
+                        ref.invalidate(userStatsProvider);
                         context.push('${AppRoutes.puzzle}?mode=daily');
                       },
                     ),

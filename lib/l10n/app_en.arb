@@ -8,8 +8,12 @@
   "dailyRefreshSchedule": "Updates at {localTime} your time (00:00 UTC) · Next in {countdown}",
   "@dailyRefreshSchedule": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshTitle": "Today's puzzle is being prepared",
@@ -17,14 +21,18 @@
   "dailyPuzzleRefreshElapsed": "Preparing for {elapsed}",
   "@dailyPuzzleRefreshElapsed": {
     "placeholders": {
-      "elapsed": {"type": "String"}
+      "elapsed": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshWindowHint": "This usually takes a few minutes. Thanks for your patience.",
   "dailyPuzzleRefreshAutoHint": "We'll check again automatically in {seconds}s.",
   "@dailyPuzzleRefreshAutoHint": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "dailyPuzzleRefreshCheckAgain": "Check again",
@@ -39,8 +47,12 @@
   "dailyAlreadyCompletedNextPuzzle": "Next puzzle around {localTime} · {countdown} to go",
   "@dailyAlreadyCompletedNextPuzzle": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyAlreadyCompletedBadge": "Completed",
@@ -110,7 +122,9 @@
   "usedBy": "Used by {percent}%",
   "@usedBy": {
     "placeholders": {
-      "percent": {"type": "String"}
+      "percent": {
+        "type": "String"
+      }
     }
   },
   "continueButton": "Continue",
@@ -152,15 +166,23 @@
   "practiceSessionProgress": "Training {current}/{limit}",
   "@practiceSessionProgress": {
     "placeholders": {
-      "current": {"type": "int"},
-      "limit": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceDailyProgress": "{used}/{limit} training sessions used today",
   "@practiceDailyProgress": {
     "placeholders": {
-      "used": {"type": "int"},
-      "limit": {"type": "int"}
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceAdGateHint": "On the free plan, watch a short ad before each new training session.",
@@ -169,7 +191,9 @@
   "practiceSessionsRemaining": "{count} training sessions left today",
   "@practiceSessionsRemaining": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "premiumFeatureGrid": "4×4 premium grids",
@@ -206,8 +230,12 @@
   "missionsProgress": "{completed}/{total} done",
   "@missionsProgress": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "shareResult": "Share result",
@@ -235,14 +263,20 @@
   "seasonPoints": "{points} SP",
   "@seasonPoints": {
     "placeholders": {
-      "points": {"type": "int"}
+      "points": {
+        "type": "int"
+      }
     }
   },
   "seasonNextReward": "Next reward at {points} SP: {reward}",
   "@seasonNextReward": {
     "placeholders": {
-      "points": {"type": "int"},
-      "reward": {"type": "String"}
+      "points": {
+        "type": "int"
+      },
+      "reward": {
+        "type": "String"
+      }
     }
   },
   "clubMastery": "Club Mastery",
@@ -256,7 +290,9 @@
   "timelineSheetTitle": "{name} — career timeline",
   "@timelineSheetTitle": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "timelineEmpty": "No senior career data available for this player.",
@@ -265,28 +301,42 @@
   "activityDailyCompleted": "{name} completed the daily puzzle ({score} pts)",
   "@activityDailyCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityChallengeCompleted": "{name} finished a friend challenge",
   "@activityChallengeCompleted": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "activityTimelineCompleted": "{name} finished timeline training ({score} pts)",
   "@activityTimelineCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityGeneric": "{name}: {action}",
   "@activityGeneric": {
     "placeholders": {
-      "name": {"type": "String"},
-      "action": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
     }
   },
   "footballFactTitle": "Did you know?",
@@ -305,7 +355,33 @@
   "tournamentYourRank": "Your rank: #{rank}",
   "@tournamentYourRank": {
     "placeholders": {
-      "rank": {"type": "int"}
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "leaderboardWeeklyTab": "This Week",
+  "leaderboardRatingTab": "Rating",
+  "weeklyLeaderboardTitle": "Weekly Daily Challenge",
+  "weeklyLeaderboardEmpty": "No daily scores this week yet. Complete today's puzzle to join the board.",
+  "weekResetsMonday": "Scores reset every Monday 00:00 UTC. Tie-break: fewer hints, then fewer mistakes.",
+  "daysPlayedCount": "{count} days played",
+  "@daysPlayedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyLeaderboardPenalties": "Hints {hints} · Mistakes {mistakes}",
+  "@weeklyLeaderboardPenalties": {
+    "placeholders": {
+      "hints": {
+        "type": "int"
+      },
+      "mistakes": {
+        "type": "int"
+      }
     }
   }
 }

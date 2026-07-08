@@ -10,20 +10,19 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
 
   final http.Client _http;
 
+  Map<String, String> get _headers => {'apikey': AppConfig.supabaseAnonKey};
+
   @override
   Future<List<LeaderboardEntry>> getLeaderboard({String? league, int limit = 50}) async {
     if (!AppConfig.isSupabaseConfigured) return const [];
 
     try {
-      final params = <String, String>{'limit': '$limit'};
+      final params = <String, String>{'limit': '$limit', 'type': 'rating'};
       if (league != null && league.isNotEmpty) params['league'] = league;
 
       final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/leaderboard')
           .replace(queryParameters: params);
-      final response = await _http.get(
-        uri,
-        headers: {'apikey': AppConfig.supabaseAnonKey},
-      );
+      final response = await _http.get(uri, headers: _headers);
 
       if (response.statusCode != 200) return const [];
 
@@ -36,6 +35,39 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
           .toList();
     } catch (_) {
       return const [];
+    }
+  }
+
+  @override
+  Future<WeeklyDailyLeaderboardSnapshot?> getWeeklyDailyLeaderboard({
+    String? userUuid,
+    int limit = 50,
+  }) async {
+    if (!AppConfig.isSupabaseConfigured) return null;
+
+    try {
+      final params = <String, String>{'limit': '$limit', 'type': 'weekly_daily'};
+      if (userUuid != null && userUuid.isNotEmpty) {
+        params['user_uuid'] = userUuid;
+      }
+
+      final headers = Map<String, String>.from(_headers);
+      if (userUuid != null && userUuid.isNotEmpty) {
+        headers['x-user-uuid'] = userUuid;
+      }
+
+      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/leaderboard')
+          .replace(queryParameters: params);
+      final response = await _http.get(uri, headers: headers);
+
+      if (response.statusCode != 200) return null;
+
+      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      if (json['ok'] != true) return null;
+
+      return WeeklyDailyLeaderboardSnapshot.fromJson(json);
+    } catch (_) {
+      return null;
     }
   }
 }

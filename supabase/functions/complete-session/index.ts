@@ -225,6 +225,27 @@ Deno.serve(async (req) => {
         },
       })
 
+      if (resolvedMode === 'daily' && !suspicious && sessionRow?.puzzle_id) {
+        const { data: puzzleDateRow } = await supabase
+          .from('puzzles')
+          .select('puzzle_date')
+          .eq('id', sessionRow.puzzle_id)
+          .maybeSingle()
+        const puzzleDate = puzzleDateRow?.puzzle_date as string | undefined
+        if (puzzleDate) {
+          const { error: weeklyError } = await supabase.rpc('upsert_weekly_daily_score', {
+            p_user_uuid: user_uuid,
+            p_puzzle_date: puzzleDate,
+            p_score: finalScore,
+            p_hints: serverHints,
+            p_mistakes: mistakes,
+          })
+          if (weeklyError) {
+            console.error('upsert_weekly_daily_score failed:', weeklyError.message)
+          }
+        }
+      }
+
       const { data: activeTournament } = await supabase.rpc('get_active_tournament')
       if (
         activeTournament &&

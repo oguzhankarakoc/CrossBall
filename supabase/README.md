@@ -84,10 +84,21 @@ SUPABASE_ANON_KEY=<from supabase status>
 | `023_phase3_features.sql` | Club mastery, season, career hint taste |
 | `024_phase4_features.sql` | Timeline mode, activity feed, facts, tournament |
 | `025_club_identity_full_coverage.sql` | Full curated badge symbols for all 105 seed clubs |
+| `026_daily_puzzle_resilience.sql` | Sparse club graph refresh + fast fallback generator |
+| `027_daily_puzzle_rollout.sql` | Daily puzzle rollout lifecycle (generating/ready/failed) |
+| `028_ensure_daily_smallint_cast.sql` | Fix `ensure_daily_puzzle` grid_size SMALLINT cast |
+| `029_backfill_player_metadata.sql` | Backfill nationality/position from identity_key siblings |
+| `030_fix_ai_features_rollout.sql` | Fix stale LiveOps flag keeping AI features disabled |
+| `031_session_resume.sql` | Resume in-progress sessions without duplicates |
+| `032_competitive_integrity.sql` | Cell binding, server timing, atomic completion |
+| `033_fair_scoring.sql` | Fair daily scoring (base + rarity + completion bonus) |
+| `034_merge_ronaldo_identity.sql` | Merge duplicate Cristiano Ronaldo identity rows |
+| `035_daily_completion_guard.sql` | Block new daily session after today's completion |
+| `036_security_rls_lockdown.sql` | RLS on all tables; revoke anon/authenticated table/RPC access |
 
-Apply through `025` for full feature set + club identity sync.
+Apply through `036` for full feature set + open-source security model. See [`SECURITY.md`](SECURITY.md).
 
-### Phase deploy (021 → 025)
+### Phase deploy (021 → 036)
 
 ```bash
 ./scripts/run_migrations.sh 021
@@ -95,6 +106,7 @@ Apply through `025` for full feature set + club identity sync.
 ./scripts/run_migrations.sh 023
 ./scripts/run_migrations.sh 024
 ./scripts/run_migrations.sh 025
+./scripts/run_migrations.sh 036   # RLS lockdown — required for open-source repo
 ```
 
 Or all at once: `./scripts/run_migrations.sh`
@@ -107,7 +119,7 @@ chmod +x scripts/run_migrations.sh
 ./scripts/run_migrations.sh 007 008      # specific migrations only
 ```
 
-Uses `DATABASE_URL` from `data_pipeline/.env`.
+Uses `DATABASE_URL` from `data_pipeline/.env`. Migrations are **idempotent** — already-applied versions are skipped via `crossball_applied_migrations` (and Supabase CLI tracking when present).
 
 **Note:** SQL files are **PostgreSQL**. IDE red squiggles from a T-SQL linter are false positives — see `.vscode/settings.json`.
 
@@ -152,11 +164,16 @@ Answer validation uses RPC `validate_player_intersection` and `club_ids_equivale
 
 Rarity stats are updated only when `puzzle_cell_id` is a valid UUID.
 
-## RLS notes
+## RLS and client access
 
-- Public read on `clubs`, `players`, published `puzzles`
-- Writes go through edge functions with service role
-- Client sends `x-user-uuid` header on authenticated requests
+The mobile app **does not** read or write PostgreSQL tables via PostgREST. All client traffic goes through **Edge Functions** (anon key → function → service role).
+
+Migration `036_security_rls_lockdown.sql`:
+- Enables RLS on every `public` table
+- Removes legacy public-read policies
+- Revokes `anon` / `authenticated` grants on tables and RPCs
+
+See [`SECURITY.md`](SECURITY.md) for the full open-source security model and deploy steps.
 
 ## Refresh materialized view
 

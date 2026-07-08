@@ -44,6 +44,21 @@ supabase functions deploy practice-puzzle practice-quota register-push-token
 - [ ] Add rate limiting (Cloudflare / Supabase gateway)
 - [ ] Optional: Supabase Anonymous Auth JWT for `user_uuid` binding
 
+## Migration 036 — PostgREST lockdown
+
+After migration `021`, economy and session RPCs were service-role only. Migration **`036_security_rls_lockdown.sql`** extends this to the entire schema:
+
+- RLS enabled (and forced where needed) on all public tables
+- Legacy public-read policies removed
+- No table or RPC grants for `anon` / `authenticated`
+
+Clients must use Edge Functions only. See [`supabase/SECURITY.md`](../supabase/SECURITY.md).
+
+```bash
+./scripts/run_migrations.sh 036
+# or: supabase db push
+```
+
 ## Breaking changes
 
 - Direct PostgREST calls to `gee_process_event` will fail (intentional)

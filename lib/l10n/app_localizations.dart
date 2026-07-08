@@ -1383,6 +1383,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your rank: #{rank}'**
   String tournamentYourRank(int rank);
+
+  /// No description provided for @leaderboardWeeklyTab.
+  ///
+  /// In en, this message translates to:
+  /// **'This Week'**
+  String get leaderboardWeeklyTab;
+
+  /// No description provided for @leaderboardRatingTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Rating'**
+  String get leaderboardRatingTab;
+
+  /// No description provided for @weeklyLeaderboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Daily Challenge'**
+  String get weeklyLeaderboardTitle;
+
+  /// No description provided for @weeklyLeaderboardEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily scores this week yet. Complete today\'s puzzle to join the board.'**
+  String get weeklyLeaderboardEmpty;
+
+  /// No description provided for @weekResetsMonday.
+  ///
+  /// In en, this message translates to:
+  /// **'Scores reset every Monday 00:00 UTC. Tie-break: fewer hints, then fewer mistakes.'**
+  String get weekResetsMonday;
+
+  /// No description provided for @daysPlayedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} days played'**
+  String daysPlayedCount(int count);
+
+  /// No description provided for @weeklyLeaderboardPenalties.
+  ///
+  /// In en, this message translates to:
+  /// **'Hints {hints} · Mistakes {mistakes}'**
+  String weeklyLeaderboardPenalties(int hints, int mistakes);
 }
 
 class _AppLocalizationsDelegate

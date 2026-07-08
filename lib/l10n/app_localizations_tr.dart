@@ -732,4 +732,31 @@ class AppLocalizationsTr extends AppLocalizations {
   String tournamentYourRank(int rank) {
     return 'Sıralaman: #$rank';
   }
+
+  @override
+  String get leaderboardWeeklyTab => 'Bu Hafta';
+
+  @override
+  String get leaderboardRatingTab => 'Rekabet';
+
+  @override
+  String get weeklyLeaderboardTitle => 'Haftalık Günlük Sıralama';
+
+  @override
+  String get weeklyLeaderboardEmpty =>
+      'Bu hafta henüz puan yok. Bugünkü günlük bulmacayı tamamla ve sıralamaya gir.';
+
+  @override
+  String get weekResetsMonday =>
+      'Puanlar her Pazartesi 00:00 UTC\'de sıfırlanır. Eşitlikte: daha az ipucu, sonra daha az hata.';
+
+  @override
+  String daysPlayedCount(int count) {
+    return '$count gün oynandı';
+  }
+
+  @override
+  String weeklyLeaderboardPenalties(int hints, int mistakes) {
+    return 'İpucu $hints · Hata $mistakes';
+  }
 }

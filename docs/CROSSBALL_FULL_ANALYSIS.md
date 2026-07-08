@@ -1002,7 +1002,7 @@ Onboarding, daily 3×3, search, rarity feedback, timer, ad placement, challenge,
 | 5 | interstitialEveryNPractice | Sabit tanımlı, kullanılmıyor | Düşük |
 | 6 | Splash route `/` | Router'da var, initial route değil | Düşük |
 | 7 | Recent/suggested picks | **Shipped** (Phase 2) | — |
-| 8 | README migration range | **Güncellendi** (001–025) | — |
+| 8 | README migration range | **Güncellendi** (001–036) | — |
 | 9 | Challenge import style | Bazı edge function'lar eski deno.land import | Deploy riski |
 | 10 | Erişilebilirlik | Semantics layer yok | Orta |
 | 11 | Hardcoded EN strings | Grid SELECT, splash | Düşük |
@@ -1054,6 +1054,9 @@ supabase functions deploy sync-user stats register-push-token
 # Data pipeline (after ETL)
 SELECT refresh_player_club_intersections();
 SELECT refresh_club_relationships();
+
+# Career enrichment (weekly GitHub Actions or manual)
+CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
 ```
 
 ### 20.2 Ortam Değişkenleri
@@ -1108,8 +1111,8 @@ SELECT refresh_club_relationships();
 | Mimari doküman | `docs/ARCHITECTURE.md` |
 | Test stratejisi | `docs/TESTING.md` |
 | Backend | `supabase/README.md`, `supabase/migrations/` |
-| Veri hattı | `data_pipeline/README.md` |
+| Veri hattı | `data_pipeline/README.md`, `scripts/run_career_enrichment.sh` |
 
 ---
 
-*Bu doküman CrossBall kod tabanının (v1.2.0, migration 025) tam analizidir. Teknik değişikliklerde güncellenmesi önerilir.*
+*Bu doküman CrossBall kod tabanının (v1.2.0, migration 036) tam analizidir. Teknik değişikliklerde güncellenmesi önerilir.*

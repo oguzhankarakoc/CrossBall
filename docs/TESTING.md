@@ -14,7 +14,7 @@ Testing pyramid for CrossBall MVP with emphasis on domain logic and critical use
         └─────────────┘
 ```
 
-**Current status:** 56+ Flutter tests + pipeline pytest tests, all passing in CI.
+**Current status:** 60+ Flutter tests + 25 pipeline pytest tests, all passing in CI.
 
 ## Coverage targets
 
@@ -91,6 +91,9 @@ pytest tests/ -q
 - Youth team filtering
 - Club name canonicalization
 - Transform output shape
+- Career reconcile + gap report + enrichment deltas
+- Idempotent migration runner (`run_migrations.py`)
+- API-Football sync + player alias resolution
 
 ## CI pipeline
 

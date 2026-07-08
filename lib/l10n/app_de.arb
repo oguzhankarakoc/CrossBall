@@ -8,8 +8,12 @@
   "dailyRefreshSchedule": "Aktualisierung um {localTime} Ortszeit (00:00 UTC) · Nächstes in {countdown}",
   "@dailyRefreshSchedule": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshTitle": "Das heutige Rätsel wird vorbereitet",
@@ -17,14 +21,18 @@
   "dailyPuzzleRefreshElapsed": "Vorbereitung seit {elapsed}",
   "@dailyPuzzleRefreshElapsed": {
     "placeholders": {
-      "elapsed": {"type": "String"}
+      "elapsed": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshWindowHint": "Das dauert meist nur wenige Minuten. Danke für deine Geduld.",
   "dailyPuzzleRefreshAutoHint": "Wir prüfen automatisch erneut in {seconds} s.",
   "@dailyPuzzleRefreshAutoHint": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "dailyPuzzleRefreshCheckAgain": "Erneut prüfen",
@@ -39,8 +47,12 @@
   "dailyAlreadyCompletedNextPuzzle": "Nächstes Rätsel gegen {localTime} · noch {countdown}",
   "@dailyAlreadyCompletedNextPuzzle": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyAlreadyCompletedBadge": "Abgeschlossen",
@@ -147,15 +159,23 @@
   "practiceSessionProgress": "Training {current}/{limit}",
   "@practiceSessionProgress": {
     "placeholders": {
-      "current": {"type": "int"},
-      "limit": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceDailyProgress": "Heute {used}/{limit} Trainingseinheiten genutzt",
   "@practiceDailyProgress": {
     "placeholders": {
-      "used": {"type": "int"},
-      "limit": {"type": "int"}
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceAdGateHint": "Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.",
@@ -164,7 +184,9 @@
   "practiceSessionsRemaining": "Noch {count} Trainingseinheiten heute",
   "@practiceSessionsRemaining": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "premiumFeatureGrid": "4×4 Premium-Gitter",
@@ -201,8 +223,12 @@
   "missionsProgress": "{completed}/{total} erledigt",
   "@missionsProgress": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "shareResult": "Ergebnis teilen",
@@ -230,14 +256,20 @@
   "seasonPoints": "{points} SP",
   "@seasonPoints": {
     "placeholders": {
-      "points": {"type": "int"}
+      "points": {
+        "type": "int"
+      }
     }
   },
   "seasonNextReward": "Nächste Belohnung bei {points} SP: {reward}",
   "@seasonNextReward": {
     "placeholders": {
-      "points": {"type": "int"},
-      "reward": {"type": "String"}
+      "points": {
+        "type": "int"
+      },
+      "reward": {
+        "type": "String"
+      }
     }
   },
   "clubMastery": "Vereins-Meisterschaft",
@@ -251,7 +283,9 @@
   "timelineSheetTitle": "{name} — Karriere-Timeline",
   "@timelineSheetTitle": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "timelineEmpty": "Keine Karrieredaten für diesen Spieler.",
@@ -260,28 +294,42 @@
   "activityDailyCompleted": "{name} hat das Tagesrätsel gelöst ({score} Pkt.)",
   "@activityDailyCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityChallengeCompleted": "{name} hat eine Freundes-Herausforderung abgeschlossen",
   "@activityChallengeCompleted": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "activityTimelineCompleted": "{name} hat Timeline-Training beendet ({score} Pkt.)",
   "@activityTimelineCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityGeneric": "{name}: {action}",
   "@activityGeneric": {
     "placeholders": {
-      "name": {"type": "String"},
-      "action": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
     }
   },
   "footballFactTitle": "Wusstest du?",
@@ -300,7 +348,33 @@
   "tournamentYourRank": "Dein Rang: #{rank}",
   "@tournamentYourRank": {
     "placeholders": {
-      "rank": {"type": "int"}
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "leaderboardWeeklyTab": "Diese Woche",
+  "leaderboardRatingTab": "Rating",
+  "weeklyLeaderboardTitle": "Wöchentliche Daily-Rangliste",
+  "weeklyLeaderboardEmpty": "Diese Woche noch keine Tagespunkte. Schließe das heutige Daily ab.",
+  "weekResetsMonday": "Punkte reset Montag 00:00 UTC. Gleichstand: weniger Hinweise, dann weniger Fehler.",
+  "daysPlayedCount": "{count} Tage gespielt",
+  "@daysPlayedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyLeaderboardPenalties": "Hinweise {hints} · Fehler {mistakes}",
+  "@weeklyLeaderboardPenalties": {
+    "placeholders": {
+      "hints": {
+        "type": "int"
+      },
+      "mistakes": {
+        "type": "int"
+      }
     }
   }
 }

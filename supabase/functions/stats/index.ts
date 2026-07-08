@@ -10,14 +10,19 @@ function isoDate(d: Date): string {
   return d.toISOString().slice(0, 10)
 }
 
-function lastSevenDays(): string[] {
-  const days: string[] = []
+function isoWeekDaysUtc(): string[] {
   const today = new Date()
   today.setUTCHours(0, 0, 0, 0)
-  for (let offset = 6; offset >= 0; offset--) {
-    const day = new Date(today)
-    day.setUTCDate(today.getUTCDate() - offset)
-    days.push(isoDate(day))
+  const day = today.getUTCDay() // Sun=0
+  const mondayOffset = day === 0 ? -6 : 1 - day
+  const monday = new Date(today)
+  monday.setUTCDate(today.getUTCDate() + mondayOffset)
+
+  const days: string[] = []
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday)
+    d.setUTCDate(monday.getUTCDate() + i)
+    days.push(isoDate(d))
   }
   return days
 }
@@ -36,7 +41,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
 
-    const weekDays = lastSevenDays()
+    const weekDays = isoWeekDaysUtc()
     const weekStart = `${weekDays[0]}T00:00:00.000Z`
 
     const { data: user } = await supabase
@@ -61,14 +66,14 @@ serve(async (req) => {
       )
     }
 
-    const todayKey = weekDays[weekDays.length - 1]
+    const todayKey = isoDate(new Date())
 
     const [{ data: stats }, { data: dailySessions }, { data: completedToday }] =
       await Promise.all([
       supabase.from('user_stats').select('*').eq('user_id', user.id).maybeSingle(),
       supabase
         .from('puzzle_sessions')
-        .select('final_score, completed_at, puzzles(puzzle_date)')
+        .select('final_score, completed_at, hints_used, mistakes, puzzles(puzzle_date)')
         .eq('user_id', user.id)
         .eq('mode', 'daily')
         .eq('status', 'completed')

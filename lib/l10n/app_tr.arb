@@ -8,8 +8,12 @@
   "dailyRefreshSchedule": "Yerel saatinizle {localTime}'de güncellenir (00:00 UTC) · Sonraki: {countdown}",
   "@dailyRefreshSchedule": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshTitle": "Bugünün bulmacası hazırlanıyor",
@@ -17,14 +21,18 @@
   "dailyPuzzleRefreshElapsed": "Hazırlanıyor: {elapsed}",
   "@dailyPuzzleRefreshElapsed": {
     "placeholders": {
-      "elapsed": {"type": "String"}
+      "elapsed": {
+        "type": "String"
+      }
     }
   },
   "dailyPuzzleRefreshWindowHint": "Bu işlem genelde birkaç dakika sürer. Sabrınız için teşekkürler.",
   "dailyPuzzleRefreshAutoHint": "{seconds} sn sonra otomatik tekrar kontrol edeceğiz.",
   "@dailyPuzzleRefreshAutoHint": {
     "placeholders": {
-      "seconds": {"type": "int"}
+      "seconds": {
+        "type": "int"
+      }
     }
   },
   "dailyPuzzleRefreshCheckAgain": "Tekrar kontrol et",
@@ -39,8 +47,12 @@
   "dailyAlreadyCompletedNextPuzzle": "Sonraki bulmaca {localTime} civarında · {countdown} kaldı",
   "@dailyAlreadyCompletedNextPuzzle": {
     "placeholders": {
-      "localTime": {"type": "String"},
-      "countdown": {"type": "String"}
+      "localTime": {
+        "type": "String"
+      },
+      "countdown": {
+        "type": "String"
+      }
     }
   },
   "dailyAlreadyCompletedBadge": "Tamamlandı",
@@ -147,15 +159,23 @@
   "practiceSessionProgress": "Antrenman {current}/{limit}",
   "@practiceSessionProgress": {
     "placeholders": {
-      "current": {"type": "int"},
-      "limit": {"type": "int"}
+      "current": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceDailyProgress": "Bugün {used}/{limit} antrenman kullanıldı",
   "@practiceDailyProgress": {
     "placeholders": {
-      "used": {"type": "int"},
-      "limit": {"type": "int"}
+      "used": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
     }
   },
   "practiceAdGateHint": "Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.",
@@ -164,7 +184,9 @@
   "practiceSessionsRemaining": "Bugün {count} antrenman hakkın kaldı",
   "@practiceSessionsRemaining": {
     "placeholders": {
-      "count": {"type": "int"}
+      "count": {
+        "type": "int"
+      }
     }
   },
   "premiumFeatureGrid": "4×4 premium ızgaralar",
@@ -201,8 +223,12 @@
   "missionsProgress": "{completed}/{total} tamamlandı",
   "@missionsProgress": {
     "placeholders": {
-      "completed": {"type": "int"},
-      "total": {"type": "int"}
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "shareResult": "Sonucu paylaş",
@@ -230,14 +256,20 @@
   "seasonPoints": "{points} SP",
   "@seasonPoints": {
     "placeholders": {
-      "points": {"type": "int"}
+      "points": {
+        "type": "int"
+      }
     }
   },
   "seasonNextReward": "Sonraki ödül {points} SP: {reward}",
   "@seasonNextReward": {
     "placeholders": {
-      "points": {"type": "int"},
-      "reward": {"type": "String"}
+      "points": {
+        "type": "int"
+      },
+      "reward": {
+        "type": "String"
+      }
     }
   },
   "clubMastery": "Kulüp Ustalığı",
@@ -251,7 +283,9 @@
   "timelineSheetTitle": "{name} — kariyer zaman çizelgesi",
   "@timelineSheetTitle": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "timelineEmpty": "Bu oyuncu için kariyer verisi yok.",
@@ -260,28 +294,42 @@
   "activityDailyCompleted": "{name} günlük bulmacayı tamamladı ({score} puan)",
   "@activityDailyCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityChallengeCompleted": "{name} bir arkadaş mücadelesi bitirdi",
   "@activityChallengeCompleted": {
     "placeholders": {
-      "name": {"type": "String"}
+      "name": {
+        "type": "String"
+      }
     }
   },
   "activityTimelineCompleted": "{name} zaman çizelgesi antrenmanını bitirdi ({score} puan)",
   "@activityTimelineCompleted": {
     "placeholders": {
-      "name": {"type": "String"},
-      "score": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "score": {
+        "type": "String"
+      }
     }
   },
   "activityGeneric": "{name}: {action}",
   "@activityGeneric": {
     "placeholders": {
-      "name": {"type": "String"},
-      "action": {"type": "String"}
+      "name": {
+        "type": "String"
+      },
+      "action": {
+        "type": "String"
+      }
     }
   },
   "footballFactTitle": "Biliyor muydun?",
@@ -300,7 +348,33 @@
   "tournamentYourRank": "Sıralaman: #{rank}",
   "@tournamentYourRank": {
     "placeholders": {
-      "rank": {"type": "int"}
+      "rank": {
+        "type": "int"
+      }
+    }
+  },
+  "leaderboardWeeklyTab": "Bu Hafta",
+  "leaderboardRatingTab": "Rekabet",
+  "weeklyLeaderboardTitle": "Haftalık Günlük Sıralama",
+  "weeklyLeaderboardEmpty": "Bu hafta henüz puan yok. Bugünkü günlük bulmacayı tamamla ve sıralamaya gir.",
+  "weekResetsMonday": "Puanlar her Pazartesi 00:00 UTC'de sıfırlanır. Eşitlikte: daha az ipucu, sonra daha az hata.",
+  "daysPlayedCount": "{count} gün oynandı",
+  "@daysPlayedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weeklyLeaderboardPenalties": "İpucu {hints} · Hata {mistakes}",
+  "@weeklyLeaderboardPenalties": {
+    "placeholders": {
+      "hints": {
+        "type": "int"
+      },
+      "mistakes": {
+        "type": "int"
+      }
     }
   }
 }

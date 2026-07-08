@@ -323,6 +323,9 @@ class PuzzleApiService {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         detail = body['error']?.toString() ?? '';
         errorCode = detail.isNotEmpty ? detail : null;
+        if (response.statusCode == 409 && detail.contains('daily_already_completed')) {
+          errorCode = 'daily_already_completed';
+        }
       } catch (_) {}
 
       throw PuzzleFetchException(

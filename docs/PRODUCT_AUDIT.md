@@ -2,7 +2,7 @@
 
 **Document type:** Senior cross-functional product audit  
 **Audience:** Engineering, Product, Design, Growth, Security, QA  
-**Version audited:** 1.0.0+1 (Flutter client + Supabase backend, migrations 001–020)  
+**Version audited:** 1.2.0 (Flutter client + Supabase backend, migrations 001–036)  
 **Audit date:** July 2026  
 **Prepared as:** Staff Flutter · Mobile Architect · PM · UX Research · UI Design · Game Design · Security · Performance · Backend · LiveOps · Growth · Accessibility · QA · ASO
 
@@ -60,7 +60,7 @@ The gap is not vision — it is **trust, polish, and retention depth**. Critical
 Full codebase review across:
 
 - **16 presentation screens** + **9 shared widgets**
-- **17 Supabase edge functions** + **20 SQL migrations**
+- **17+ Supabase edge functions** + **36 SQL migrations**
 - **Python data pipeline** (ETL, dedup, club graph)
 - **12 Flutter test files**, CI workflows
 - Existing docs: `ARCHITECTURE.md`, `CROSSBALL_FULL_ANALYSIS.md`, `TESTING.md`, Stitch design system
@@ -542,7 +542,7 @@ Cannot (today): Access service role key (not in client)
 
 | Doc | Status |
 |-----|--------|
-| ARCHITECTURE.md | Good but migration range outdated (015 vs 020) |
+| ARCHITECTURE.md | Updated through migration 036 + career enrichment |
 | README | Lists 4×4 premium — not implemented |
 | CROSSBALL_FULL_ANALYSIS.md | Comprehensive |
 | API contracts | Partial in ARCHITECTURE.md |
@@ -689,7 +689,7 @@ Full register of auditable recommendations. **IMP = Implemented in this audit pa
 | **5** | Launch polish | iOS ATT, error reporting, XP skeleton, contrast-safe typography |
 | **Club Identity** | Legal-safe badges | 105 curated clubs, procedural badges, migration 025 |
 
-See [`PHASE0_SECURITY.md`](PHASE0_SECURITY.md) for migration 021 deploy steps.
+See [`PHASE0_SECURITY.md`](PHASE0_SECURITY.md) for migration 021 deploy steps and [`supabase/SECURITY.md`](../supabase/SECURITY.md) for migration 036 RLS lockdown.
 
 ---
 

@@ -654,10 +654,11 @@ See `docs/TESTING.md`.
 | Flutter | App Store, Google Play |
 | Supabase | Managed cloud project |
 | Edge functions | `supabase functions deploy` (npm imports via `deno.json`) |
-| Migrations | `./scripts/run_migrations.sh` (001–025) or `supabase db push` |
-| Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — API-Football + patches + daily puzzle |
-| Pipeline (weekly) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh |
-| Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh` |
+| Migrations | `./scripts/run_migrations.sh` (001–036, idempotent) or `supabase db push` |
+| Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — migrations + API-Football + light patches + daily puzzle |
+| Pipeline (weekly ETL) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh + full graph |
+| Pipeline (weekly careers) | GitHub Actions `career-enrichment-weekly.yml` — reconcile stale stints + enriched patches |
+| Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh`, `./scripts/run_career_enrichment.sh` |
 | Analytics | PostHog cloud |
 
 ---
@@ -672,4 +673,4 @@ See `docs/TESTING.md`.
 
 ---
 
-*CrossBall Architecture v1.2.0 — Phases 0–5, club identity, GEE, LOE, API-Football sync*
+*CrossBall Architecture v1.2.0 — Phases 0–5, club identity, GEE, LOE, API-Football sync, career enrichment, RLS lockdown (036)*

@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/cache/active_puzzle_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/constants/game_constants.dart';
+import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../../../core/utils/anti_cheat_tracker.dart';
@@ -163,7 +164,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   int get _gridSizeForCache =>
       params.gridSize ?? state.puzzle?.gridSize ?? GameConstants.gridSize;
 
-  String get _todayDate => DateTime.now().toIso8601String().split('T').first;
+  String get _todayDate => DailyPuzzleSchedule.todayPuzzleDateUtc();
 
   Map<String, PuzzleCell> _cellsMapFromPuzzle(Puzzle puzzle) {
     final cells = <String, PuzzleCell>{};
@@ -181,6 +182,15 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
     if (params.mode == PuzzleMode.challenge) {
       return snapshot['challenge_id'] == params.challengeId;
+    }
+    if (_isTrainingMode) {
+      final cachedUsageDate = snapshot['usage_date'] as String?;
+      final quotaDate = _ref.read(practiceSessionProvider).dateKey;
+      if (cachedUsageDate != null &&
+          quotaDate.isNotEmpty &&
+          cachedUsageDate != quotaDate) {
+        return false;
+      }
     }
     return true;
   }
@@ -312,6 +322,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
   double _scoreFromCells(
     Map<String, PuzzleCell> cells,
     int hintsUsed, {
+    required int mistakes,
     required int totalCells,
     required bool applyCompletionBonus,
   }) {
@@ -329,6 +340,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     return ScoringEngine.calculateSessionScore(
       cellScores: scores,
       hintsUsed: hintsUsed,
+      mistakes: mistakes,
       completionBonus: completionBonus,
     );
   }
@@ -372,12 +384,17 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       hintsJson[entry.key] = entry.value.map((h) => h.toJson()).toList();
     }
 
+    final usageDate = _isTrainingMode
+        ? _ref.read(practiceSessionProvider).dateKey
+        : null;
+
     await _activeCache.save(
       mode: params.mode,
       challengeId: params.challengeId,
       gridSize: _gridSizeForCache,
       snapshot: {
         'puzzle': puzzle.toJson(),
+        if (usageDate != null && usageDate.isNotEmpty) 'usage_date': usageDate,
         'session_id': sessionId,
         'started_at': state.startedAt?.toIso8601String(),
         'cells': cellsJson,
@@ -420,6 +437,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       if (params.mode == PuzzleMode.daily &&
           profile != null &&
           AppConfig.isSupabaseConfigured) {
+        _ref.invalidate(userStatsProvider);
         try {
           final stats = await _ref.read(userStatsProvider.future);
           if (stats.dailyCompletedToday) {
@@ -427,7 +445,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
             state = state.copyWith(isLoading: false, error: 'daily_already_completed');
             return;
           }
-        } catch (_) {}
+        } catch (e, st) {
+          cbDebugError('Daily', 'stats pre-check failed — blocking daily load', e, st);
+          state = state.copyWith(isLoading: false, error: 'puzzle_load_failed');
+          return;
+        }
       }
 
       if (_isTrainingMode) {
@@ -437,6 +459,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         }
         await _ref.read(practiceSessionProvider.notifier).syncFromServer(profile.userUuid);
         final session = _ref.read(practiceSessionProvider);
+        if (session.syncError != null) {
+          practiceDebug('blocked: quota sync failed', {'error': session.syncError});
+          state = state.copyWith(isLoading: false, error: 'practice_load_failed');
+          return;
+        }
         practiceDebug('loadPuzzle practice gate', {
           'isPremium': session.isPremium,
           'gridSize': size,
@@ -579,6 +606,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       totalScore = _scoreFromCells(
         cells,
         hintsUsed,
+        mistakes: mistakes,
         totalCells: puzzle.totalCells,
         applyCompletionBonus: true,
       );
@@ -814,7 +842,15 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         await _persistSnapshot();
       }
     } else {
-      state = state.copyWith(mistakes: state.mistakes + 1);
+      final nextMistakes = state.mistakes + 1;
+      final previewScore = _scoreFromCells(
+        state.cells,
+        state.hintsUsed,
+        mistakes: nextMistakes,
+        totalCells: puzzle.totalCells,
+        applyCompletionBonus: true,
+      );
+      state = state.copyWith(mistakes: nextMistakes, totalScore: previewScore);
       await _persistSnapshot();
       _ref.read(analyticsProvider).track('answer_submitted', properties: {
         'correct': false,
@@ -835,6 +871,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         : _scoreFromCells(
             state.cells,
             hintsUsed,
+            mistakes: state.mistakes,
             totalCells: puzzle.totalCells,
             applyCompletionBonus: true,
           );

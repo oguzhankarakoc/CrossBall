@@ -28,10 +28,14 @@ abstract final class ScoringEngine {
   static double calculateSessionScore({
     required List<double> cellScores,
     required int hintsUsed,
+    int mistakes = 0,
     int completionBonus = 0,
   }) {
     final base = cellScores.fold<double>(0, (a, b) => a + b);
-    return (base + completionBonus - hintsUsed * GameConstants.hintScorePenalty)
+    return (base +
+            completionBonus -
+            hintsUsed * GameConstants.hintScorePenalty -
+            mistakes * GameConstants.mistakePenalty)
         .clamp(0, double.infinity);
   }
 

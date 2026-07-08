@@ -19,6 +19,9 @@ Deterministic, reproducible pipeline for ingesting football player and club data
 |--------|------|-------|
 | Kaggle EA FC 24 + FIFA 23 (SoFIFA export) | Free | Primary bulk ingest |
 | `data/raw/patches/career_patches.csv` | Free | Manual curation for recent transfers/loans |
+| `data/raw/patches/api_football_careers.csv` | Free | API-Football transfer rows (daily sync output) |
+| `data/raw/patches/enriched_careers.csv` | Free | Reconciled career deltas (weekly enrichment) |
+| `data/raw/patches/player_id_aliases.csv` | Free | API-Football ↔ SoFIFA player id mapping |
 | **API-Football** (`/transfers`) | Free — 100 req/day | Recent transfers & loans (auto sync) |
 
 No paid APIs required. Re-runs **update** existing career rows (end dates, source) instead of ignoring conflicts.
@@ -57,8 +60,9 @@ Data sync is **not automatic until you enable it**. Two options:
    - `API_FOOTBALL_KEY` — free API key
    - *(optional)* `KAGGLE_USERNAME` + `KAGGLE_KEY` for weekly full Kaggle fetch
 3. Workflows run automatically:
-   - **Daily 00:00 UTC** (03:00 TRT) — API-Football transfers → DB → daily puzzle
-   - **Sunday 08:00 Istanbul** — weekly Kaggle + patches
+   - **Daily 00:00 UTC** (03:00 TRT) — pending migrations → API-Football (30 teams) → light patch load → daily puzzle
+   - **Saturday 07:00 Istanbul** — career enrichment (all mapped teams, reconcile + DB load)
+   - **Sunday 08:00 Istanbul** — weekly Kaggle + full graph refresh
 
 Manual trigger: GitHub → Actions → "Data Sync (Daily)" → Run workflow.
 
@@ -76,9 +80,11 @@ Requires `data_pipeline/.env` on the machine (same keys as above). Logs: `logs/d
 ### Manual (development only)
 
 ```bash
-./scripts/sync_api_football.sh      # one-off API sync
+./scripts/sync_api_football.sh      # one-off API sync (~30 teams)
 ./scripts/run_etl.sh                # one-off full ETL
-./scripts/apply_career_patches.sh   # patches only
+./scripts/apply_career_patches.sh   # manual patches only
+./scripts/run_career_enrichment.sh  # reconcile + gap report (CSV only)
+CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh  # apply enriched patches to DB
 ```
 
 ## Setup
@@ -88,8 +94,18 @@ cd data_pipeline
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # set DATABASE_URL (Supabase local or remote)
+cp .env.example .env   # set DATABASE_URL (see examples in .env.example)
 ```
+
+**`DATABASE_URL` by environment:**
+
+| Where | Connection | Example host |
+|-------|------------|--------------|
+| Local Supabase CLI | Direct | `localhost:54322` |
+| Mac → production | Direct | `db.<project-ref>.supabase.co:5432` |
+| GitHub Actions | Transaction pooler | `aws-0-ap-south-1.pooler.supabase.com:6543` |
+
+Never commit `.env` — only `.env.example` with placeholders.
 
 ### Kaggle API (for automatic download)
 
@@ -111,6 +127,32 @@ chmod +x scripts/apply_career_patches.sh
 ```
 
 Add rows to `data_pipeline/data/raw/patches/career_patches.csv` (SoFIFA player `id`, club, dates, `is_loan`).
+
+### Career enrichment (stale transfer data)
+
+When players show only an old club (e.g. after a summer transfer), run enrichment to reconcile open stints and backfill missing clubs from API-Football:
+
+```bash
+# From project root — gap report only (no DB writes)
+./scripts/run_career_enrichment.sh --skip-api-sync
+
+# Full run + load to Supabase
+CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
+```
+
+Or from `data_pipeline/`:
+
+```bash
+python3 -m pipeline career-gap-report
+python3 -m pipeline career-enrich --skip-api-sync
+python3 -m pipeline career-enrich --load   # apply enriched_careers.csv to PostgreSQL
+```
+
+Output:
+- `data/raw/patches/enriched_careers.csv` — reconciled deltas (committed after weekly job)
+- `reports/career_gaps.csv` — players still needing manual review (gitignored locally; GitHub artifact)
+
+The script auto-creates `.venv`, prefers `python3`, and reads `DATABASE_URL` from `data_pipeline/.env`.
 
 ## Usage
 
@@ -151,13 +193,13 @@ python -m pipeline run \
 
 ### Remote Supabase
 
-Set `DATABASE_URL` in `.env` to your Supabase Postgres connection string (Settings → Database → URI).
+Set `DATABASE_URL` in `data_pipeline/.env` (not the repo root `.env`).
 
 ```bash
 # Local Mac: direct connection (Connect modal, port 5432) works fine.
 # GitHub Actions: must use Transaction pooler (IPv4) — CrossBall region is ap-south-1:
 export DATABASE_URL="postgresql://postgres.kseqeqpoouneaiymdzpq:[password]@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
-python -m pipeline run-all
+python3 -m pipeline run-all
 ```
 
 After load, refresh intersections:
@@ -174,6 +216,8 @@ SELECT public.refresh_player_club_intersections();
 | `transform-kaggle` | SoFIFA CSV → players.csv + clubs.csv + merge patches |
 | `apply-patches` | Load curated career patches only (fast incremental update) |
 | `sync-api-football` | Fetch transfers from API-Football → patch CSV (+ optional `--load`) |
+| `career-gap-report` | Detect stale/missing career stints → `reports/career_gaps.csv` |
+| `career-enrich` | API sync (all teams) + reconcile + write `enriched_careers.csv` (+ optional `--load`) |
 | `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
 | `apply-patches --light` | Patch load without dedupe/graph refresh (daily CI sync) |
 | `run` | Validate + upsert to PostgreSQL |

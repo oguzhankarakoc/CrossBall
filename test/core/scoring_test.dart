@@ -65,6 +65,19 @@ void main() {
       expect(score, closeTo((core * 1.0 - 30).clamp(GameConstants.baseCellScore * 0.5, double.infinity), 0.01));
     });
 
+    test('mistakes reduce session score', () {
+      final score = ScoringEngine.calculateSessionScore(
+        cellScores: [12, 12, 12],
+        hintsUsed: 0,
+        mistakes: 2,
+        completionBonus: GameConstants.dailyCompletionBonus,
+      );
+      expect(
+        score,
+        36 + GameConstants.dailyCompletionBonus - 2 * GameConstants.mistakePenalty,
+      );
+    });
+
     test('session score aggregates cells, completion bonus, minus hints', () {
       final score = ScoringEngine.calculateSessionScore(
         cellScores: [12, 12, 12],

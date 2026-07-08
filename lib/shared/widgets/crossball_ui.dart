@@ -102,14 +102,18 @@ class CrossBallAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.title,
     this.actions,
     this.leading,
+    this.tabBar,
   });
 
   final String title;
   final List<Widget>? actions;
   final Widget? leading;
+  final PreferredSizeWidget? tabBar;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => Size.fromHeight(
+        kToolbarHeight + (tabBar?.preferredSize.height ?? 1),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -130,22 +134,23 @@ class CrossBallAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: actions,
       backgroundColor: colors.surface.withValues(alpha: isDark ? 0.72 : 0.96),
       surfaceTintColor: Colors.transparent,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Container(
-          height: 1,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.transparent,
-                colors.primary.withValues(alpha: 0.35),
-                colors.lime.withValues(alpha: 0.2),
-                Colors.transparent,
-              ],
+      bottom: tabBar ??
+          PreferredSize(
+            preferredSize: const Size.fromHeight(1),
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    colors.primary.withValues(alpha: 0.35),
+                    colors.lime.withValues(alpha: 0.2),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
             ),
           ),
-        ),
-      ),
     );
 
     if (!isDark) return appBar;
