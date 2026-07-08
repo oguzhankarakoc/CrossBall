@@ -231,8 +231,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                     ? _buildPracticeAdGate(context, l10n, colors)
                 : game.error == 'daily_already_completed'
                     ? DailyPuzzleCompletedPanel(
-                        todayScore:
-                            ref.watch(userStatsProvider).valueOrNull?.todayDailyScore ?? 0,
+                        todayScore: ref.watch(dailyTodayScoreProvider).valueOrNull ?? 0,
                         streak: ref.watch(userStatsProvider).valueOrNull?.currentStreak ?? 0,
                         onHome: () => context.go(AppRoutes.home),
                         onPractice: () => context.push('${AppRoutes.puzzle}?mode=practice'),
@@ -345,6 +344,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                         cells: game.cells,
                                         selectedRow: game.selectedRow,
                                         selectedCol: game.selectedCol,
+                                        validatingCellKey: game.validatingCellKey,
                                         onCellTap: _onCellTap,
                                       ),
                                     ),

@@ -15,6 +15,7 @@ class PuzzleGrid extends StatelessWidget {
     required this.onCellTap,
     this.selectedRow,
     this.selectedCol,
+    this.validatingCellKey,
   });
 
   final Puzzle puzzle;
@@ -22,6 +23,7 @@ class PuzzleGrid extends StatelessWidget {
   final void Function(int row, int col) onCellTap;
   final int? selectedRow;
   final int? selectedCol;
+  final String? validatingCellKey;
 
   @override
   Widget build(BuildContext context) {
@@ -137,6 +139,7 @@ class PuzzleGrid extends StatelessWidget {
                             cell: cells['${row}_$col'],
                             size: cellSize,
                             isSelected: selectedRow == row && selectedCol == col,
+                            isValidating: validatingCellKey == '${row}_$col',
                             onTap: () => onCellTap(row, col),
                           ),
                         ),
@@ -183,12 +186,14 @@ class _GridCell extends StatefulWidget {
     required this.cell,
     required this.size,
     required this.isSelected,
+    required this.isValidating,
     required this.onTap,
   });
 
   final PuzzleCell? cell;
   final double size;
   final bool isSelected;
+  final bool isValidating;
   final VoidCallback onTap;
 
   @override
@@ -237,7 +242,7 @@ class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixi
     return Padding(
       padding: const EdgeInsets.all(2),
       child: GestureDetector(
-        onTap: solved ? null : widget.onTap,
+        onTap: solved || widget.isValidating ? null : widget.onTap,
         child: AnimatedBuilder(
           animation: _pulseController,
           builder: (context, child) {
@@ -281,7 +286,16 @@ class _GridCellState extends State<_GridCell> with SingleTickerProviderStateMixi
             width: inner,
             height: inner,
             child: Center(
-              child: solved
+              child: widget.isValidating
+                  ? SizedBox(
+                      width: 28,
+                      height: 28,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2.5,
+                        color: colors.lime,
+                      ),
+                    )
+                  : solved
                   ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

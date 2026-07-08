@@ -58,6 +58,7 @@ class PuzzleGameState extends Equatable {
     this.challengeCreatorScore,
     this.challengeResult,
     this.startedAt,
+    this.validatingCellKey,
   });
 
   final Puzzle? puzzle;
@@ -78,6 +79,7 @@ class PuzzleGameState extends Equatable {
   final double? challengeCreatorScore;
   final ChallengeResult? challengeResult;
   final DateTime? startedAt;
+  final String? validatingCellKey;
 
   int get solvedCount => cells.values.where((c) => c.isSolved).length;
   int get totalCells => puzzle?.totalCells ?? 0;
@@ -106,6 +108,8 @@ class PuzzleGameState extends Equatable {
     double? challengeCreatorScore,
     ChallengeResult? challengeResult,
     DateTime? startedAt,
+    String? validatingCellKey,
+    bool clearValidatingCell = false,
     bool clearSelection = false,
   }) =>
       PuzzleGameState(
@@ -127,6 +131,8 @@ class PuzzleGameState extends Equatable {
         challengeCreatorScore: challengeCreatorScore ?? this.challengeCreatorScore,
         challengeResult: challengeResult ?? this.challengeResult,
         startedAt: startedAt ?? this.startedAt,
+        validatingCellKey:
+            clearValidatingCell ? null : (validatingCellKey ?? this.validatingCellKey),
       );
 
   @override
@@ -145,6 +151,7 @@ class PuzzleGameState extends Equatable {
         error,
         hintsRevealed,
         challengeResult,
+        validatingCellKey,
       ];
 }
 
@@ -447,7 +454,10 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         try {
           final stats = await _ref.read(userStatsProvider.future);
           if (stats.dailyCompletedToday) {
-            await dailyStore.markCompletedToday(userUuid: profile.userUuid);
+            await dailyStore.markCompletedToday(
+              userUuid: profile.userUuid,
+              score: stats.todayDailyScore > 0 ? stats.todayDailyScore : null,
+            );
             await _clearCachedSnapshot();
             state = state.copyWith(isLoading: false, error: 'daily_already_completed');
             return;
@@ -771,6 +781,8 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final cell = state.cells[key];
     if (cell == null) return null;
 
+    state = state.copyWith(validatingCellKey: key, clearSelection: true);
+
     final rowClub = puzzle.rowClubAt(row);
     final colClub = puzzle.colClubAt(col);
     final submitStart = DateTime.now();
@@ -779,19 +791,26 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         ? DateTime.now().difference(state.cellStartTime!).inMilliseconds
         : 60000;
 
-    final result = await _repo.validateAnswer(
-      puzzleId: puzzle.id,
-      puzzleCellId: cell.id,
-      rowClubId: rowClub.id,
-      colClubId: colClub.id,
-      playerId: player.id,
-      sessionId: state.sessionId!,
-      userUuid: profile.userUuid,
-      responseTimeMs: responseMs,
-    );
+    AnswerResult result;
+    try {
+      result = await _repo.validateAnswer(
+        puzzleId: puzzle.id,
+        puzzleCellId: cell.id,
+        rowClubId: rowClub.id,
+        colClubId: colClub.id,
+        playerId: player.id,
+        sessionId: state.sessionId!,
+        userUuid: profile.userUuid,
+        responseTimeMs: responseMs,
+      );
+    } catch (e, st) {
+      cbDebugError('Session', 'validateAnswer failed', e, st);
+      state = state.copyWith(clearValidatingCell: true);
+      rethrow;
+    }
 
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
-    await _ref.read(searchRepositoryProvider).recordPick(player);
+    unawaited(_ref.read(searchRepositoryProvider).recordPick(player));
 
     if (result.correct) {
       final cellScore = ScoringEngine.calculateCellScore(
@@ -834,7 +853,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         cells: newCells,
         totalScore: sessionScore,
         isComplete: isComplete,
-        clearSelection: true,
+        clearValidatingCell: true,
       );
 
       _ref.read(analyticsProvider).track('answer_submitted', properties: {
@@ -857,7 +876,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         totalCells: puzzle.totalCells,
         applyCompletionBonus: true,
       );
-      state = state.copyWith(mistakes: nextMistakes, totalScore: previewScore);
+      state = state.copyWith(
+        mistakes: nextMistakes,
+        totalScore: previewScore,
+        clearValidatingCell: true,
+      );
       await _persistSnapshot();
       _ref.read(analyticsProvider).track('answer_submitted', properties: {
         'correct': false,
@@ -1024,14 +1047,16 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       state = state.copyWith(totalScore: flushResult.finalScore!);
     }
 
+    final resolvedScore = flushResult.finalScore ?? state.totalScore;
+
     if (params.mode == PuzzleMode.daily) {
       await _ref.read(dailyCompletionStoreProvider).markCompletedToday(
             userUuid: profile.userUuid,
+            score: resolvedScore,
           );
       _ref.invalidate(dailyCompletedTodayProvider);
+      _ref.invalidate(dailyTodayScoreProvider);
     }
-
-    final resolvedScore = flushResult.finalScore ?? state.totalScore;
 
     _ref.invalidate(playerProgressionProvider);
     _ref.invalidate(playerMissionsProvider);

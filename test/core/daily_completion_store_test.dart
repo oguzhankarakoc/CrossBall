@@ -42,5 +42,21 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('daily_completed_date_v1_u1'), today);
     });
+
+    test('persists today score with completion', () async {
+      SharedPreferences.setMockInitialValues({});
+      final store = DailyCompletionStore();
+      const userUuid = 'user-score';
+
+      await store.markCompletedToday(userUuid: userUuid, score: 170.4);
+      expect(await store.getTodayScore(userUuid: userUuid), 170.4);
+    });
+
+    test('getTodayScore returns null when not completed today', () async {
+      SharedPreferences.setMockInitialValues({});
+      final store = DailyCompletionStore();
+
+      expect(await store.getTodayScore(userUuid: 'missing'), isNull);
+    });
   });
 }

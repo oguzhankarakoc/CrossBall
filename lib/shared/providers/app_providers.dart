@@ -22,6 +22,7 @@ import '../../core/cache/daily_completion_store.dart';
 import '../../core/cache/offline_cache.dart';
 import '../../core/network/supabase_provider.dart';
 import 'locale_provider.dart';
+import 'session_providers.dart';
 
 final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
 
@@ -93,10 +94,32 @@ final dailyCompletedTodayProvider = FutureProvider<bool>((ref) async {
   }
   final stats = await ref.watch(userStatsProvider.future);
   if (stats.dailyCompletedToday) {
-    await store.markCompletedToday(userUuid: profile.userUuid);
+    await store.markCompletedToday(
+      userUuid: profile.userUuid,
+      score: stats.todayDailyScore > 0 ? stats.todayDailyScore : null,
+    );
     return true;
   }
   return false;
+});
+
+/// Today's daily score — local cache first (when finalize lagged), then server stats.
+final dailyTodayScoreProvider = FutureProvider<double>((ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  final store = ref.watch(dailyCompletionStoreProvider);
+  final local = await store.getTodayScore(userUuid: profile.userUuid);
+  if (local != null && local > 0) return local;
+
+  final last = ref.watch(lastCompletedSessionProvider);
+  if (last != null &&
+      last.mode == 'daily' &&
+      last.score > 0 &&
+      await store.isCompletedToday(userUuid: profile.userUuid)) {
+    return last.score;
+  }
+
+  final stats = await ref.watch(userStatsProvider.future);
+  return stats.todayDailyScore;
 });
 
 final seasonInfoProvider = FutureProvider<SeasonInfo>((ref) async {
