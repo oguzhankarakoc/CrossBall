@@ -35,8 +35,7 @@ class PracticeQuotaApi {
   }
 
   Map<String, String> _headers(String userUuid) => {
-        'apikey': AppConfig.supabaseAnonKey,
-        'Content-Type': 'application/json',
+        ...AppConfig.supabaseFunctionHeaders,
         'x-user-uuid': userUuid,
       };
 

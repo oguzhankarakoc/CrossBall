@@ -42,8 +42,7 @@ class OfflineSyncService {
         final response = await _http.post(
           Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
           headers: {
-            'apikey': AppConfig.supabaseAnonKey,
-            'Content-Type': 'application/json',
+            ...AppConfig.supabaseFunctionHeaders,
             if (session['user_uuid'] is String)
               'x-user-uuid': session['user_uuid'] as String,
           },

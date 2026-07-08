@@ -54,6 +54,54 @@ verify_jwt = false
 [functions.liveops-config]
 verify_jwt = false
 
+[functions.start-session]
+verify_jwt = false
+
+[functions.practice-puzzle]
+verify_jwt = false
+
+[functions.practice-quota]
+verify_jwt = false
+
+[functions.grant-hint-ad]
+verify_jwt = false
+
+[functions.verify-premium]
+verify_jwt = false
+
+[functions.register-push-token]
+verify_jwt = false
+
+[functions.leaderboard]
+verify_jwt = false
+
+[functions.activity-feed]
+verify_jwt = false
+
+[functions.player-fact]
+verify_jwt = false
+
+[functions.tournament]
+verify_jwt = false
+
+[functions.career-timeline]
+verify_jwt = false
+
+[functions.season]
+verify_jwt = false
+
+[functions.club-mastery]
+verify_jwt = false
+
+[functions.consume-hint-taste]
+verify_jwt = false
+
+[functions.generate-puzzle]
+verify_jwt = false
+
+[functions.send-streak-reminder]
+verify_jwt = false
+
 [auth]
 enabled = true
 site_url = "http://localhost:3000"

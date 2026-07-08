@@ -81,10 +81,7 @@ class PuzzleApiService {
 
   String get _baseUrl => AppConfig.supabaseUrl;
 
-  Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
-        'apikey': AppConfig.supabaseAnonKey,
-      };
+  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
 
   Future<Map<String, dynamic>> fetchDailyPuzzle({String? userUuid}) async {
     cbDebug('Daily', 'fetchDailyPuzzle start', {
@@ -883,8 +880,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       final response = await _http.post(
         Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
         headers: {
-          'apikey': AppConfig.supabaseAnonKey,
-          'Content-Type': 'application/json',
+          ...AppConfig.supabaseFunctionHeaders,
           'x-user-uuid': userUuid,
         },
         body: jsonEncode(body),

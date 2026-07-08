@@ -10,9 +10,7 @@ class SocialRepositoryImpl implements SocialRepository {
 
   final http.Client _http;
 
-  Map<String, String> get _headers => {
-        'apikey': AppConfig.supabaseAnonKey,
-      };
+  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
 
   @override
   Future<List<ActivityEvent>> getActivityFeed({int limit = 15}) async {

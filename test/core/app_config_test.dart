@@ -29,4 +29,10 @@ FIREBASE_ANDROID_APP_ID=1:123456789012:android:abc
     expect(AppConfig.firebaseIosAppId, '1:123456789012:ios:abc');
     expect(AppConfig.firebaseAndroidApiKey, 'AIza-android');
   });
+
+  test('supabaseFunctionHeaders includes Authorization bearer', () {
+    final headers = AppConfig.supabaseFunctionHeaders;
+    expect(headers['apikey'], 'test');
+    expect(headers['Authorization'], 'Bearer test');
+  });
 }

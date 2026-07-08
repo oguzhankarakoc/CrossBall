@@ -10,7 +10,7 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
 
   final http.Client _http;
 
-  Map<String, String> get _headers => {'apikey': AppConfig.supabaseAnonKey};
+  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
 
   @override
   Future<List<LeaderboardEntry>> getLeaderboard({String? league, int limit = 50}) async {

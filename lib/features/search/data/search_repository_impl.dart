@@ -37,10 +37,7 @@ class SearchApiService {
             .replace(queryParameters: params);
         final response = await _http.get(
           uri,
-          headers: {
-            'apikey': AppConfig.supabaseAnonKey,
-            'Content-Type': 'application/json',
-          },
+          headers: AppConfig.supabaseFunctionHeaders,
         );
         if (response.statusCode == 200) {
           return SearchResponse.fromJson(
@@ -66,10 +63,7 @@ class SearchApiService {
         );
         final response = await _http.get(
           uri,
-          headers: {
-            'apikey': AppConfig.supabaseAnonKey,
-            'Content-Type': 'application/json',
-          },
+          headers: AppConfig.supabaseFunctionHeaders,
         );
         if (response.statusCode == 200) {
           final body = jsonDecode(response.body) as Map<String, dynamic>;

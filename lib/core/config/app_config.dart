@@ -20,6 +20,15 @@ abstract final class AppConfig {
   static bool get isSupabaseConfigured =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 
+  /// Direct HTTP calls to Edge Functions need both apikey and Authorization.
+  static Map<String, String> get supabaseFunctionHeaders => {
+        'Content-Type': 'application/json',
+        if (isSupabaseConfigured) ...{
+          'apikey': supabaseAnonKey,
+          'Authorization': 'Bearer $supabaseAnonKey',
+        },
+      };
+
   static bool get isAdMobEnabled =>
       dotenv.env['ADMOB_ENABLED']?.trim().toLowerCase() != 'false';
 

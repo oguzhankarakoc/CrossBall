@@ -11,10 +11,7 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
 
   final http.Client _http;
 
-  Map<String, String> get _headers => {
-        'apikey': AppConfig.supabaseAnonKey,
-        'Content-Type': 'application/json',
-      };
+  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
 
   @override
   Future<Challenge> createChallenge({

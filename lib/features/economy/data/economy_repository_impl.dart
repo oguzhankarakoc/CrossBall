@@ -53,7 +53,7 @@ class EconomyRepositoryImpl implements EconomyRepository {
       final response = await _http.get(
         uri,
         headers: {
-          'apikey': AppConfig.supabaseAnonKey,
+          ...AppConfig.supabaseFunctionHeaders,
           'x-user-uuid': userUuid,
         },
       );
@@ -75,7 +75,7 @@ class EconomyRepositoryImpl implements EconomyRepository {
       final response = await _http.get(
         uri,
         headers: {
-          'apikey': AppConfig.supabaseAnonKey,
+          ...AppConfig.supabaseFunctionHeaders,
           'x-user-uuid': userUuid,
         },
       );
@@ -110,7 +110,7 @@ class EconomyRepositoryImpl implements EconomyRepository {
       final response = await _http.get(
         uri,
         headers: {
-          'apikey': AppConfig.supabaseAnonKey,
+          ...AppConfig.supabaseFunctionHeaders,
           'x-user-uuid': userUuid,
         },
       );

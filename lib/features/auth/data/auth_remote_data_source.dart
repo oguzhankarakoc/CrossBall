@@ -59,8 +59,7 @@ class AuthRemoteDataSource {
     final response = await _http.post(
       Uri.parse('${AppConfig.supabaseUrl}/functions/v1/sync-user'),
       headers: {
-        'apikey': AppConfig.supabaseAnonKey,
-        'Content-Type': 'application/json',
+        ...AppConfig.supabaseFunctionHeaders,
         'x-user-uuid': userUuid,
       },
       body: jsonEncode(body),
@@ -116,8 +115,7 @@ class AuthRemoteDataSource {
     final response = await _http.post(
       Uri.parse('${AppConfig.supabaseUrl}/functions/v1/verify-premium'),
       headers: {
-        'apikey': AppConfig.supabaseAnonKey,
-        'Content-Type': 'application/json',
+        ...AppConfig.supabaseFunctionHeaders,
         'x-user-uuid': userUuid,
       },
       body: jsonEncode({
