@@ -18,6 +18,7 @@ import '../../features/social/domain/social.dart';
 import '../../features/stats/data/stats_repository_impl.dart';
 import '../../features/stats/domain/stats.dart';
 import '../../core/cache/active_puzzle_cache.dart';
+import '../../core/cache/daily_completion_store.dart';
 import '../../core/cache/offline_cache.dart';
 import '../../core/network/supabase_provider.dart';
 import 'locale_provider.dart';
@@ -26,6 +27,10 @@ final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
 
 final activePuzzleCacheProvider = Provider<ActivePuzzleCache>(
   (ref) => ActivePuzzleCache(),
+);
+
+final dailyCompletionStoreProvider = Provider<DailyCompletionStore>(
+  (ref) => DailyCompletionStore(),
 );
 
 final analyticsProvider = Provider<AnalyticsService>((ref) => createAnalyticsService());
@@ -77,6 +82,21 @@ final dailyPuzzleProvider = FutureProvider((ref) async {
 final userStatsProvider = FutureProvider((ref) async {
   final profile = await ref.watch(userProfileProvider.future);
   return ref.watch(statsRepositoryProvider).getStats(profile.userUuid);
+});
+
+/// Server stats + local daily completion guard (UTC day).
+final dailyCompletedTodayProvider = FutureProvider<bool>((ref) async {
+  final profile = await ref.watch(userProfileProvider.future);
+  final store = ref.watch(dailyCompletionStoreProvider);
+  if (await store.isCompletedToday(userUuid: profile.userUuid)) {
+    return true;
+  }
+  final stats = await ref.watch(userStatsProvider.future);
+  if (stats.dailyCompletedToday) {
+    await store.markCompletedToday(userUuid: profile.userUuid);
+    return true;
+  }
+  return false;
 });
 
 final seasonInfoProvider = FutureProvider<SeasonInfo>((ref) async {

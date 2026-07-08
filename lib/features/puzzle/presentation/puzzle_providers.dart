@@ -437,10 +437,17 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       if (params.mode == PuzzleMode.daily &&
           profile != null &&
           AppConfig.isSupabaseConfigured) {
+        final dailyStore = _ref.read(dailyCompletionStoreProvider);
+        if (await dailyStore.isCompletedToday(userUuid: profile.userUuid)) {
+          await _clearCachedSnapshot();
+          state = state.copyWith(isLoading: false, error: 'daily_already_completed');
+          return;
+        }
         _ref.invalidate(userStatsProvider);
         try {
           final stats = await _ref.read(userStatsProvider.future);
           if (stats.dailyCompletedToday) {
+            await dailyStore.markCompletedToday(userUuid: profile.userUuid);
             await _clearCachedSnapshot();
             state = state.copyWith(isLoading: false, error: 'daily_already_completed');
             return;
@@ -938,7 +945,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
   Future<void> _completeSession() async {
     if (_sessionFinalized) return;
-    _sessionFinalized = true;
 
     _antiCheat?.evaluate();
     final metadata = _antiCheat?.toMetadata() ?? {};
@@ -948,6 +954,8 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
     final profile = await _ref.read(userProfileProvider.future);
     final puzzle = state.puzzle!;
+    final fullGrid =
+        state.cells.values.where((c) => c.isSolved).length >= state.totalCells;
 
     Set<String> priorAchievementSlugs = {};
     try {
@@ -986,18 +994,44 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       },
     );
 
-    final authoritativeScore = await _repo.flushSessionCompletion(
-      sessionId: state.sessionId!,
-      userUuid: profile.userUuid,
-      mode: params.mode.name,
-      finishedEarly: state.finishedEarly,
-      challengeWon: challengeResult?.youWon,
-    );
-    if (authoritativeScore != null) {
-      state = state.copyWith(totalScore: authoritativeScore);
+    SessionFlushResult flushResult = const SessionFlushResult(ok: false);
+    for (var attempt = 0; attempt < 3; attempt++) {
+      flushResult = await _repo.flushSessionCompletion(
+        sessionId: state.sessionId!,
+        userUuid: profile.userUuid,
+        mode: params.mode.name,
+        finishedEarly: state.finishedEarly,
+        challengeWon: challengeResult?.youWon,
+      );
+      if (flushResult.ok || flushResult.isDailyAlreadyCompleted) break;
+      await Future.delayed(Duration(milliseconds: 400 * (attempt + 1)));
     }
 
-    final resolvedScore = authoritativeScore ?? state.totalScore;
+    final serverSynced = flushResult.ok || flushResult.isDailyAlreadyCompleted;
+    if (!serverSynced &&
+        !(params.mode == PuzzleMode.daily && fullGrid && !state.finishedEarly)) {
+      cbDebug('Session', 'complete-session flush failed — will retry later', {
+        'sessionId': state.sessionId,
+        'error': flushResult.errorCode,
+        'mode': params.mode.name,
+      });
+      return;
+    }
+
+    _sessionFinalized = true;
+
+    if (flushResult.finalScore != null) {
+      state = state.copyWith(totalScore: flushResult.finalScore!);
+    }
+
+    if (params.mode == PuzzleMode.daily) {
+      await _ref.read(dailyCompletionStoreProvider).markCompletedToday(
+            userUuid: profile.userUuid,
+          );
+      _ref.invalidate(dailyCompletedTodayProvider);
+    }
+
+    final resolvedScore = flushResult.finalScore ?? state.totalScore;
 
     _ref.invalidate(playerProgressionProvider);
     _ref.invalidate(playerMissionsProvider);
@@ -1039,10 +1073,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
 
     _ref.read(analyticsProvider).track('puzzle_completed', properties: {
-      'score': state.totalScore,
+      'score': resolvedScore,
       'duration_ms': durationMs,
       'hints': state.hintsUsed,
       'mode': params.mode.name,
+      'server_synced': serverSynced,
     });
 
     await _clearCachedSnapshot();

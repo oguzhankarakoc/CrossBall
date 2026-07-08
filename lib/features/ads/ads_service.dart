@@ -21,7 +21,10 @@ enum AdPlacement {
 
 abstract interface class AdsService {
   Future<void> initialize();
-  BannerAd? createBanner(AdPlacement placement);
+  Future<BannerAd?> createAdaptiveBanner({
+    required AdPlacement placement,
+    required int width,
+  });
   Future<bool> showInterstitial();
   Future<bool> showRewarded();
   bool get isPremium;
@@ -70,26 +73,47 @@ class AdsServiceImpl implements AdsService {
     return AppConfig.adMobRewardedAndroid;
   }
 
+  bool _supportsBanner(AdPlacement placement) {
+    return placement == AdPlacement.shell ||
+        placement == AdPlacement.gameplay ||
+        placement == AdPlacement.stats ||
+        placement == AdPlacement.result;
+  }
+
   @override
-  BannerAd? createBanner(AdPlacement placement) {
-    if (!AppConfig.isAdMobEnabled || _isPremium) return null;
-    if (placement != AdPlacement.shell &&
-        placement != AdPlacement.gameplay &&
-        placement != AdPlacement.stats &&
-        placement != AdPlacement.result) {
+  Future<BannerAd?> createAdaptiveBanner({
+    required AdPlacement placement,
+    required int width,
+  }) async {
+    if (!AppConfig.isAdMobEnabled || _isPremium || !_supportsBanner(placement)) {
       return null;
     }
 
-    return BannerAd(
+    final safeWidth = width.clamp(320, 728);
+    final adaptiveSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+      safeWidth,
+    );
+    final size = adaptiveSize ?? AdSize.banner;
+
+    final completer = Completer<BannerAd?>();
+    late BannerAd banner;
+    banner = BannerAd(
       adUnitId: _bannerUnitId(),
-      size: AdSize.banner,
+      size: size,
       request: const AdRequest(),
       listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          if (!completer.isCompleted) completer.complete(banner);
+        },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
+          if (!completer.isCompleted) completer.complete(null);
         },
       ),
-    )..load();
+    );
+
+    banner.load();
+    return completer.future;
   }
 
   void _loadInterstitial() {

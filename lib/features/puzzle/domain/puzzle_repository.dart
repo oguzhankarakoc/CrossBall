@@ -47,7 +47,7 @@ abstract interface class PuzzleRepository {
   });
 
   /// Sends completion to the server when online; returns authoritative score.
-  Future<double?> flushSessionCompletion({
+  Future<SessionFlushResult> flushSessionCompletion({
     required String sessionId,
     required String userUuid,
     required String mode,

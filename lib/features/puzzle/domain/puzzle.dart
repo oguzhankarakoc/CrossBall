@@ -398,6 +398,21 @@ class SessionStartResult extends Equatable {
   List<Object?> get props => [sessionId, startedAt, resumed];
 }
 
+class SessionFlushResult {
+  const SessionFlushResult({
+    required this.ok,
+    this.finalScore,
+    this.errorCode,
+  });
+
+  final bool ok;
+  final double? finalScore;
+  final String? errorCode;
+
+  bool get isDailyAlreadyCompleted =>
+      (errorCode ?? '').contains('daily_already_completed');
+}
+
 class SessionHintProgress extends Equatable {
   const SessionHintProgress({
     required this.puzzleCellId,

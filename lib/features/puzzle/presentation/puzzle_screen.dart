@@ -203,7 +203,10 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         ],
       ),
       body: PitchBackground(
-        child: game.isLoading
+        child: Column(
+          children: [
+            Expanded(
+              child: game.isLoading
             ? Center(
                 child: CircularProgressIndicator(color: colors.lime),
               )
@@ -367,10 +370,12 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                               ],
                             ),
                           ),
+            ),
+            if (showGameplayBanner)
+              const CrossBallBannerSlot(placement: AdPlacement.gameplay),
+          ],
+        ),
       ),
-      bottomNavigationBar: showGameplayBanner
-          ? const CrossBallBannerSlot(placement: AdPlacement.gameplay)
-          : null,
     );
   }
 
@@ -622,12 +627,15 @@ class ChallengeResultScreen extends StatelessWidget {
 
     return Scaffold(
       body: PitchBackground(
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+        child: Column(
+          children: [
+            Expanded(
+              child: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSpacing.xl),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                 Icon(
                   result.youWon ? Icons.emoji_events : Icons.sports_soccer,
                   size: 64,
@@ -654,12 +662,15 @@ class ChallengeResultScreen extends StatelessWidget {
                   width: double.infinity,
                   child: OutlinedButton(onPressed: onHome, child: Text(l10n.backToHome)),
                 ),
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            const CrossBallBannerSlot(placement: AdPlacement.result),
+          ],
         ),
       ),
-      bottomNavigationBar: const CrossBallBannerSlot(placement: AdPlacement.result),
     );
   }
 }

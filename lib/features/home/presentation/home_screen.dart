@@ -51,7 +51,9 @@ class HomeScreen extends ConsumerWidget {
     final stats = ref.watch(userStatsProvider).valueOrNull;
     final rollout = ref.watch(dailyPuzzleRolloutProvider).valueOrNull;
     final isDailyRefreshing = rollout?.isBlocked ?? false;
-    final dailyCompleted = !isDailyRefreshing && (stats?.dailyCompletedToday ?? false);
+    final dailyCompletedAsync = ref.watch(dailyCompletedTodayProvider);
+    final dailyCompleted = !isDailyRefreshing &&
+        (dailyCompletedAsync.valueOrNull ?? stats?.dailyCompletedToday ?? false);
     final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
     final streak = stats?.currentStreak ?? 0;
     final localeName = Localizations.localeOf(context).toString();
@@ -81,7 +83,6 @@ class HomeScreen extends ConsumerWidget {
                 : Icons.calendar_today_rounded;
 
     return Scaffold(
-      extendBody: true,
       appBar: CrossBallAppBar(
         title: l10n.homeTitle,
         actions: [
@@ -150,11 +151,15 @@ class HomeScreen extends ConsumerWidget {
                               : l10n.continueButton,
                       badge: dailyBadge,
                       badgeIcon: dailyBadgeIcon,
-                      onTap: () {
-                        cbDebug('Daily', 'home → open daily puzzle', {
-                          'dailyCompleted': dailyCompleted,
-                        });
+                      onTap: () async {
                         ref.invalidate(userStatsProvider);
+                        ref.invalidate(dailyCompletedTodayProvider);
+                        final completed =
+                            await ref.read(dailyCompletedTodayProvider.future);
+                        cbDebug('Daily', 'home → open daily puzzle', {
+                          'dailyCompleted': completed,
+                        });
+                        if (!context.mounted) return;
                         context.push('${AppRoutes.puzzle}?mode=daily');
                       },
                     ),

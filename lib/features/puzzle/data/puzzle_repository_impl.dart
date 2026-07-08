@@ -246,7 +246,17 @@ class PuzzleApiService {
             jsonDecode(response.body) as Map<String, dynamic>,
           );
         }
-      } catch (_) {}
+        String detail = 'validate-answer failed (${response.statusCode})';
+        try {
+          final body = jsonDecode(response.body) as Map<String, dynamic>;
+          detail = body['error']?.toString() ?? detail;
+        } catch (_) {}
+        throw PuzzleFetchException(detail, statusCode: response.statusCode);
+      } on PuzzleFetchException {
+        rethrow;
+      } catch (e) {
+        throw PuzzleFetchException('validate-answer network error: $e');
+      }
     }
     return _demoValidate(playerId, rowClubId, colClubId);
   }
@@ -323,9 +333,6 @@ class PuzzleApiService {
         final body = jsonDecode(response.body) as Map<String, dynamic>;
         detail = body['error']?.toString() ?? '';
         errorCode = detail.isNotEmpty ? detail : null;
-        if (response.statusCode == 409 && detail.contains('daily_already_completed')) {
-          errorCode = 'daily_already_completed';
-        }
       } catch (_) {}
 
       throw PuzzleFetchException(
@@ -854,14 +861,16 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   }
 
   @override
-  Future<double?> flushSessionCompletion({
+  Future<SessionFlushResult> flushSessionCompletion({
     required String sessionId,
     required String userUuid,
     required String mode,
     required bool finishedEarly,
     bool? challengeWon,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return null;
+    if (!AppConfig.isSupabaseConfigured) {
+      return const SessionFlushResult(ok: false, errorCode: 'offline');
+    }
 
     try {
       final body = <String, dynamic>{
@@ -869,7 +878,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         'user_uuid': userUuid,
         'mode': mode,
         'finished_early': finishedEarly,
-        if (challengeWon != null) 'challenge_won': challengeWon,
+        'challenge_won': ?challengeWon,
       };
       final response = await _http.post(
         Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
@@ -888,9 +897,28 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         if (progression != null) {
           await _cache.cacheProgression(progression);
         }
-        return (decoded['final_score'] as num?)?.toDouble();
+        return SessionFlushResult(
+          ok: true,
+          finalScore: (decoded['final_score'] as num?)?.toDouble(),
+        );
       }
-    } catch (_) {}
-    return null;
+
+      String errorCode = 'complete_session_${response.statusCode}';
+      try {
+        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        errorCode = decoded['error']?.toString() ?? errorCode;
+      } catch (_) {}
+
+      cbDebug('Session', 'flushSessionCompletion failed', {
+        'sessionId': sessionId,
+        'status': response.statusCode,
+        'error': errorCode,
+      });
+
+      return SessionFlushResult(ok: false, errorCode: errorCode);
+    } catch (e, st) {
+      cbDebugError('Session', 'flushSessionCompletion network error', e, st);
+      return SessionFlushResult(ok: false, errorCode: e.toString());
+    }
   }
 }
