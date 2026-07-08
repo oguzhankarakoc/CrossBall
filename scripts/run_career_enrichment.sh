@@ -27,8 +27,15 @@ if [[ "${CAREER_ENRICH_LOAD:-}" == "1" ]]; then
   LOAD_FLAG="--load"
 fi
 
+PYTHON="python3"
+if [[ -n "${VIRTUAL_ENV:-}" ]] && command -v python >/dev/null 2>&1; then
+  PYTHON="python"
+elif [[ -x "$PIPELINE_DIR/.venv/bin/python" ]]; then
+  PYTHON="$PIPELINE_DIR/.venv/bin/python"
+fi
+
 echo "=== Career enrichment (API sync + reconcile + gap report) ==="
-python -m pipeline career-enrich \
+"$PYTHON" -m pipeline career-enrich \
   --api-limit 0 \
   ${LOAD_FLAG} \
   "$@"
