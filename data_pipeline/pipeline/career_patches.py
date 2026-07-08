@@ -20,6 +20,9 @@ DEFAULT_PATCHES_PATH = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'p
 API_FOOTBALL_PATCHES_PATH = (
     Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'api_football_careers.csv'
 )
+ENRICHED_PATCHES_PATH = (
+    Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'enriched_careers.csv'
+)
 
 
 def load_career_patches(path: Path | None = None) -> list[dict]:
@@ -64,12 +67,15 @@ def _patch_key(row: dict) -> tuple[str, str, str, str]:
 def load_all_career_patches(
     manual_path: Path | None = None,
     api_football_path: Path | None = None,
+    enriched_path: Path | None = None,
 ) -> list[dict]:
-    """Load manual patches first, then API-Football patches (later wins on key conflict)."""
+    """Load manual, API-Football, then reconciled enrichment deltas."""
     combined: list[dict] = []
     combined.extend(load_career_patches(manual_path or DEFAULT_PATCHES_PATH))
     api_path = api_football_path or API_FOOTBALL_PATCHES_PATH
     combined.extend(load_career_patches(api_path))
+    enriched = enriched_path or ENRICHED_PATCHES_PATH
+    combined.extend(load_career_patches(enriched))
     return combined
 
 

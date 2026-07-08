@@ -13,6 +13,8 @@ from .api_football_sync import (
     sync_transfers_to_career_rows,
     write_career_csv,
 )
+from .career_enrichment import run_career_enrichment
+from .career_gap_report import detect_career_gaps, write_gap_report
 from .career_patches import DEFAULT_PATCHES_PATH, load_all_career_patches
 from .fetch_kaggle import fetch_kaggle_dataset
 from .kaggle_transform import transform_kaggle_files, write_pipeline_csv
@@ -174,7 +176,7 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[b
     """Apply curated career patches to PostgreSQL without a full Kaggle re-download."""
     light = _patch_load_light() if light is None else light
     mode = 'light (skip dedupe + graph refresh)' if light else 'full'
-    print(f'  Applying career patches (manual + API-Football) — {mode}')
+    print(f'  Applying career patches (manual + API-Football + enriched) — {mode}')
     patches = load_all_career_patches(manual_path=patches_path)
     if not patches:
         raise SystemExit(f'No patches found at {patches_path}')
@@ -440,6 +442,43 @@ def main():
     sub.add_parser('daily-rollout-begin', help='Mark today\'s daily puzzle rollout as generating')
     sub.add_parser('ensure-daily', help='Ensure today\'s global daily puzzle exists in PostgreSQL')
 
+    gap_parser = sub.add_parser(
+        'career-gap-report',
+        help='Detect stale/missing career rows from base CSV + patch sources',
+    )
+    gap_parser.add_argument('--players-csv', type=Path, default=Path('data/raw/players.csv'))
+    gap_parser.add_argument(
+        '--output',
+        type=Path,
+        default=Path('../reports/career_gaps.csv'),
+    )
+
+    enrich_parser = sub.add_parser(
+        'career-enrich',
+        help='Sync API-Football, reconcile careers, write enriched patch deltas + gap report',
+    )
+    enrich_parser.add_argument('--players-csv', type=Path, default=Path('data/raw/players.csv'))
+    enrich_parser.add_argument(
+        '--output',
+        type=Path,
+        default=Path('data/raw/patches/enriched_careers.csv'),
+    )
+    enrich_parser.add_argument(
+        '--gap-report',
+        type=Path,
+        default=Path('../reports/career_gaps.csv'),
+    )
+    enrich_parser.add_argument('--skip-api-sync', action='store_true')
+    enrich_parser.add_argument('--api-offset', type=int, default=0)
+    enrich_parser.add_argument('--api-limit', type=int, default=0, help='0 = all mapped teams')
+    enrich_parser.add_argument('--no-cache', action='store_true')
+    enrich_parser.add_argument(
+        '--load',
+        action='store_true',
+        help='After enrichment, apply all patches to PostgreSQL',
+    )
+    enrich_parser.add_argument('--clubs', type=Path, default=Path('data/raw/clubs.csv'))
+
     args = parser.parse_args()
 
     if args.command == 'run':
@@ -473,6 +512,25 @@ def main():
         cmd_daily_rollout_begin()
     elif args.command == 'ensure-daily':
         cmd_ensure_daily()
+    elif args.command == 'career-gap-report':
+        gaps = detect_career_gaps(players_csv=args.players_csv)
+        write_gap_report(gaps, args.output)
+        print(f'  Wrote {len(gaps)} gap(s) → {args.output}')
+    elif args.command == 'career-enrich':
+        api_limit = None if args.api_limit == 0 else args.api_limit
+        summary = run_career_enrichment(
+            players_csv=args.players_csv,
+            enriched_output=args.output,
+            gap_report_output=args.gap_report,
+            skip_api_sync=args.skip_api_sync,
+            api_offset=args.api_offset,
+            api_limit=api_limit,
+            use_cache=not args.no_cache,
+        )
+        for key, value in summary.items():
+            print(f'  {key}: {value}')
+        if args.load:
+            cmd_apply_patches(DEFAULT_PATCHES_PATH, args.clubs, light=_patch_load_light())
     else:
         parser.print_help()
 

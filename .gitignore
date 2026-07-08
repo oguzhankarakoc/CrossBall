@@ -55,6 +55,7 @@ venv/
 data_pipeline/.venv/
 data_pipeline/data/raw/kaggle/
 data_pipeline/data/cache/
+reports/career_gaps.csv
 
 # Symbolication related
 app.*.symbols

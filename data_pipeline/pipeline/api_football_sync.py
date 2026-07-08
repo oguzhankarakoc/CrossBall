@@ -10,7 +10,8 @@ from .api_football_client import ApiFootballClient, ApiFootballError
 from .club_metadata import canonical_club_name
 from .kaggle_transform import MIN_CAREER_YEAR, TOP_CLUB_NAMES
 from .normalize import normalize_name
-from .player_identity import player_identity_key
+from .player_aliases import build_player_lookup_rows, load_player_aliases, resolve_external_id
+from .player_identity import player_identity_key, pick_preferred_name
 
 TEAM_IDS_PATH = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'api_football' / 'team_ids.json'
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'api_football_careers.csv'
@@ -122,6 +123,9 @@ def sync_transfers_to_career_rows(
 
     af_id_to_name = {v: k for k, v in team_map.items()}
     name_to_external, identity_to_external = _load_player_lookups(players_csv)
+    roster_rows = build_player_lookup_rows(players_csv) if players_csv else []
+    alias_map = load_player_aliases()
+    preferred_names: dict[str, str] = {}
 
     items = list(team_map.items())
     if offset:
@@ -155,11 +159,21 @@ def sync_transfers_to_career_rows(
                 continue
 
             stats['players_seen'] = int(stats['players_seen']) + 1
-            ext_id = name_to_external.get(normalize_name(player_name))
+            ext_id = resolve_external_id(
+                player_name,
+                api_football_player_id=af_player_id,
+                name_to_external=name_to_external,
+                identity_to_external=identity_to_external,
+                alias_map=alias_map,
+                roster_rows=roster_rows,
+            )
             if not ext_id:
-                ext_id = identity_to_external.get(player_identity_key(player_name))
-            if not ext_id and af_player_id is not None:
-                ext_id = f'af-{af_player_id}'
+                continue
+            if ext_id.startswith('af-'):
+                continue
+
+            display_name = preferred_names.get(ext_id, player_name)
+            preferred_names[ext_id] = pick_preferred_name(display_name, player_name)
 
             stints = build_stints_from_player_transfers(
                 item.get('transfers') or [],
@@ -172,7 +186,7 @@ def sync_transfers_to_career_rows(
                 key = (ext_id, stint['team'], stint['start_date'], stint['is_loan'])
                 career_rows[key] = {
                     'id': ext_id,
-                    'name': player_name,
+                    'name': preferred_names[ext_id],
                     'team': stint['team'],
                     'nationality': '',
                     'position': '',

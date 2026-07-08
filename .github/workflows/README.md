@@ -51,6 +51,28 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 | **Script** | `./scripts/run_scheduled_etl.sh` |
 | **Steps** | Kaggle fetch (if secrets set) or transform committed CSV → full load → patches |
 
+### Career Enrichment (Weekly) — `career-enrichment-weekly.yml`
+
+| | |
+|--|--|
+| **Schedule** | Saturday 04:00 UTC (07:00 Istanbul) |
+| **Manual** | Actions → Career Enrichment (Weekly) → Run workflow |
+| **Script** | `./scripts/run_career_enrichment.sh` |
+| **Steps** | API-Football sync (all mapped teams) → reconcile stale stints → write `enriched_careers.csv` → apply patches + graph refresh |
+| **Artifact** | `reports/career_gaps.csv` (players needing attention) |
+
+Local run (no DB load):
+
+```bash
+cd data_pipeline && python -m pipeline career-enrich --skip-api-sync
+```
+
+Apply to Supabase after enrichment:
+
+```bash
+CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
+```
+
 ### CI — `ci.yml`
 
 Runs on push/PR to `main` and `feature/**`: Flutter analyze/test + pipeline pytest. **Does not** run data sync.
