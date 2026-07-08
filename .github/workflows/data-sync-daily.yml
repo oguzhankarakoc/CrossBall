@@ -22,9 +22,9 @@ jobs:
       ENSURE_DAILY_TIER: medium
       DB_STATEMENT_TIMEOUT: 30min
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: pip
@@ -49,8 +49,8 @@ jobs:
           test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
-      - name: Apply database migrations
-        run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh 028 029
+      - name: Apply pending database migrations
+        run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh
 
       - name: Run scheduled API-Football sync
         run: chmod +x scripts/run_scheduled_sync.sh && ./scripts/run_scheduled_sync.sh
