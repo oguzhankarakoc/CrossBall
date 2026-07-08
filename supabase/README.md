@@ -119,7 +119,12 @@ chmod +x scripts/run_migrations.sh
 ./scripts/run_migrations.sh 007 008      # specific migrations only
 ```
 
-Uses `DATABASE_URL` from `data_pipeline/.env`. Migrations are **idempotent** — already-applied versions are skipped via `crossball_applied_migrations` (and Supabase CLI tracking when present).
+Uses `DATABASE_URL` from `data_pipeline/.env`. Migrations are **idempotent** — already-applied versions are skipped via `crossball_applied_migrations` (and Supabase CLI tracking when present). Numeric prefixes match both `011` (Supabase CLI) and `011_game_economy_engine` (repo filenames).
+
+```bash
+./scripts/run_migrations.sh --sync-tracking   # backfill local tracking from supabase_migrations
+./scripts/run_migrations.sh 037 038 039       # apply latest only
+```
 
 **Note:** SQL files are **PostgreSQL**. IDE red squiggles from a T-SQL linter are false positives — see `.vscode/settings.json`.
 

@@ -33,10 +33,14 @@ CREATE TABLE IF NOT EXISTS liveops_feature_flags (
 -- EVENTS (daily / weekly / monthly / seasonal / tournament / calendar)
 -- =============================================================================
 
-CREATE TYPE liveops_event_type AS ENUM (
-  'daily', 'weekly', 'monthly', 'seasonal', 'tournament',
-  'calendar', 'limited', 'community', 'global'
-);
+DO $$ BEGIN
+  CREATE TYPE liveops_event_type AS ENUM (
+    'daily', 'weekly', 'monthly', 'seasonal', 'tournament',
+    'calendar', 'limited', 'community', 'global'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS liveops_events (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -157,9 +161,13 @@ CREATE TABLE IF NOT EXISTS liveops_ab_assignments (
 -- ANNOUNCEMENTS
 -- =============================================================================
 
-CREATE TYPE liveops_announcement_type AS ENUM (
-  'info', 'maintenance', 'feature', 'event', 'competition', 'patch', 'promotion'
-);
+DO $$ BEGIN
+  CREATE TYPE liveops_announcement_type AS ENUM (
+    'info', 'maintenance', 'feature', 'event', 'competition', 'patch', 'promotion'
+  );
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS liveops_announcements (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),

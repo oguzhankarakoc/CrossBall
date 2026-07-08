@@ -52,7 +52,11 @@ CREATE TABLE IF NOT EXISTS economy_achievement_definitions (
   sort_order        INT NOT NULL DEFAULT 0
 );
 
-CREATE TYPE economy_mission_period AS ENUM ('daily', 'weekly', 'seasonal', 'event');
+DO $$ BEGIN
+  CREATE TYPE economy_mission_period AS ENUM ('daily', 'weekly', 'seasonal', 'event');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS economy_mission_definitions (
   slug              TEXT PRIMARY KEY,

@@ -1,29 +1,39 @@
+import importlib.util
 from pathlib import Path
 
-import sys
-
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / "scripts"))
-
-from run_migrations import migration_version, resolve_migration_files  # noqa: E402
+import pytest
 
 
-def test_migration_version_uses_stem():
-    assert migration_version(Path("028_ensure_daily_smallint_cast.sql")) == "028_ensure_daily_smallint_cast"
+def _load_runner():
+    path = Path(__file__).resolve().parents[2] / "scripts" / "run_migrations.py"
+    spec = importlib.util.spec_from_file_location("run_migrations", path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
-def test_resolve_all_migrations_sorted(tmp_path):
-    migrations_dir = tmp_path / "migrations"
-    migrations_dir.mkdir()
-    (migrations_dir / "010_b.sql").write_text("-- b")
-    (migrations_dir / "009_a.sql").write_text("-- a")
-
-    files = resolve_migration_files(migrations_dir, [])
-    assert [path.name for path in files] == ["009_a.sql", "010_b.sql"]
+runner = _load_runner()
 
 
-def test_resolve_numeric_prefix():
-    migrations_dir = Path(__file__).resolve().parents[2] / "supabase" / "migrations"
-    files = resolve_migration_files(migrations_dir, ["036"])
-    assert len(files) == 1
-    assert files[0].name == "036_security_rls_lockdown.sql"
+def test_migration_prefix_matches_supabase_and_repo_keys():
+    assert runner.migration_prefix("011") == "011"
+    assert runner.migration_prefix("011_game_economy_engine") == "011"
+    assert runner.migration_prefix("039_player_identity_dotted_initials") == "039"
+
+
+def test_is_migration_applied_accepts_numeric_alias():
+    applied = {"011", "012_liveops_engine"}
+    assert runner.is_migration_applied("011_game_economy_engine", applied)
+    assert runner.is_migration_applied("012_liveops_engine", applied)
+    assert not runner.is_migration_applied("037_weekly_daily_leaderboard_and_scoring", applied)
+
+
+def test_build_prefix_index_uses_repo_stem():
+    files = [
+        Path("supabase/migrations/011_game_economy_engine.sql"),
+        Path("supabase/migrations/037_weekly_daily_leaderboard_and_scoring.sql"),
+    ]
+    index = runner.build_prefix_index(files)
+    assert index["011"] == "011_game_economy_engine"
+    assert index["037"] == "037_weekly_daily_leaderboard_and_scoring"

@@ -38,6 +38,28 @@ def migration_version(path: Path) -> str:
     return path.stem
 
 
+def migration_prefix(version: str) -> str:
+    """Numeric prefix shared by Supabase CLI ('011') and repo files ('011_game_economy_engine')."""
+    head = version.split("_", 1)[0]
+    return head if head.isdigit() else version
+
+
+def build_prefix_index(files: list[Path]) -> dict[str, str]:
+    """Map numeric prefix -> canonical filename stem."""
+    index: dict[str, str] = {}
+    for path in files:
+        stem = migration_version(path)
+        index[migration_prefix(stem)] = stem
+    return index
+
+
+def is_migration_applied(version: str, applied_versions: set[str]) -> bool:
+    if version in applied_versions:
+        return True
+    prefix = migration_prefix(version)
+    return any(migration_prefix(applied) == prefix for applied in applied_versions)
+
+
 def _supabase_tracking_exists(cur) -> bool:
     cur.execute(
         """
@@ -76,6 +98,32 @@ def record_applied_version(cur, version: str) -> None:
     )
 
 
+def sync_tracking(cur, files: list[Path]) -> int:
+    """Backfill crossball_applied_migrations from Supabase CLI tracking + prefix map."""
+    prefix_index = build_prefix_index(files)
+    applied = load_applied_versions(cur)
+    synced = 0
+
+    for raw in sorted(applied):
+        canonical = prefix_index.get(migration_prefix(raw))
+        if canonical is None:
+            continue
+        cur.execute(
+            f"""
+            INSERT INTO public.{TRACKING_TABLE} (version)
+            VALUES (%s)
+            ON CONFLICT (version) DO NOTHING
+            RETURNING version
+            """,
+            (canonical,),
+        )
+        if cur.fetchone():
+            print(f"SYNC {canonical} (from {raw})")
+            synced += 1
+
+    return synced
+
+
 def resolve_migration_files(migrations_dir: Path, args: list[str]) -> list[Path] | None:
     if not args:
         return sorted(migrations_dir.glob("*.sql"))
@@ -95,6 +143,12 @@ def resolve_migration_files(migrations_dir: Path, args: list[str]) -> list[Path]
     return files
 
 
+def apply_migration(cur, path: Path, version: str) -> None:
+    sql = path.read_text(encoding="utf-8")
+    cur.execute(sql)
+    record_applied_version(cur, version)
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     env_path = root / "data_pipeline" / ".env"
@@ -106,41 +160,54 @@ def main() -> int:
         return 1
 
     migrations_dir = root / "supabase" / "migrations"
-    files = resolve_migration_files(migrations_dir, sys.argv[1:])
+    args = [a for a in sys.argv[1:] if a != "--sync-tracking"]
+    sync_only = "--sync-tracking" in sys.argv[1:]
+
+    files = resolve_migration_files(migrations_dir, args)
     if files is None:
         return 1
 
-    if not files:
+    if not files and not sync_only:
         print("No migration files found.", file=sys.stderr)
         return 1
 
     conn = psycopg2.connect(_sanitize_database_url(database_url))
-    conn.autocommit = True
     cur = conn.cursor()
 
     applied = 0
     skipped = 0
 
     try:
+        if sync_only:
+            synced = sync_tracking(cur, sorted(migrations_dir.glob("*.sql")))
+            conn.commit()
+            print(f"\nSynced {synced} migration record(s) into {TRACKING_TABLE}.")
+            return 0
+
         applied_versions = load_applied_versions(cur)
 
         for path in files:
             if not path.is_file():
                 print(f"Migration not found: {path}", file=sys.stderr)
+                conn.rollback()
                 return 1
 
             version = migration_version(path)
-            if version in applied_versions:
+            if is_migration_applied(version, applied_versions):
                 print(f"SKIP {path.name} (already applied)")
                 skipped += 1
                 continue
 
-            sql = path.read_text(encoding="utf-8")
-            cur.execute(sql)
-            record_applied_version(cur, version)
-            applied_versions.add(version)
-            print(f"OK   {path.name}")
-            applied += 1
+            try:
+                apply_migration(cur, path, version)
+                conn.commit()
+                applied_versions.add(version)
+                print(f"OK   {path.name}")
+                applied += 1
+            except Exception as exc:
+                conn.rollback()
+                print(f"FAIL {path.name}: {exc}", file=sys.stderr)
+                return 1
     finally:
         cur.close()
         conn.close()

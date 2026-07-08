@@ -116,8 +116,9 @@ All themes use brightness-aware typography (headline/title styles adapt for cont
 ## Development scripts
 
 ```bash
-./scripts/run_migrations.sh              # apply pending SQL migrations (001–036, idempotent)
+./scripts/run_migrations.sh              # apply pending SQL migrations (001–039, idempotent)
 ./scripts/run_migrations.sh 021 036      # security hardening through RLS lockdown
+./scripts/run_migrations.sh --sync-tracking  # backfill crossball_applied_migrations from Supabase CLI
 ./scripts/run_etl.sh                     # full Kaggle → PostgreSQL pipeline
 ./scripts/sync_api_football.sh           # API-Football transfers → DB (manual, ~30 teams)
 ./scripts/run_career_enrichment.sh       # reconcile stale careers + gap report (no DB load)
