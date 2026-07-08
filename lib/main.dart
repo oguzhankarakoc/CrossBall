@@ -12,6 +12,7 @@ import 'core/crash/crash_reporting_service.dart';
 import 'core/debug/crossball_debug_log.dart';
 import 'core/sync/offline_sync_service.dart';
 import 'features/ads/ads_service.dart';
+import 'features/auth/domain/user_profile.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'features/notifications/push_notification_service.dart';
 import 'features/premium/premium_service.dart';
@@ -58,13 +59,15 @@ Future<void> main() async {
       userUuid: profile.userUuid,
       pushOptIn: profile.pushOptIn,
     );
-    await container.read(analyticsProvider).identify(
-          profile.userUuid,
-          traits: {
-            'is_premium': profile.isPremium,
-            if (profile.displayName != null) 'display_name': profile.displayName,
-          },
-        );
+    final analytics = container.read(analyticsProvider);
+    await analytics.identify(
+      profile.userUuid,
+      traits: {
+        'is_premium': profile.isPremium,
+        if (profile.displayName != null) 'display_name': profile.displayName,
+      },
+    );
+    unawaited(analytics.track('app_opened'));
   } catch (e, st) {
     debugPrint('Startup profile sync failed: $e\n$st');
   }
@@ -98,7 +101,7 @@ Future<void> main() async {
   runApp(const ProviderScope(child: PremiumAdsSync(child: CrossBallApp())));
 }
 
-/// Keeps ads premium flag in sync with profile/IAP state.
+/// Keeps ads + analytics traits in sync with profile/IAP state.
 class PremiumAdsSync extends ConsumerWidget {
   const PremiumAdsSync({super.key, required this.child});
 
@@ -106,9 +109,43 @@ class PremiumAdsSync extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen<bool>(isPremiumProvider, (_, isPremium) {
+    ref.listen<bool>(isPremiumProvider, (previous, isPremium) {
       ref.read(adsServiceProvider).isPremium = isPremium;
+      if (previous != isPremium) {
+        _syncAnalyticsIdentity(ref, isPremium: isPremium);
+      }
+    });
+    ref.listen(userProfileProvider, (previous, next) {
+      final prevProfile = previous?.valueOrNull;
+      final profile = next.valueOrNull;
+      if (profile == null) return;
+      if (prevProfile?.displayName != profile.displayName ||
+          prevProfile?.isPremium != profile.isPremium) {
+        _syncAnalyticsIdentity(
+          ref,
+          isPremium: ref.read(isPremiumProvider),
+          profile: profile,
+        );
+      }
     });
     return child;
+  }
+
+  void _syncAnalyticsIdentity(
+    WidgetRef ref, {
+    required bool isPremium,
+    UserProfile? profile,
+  }) {
+    profile ??= ref.read(userProfileProvider).valueOrNull;
+    if (profile == null) return;
+    unawaited(
+      ref.read(analyticsProvider).identify(
+            profile.userUuid,
+            traits: {
+              'is_premium': isPremium,
+              if (profile.displayName != null) 'display_name': profile.displayName,
+            },
+          ),
+    );
   }
 }

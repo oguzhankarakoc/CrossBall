@@ -35,4 +35,24 @@ FIREBASE_ANDROID_APP_ID=1:123456789012:android:abc
     expect(headers['apikey'], 'test');
     expect(headers['Authorization'], 'Bearer test');
   });
+
+  test('posthog active when key present and analytics enabled', () {
+    dotenv.testLoad(fileInput: '''
+POSTHOG_API_KEY=phc_test
+POSTHOG_HOST=https://eu.i.posthog.com
+ANALYTICS_ENABLED=true
+''');
+    expect(AppConfig.isPostHogConfigured, isTrue);
+    expect(AppConfig.isPostHogActive, isTrue);
+    expect(AppConfig.isAnalyticsEnabled, isTrue);
+  });
+
+  test('posthog inactive when analytics disabled', () {
+    dotenv.testLoad(fileInput: '''
+POSTHOG_API_KEY=phc_test
+ANALYTICS_ENABLED=false
+''');
+    expect(AppConfig.isPostHogConfigured, isTrue);
+    expect(AppConfig.isPostHogActive, isFalse);
+  });
 }

@@ -59,12 +59,17 @@ abstract final class AppConfig {
       dotenv.env['ADMOB_REWARDED_IOS']?.trim() ??
       'ca-app-pub-3940256099942544/1712485313';
 
-  // PostHog analytics
+  // PostHog analytics (optional — set POSTHOG_API_KEY; disable with ANALYTICS_ENABLED=false)
+  static bool get isAnalyticsEnabled =>
+      dotenv.env['ANALYTICS_ENABLED']?.trim().toLowerCase() != 'false';
+
   static String get postHogApiKey => dotenv.env['POSTHOG_API_KEY']?.trim() ?? '';
   static String get postHogHost =>
-      dotenv.env['POSTHOG_HOST']?.trim() ?? 'https://us.i.posthog.com';
+      dotenv.env['POSTHOG_HOST']?.trim() ?? 'https://eu.i.posthog.com';
 
   static bool get isPostHogConfigured => postHogApiKey.isNotEmpty;
+
+  static bool get isPostHogActive => isAnalyticsEnabled && isPostHogConfigured;
 
   // In-app purchase
   static bool get isIapEnabled =>

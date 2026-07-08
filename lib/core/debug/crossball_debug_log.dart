@@ -38,6 +38,10 @@ void cbDebugConfigSnapshot() {
     'useTestAds': AppConfig.useTestAds,
     'remotePushEnabled': AppConfig.isRemotePushEnabled,
     'firebaseConfigured': AppConfig.isFirebaseConfigured,
+    'analyticsEnabled': AppConfig.isAnalyticsEnabled,
+    'postHogConfigured': AppConfig.isPostHogConfigured,
+    'postHogActive': AppConfig.isPostHogActive,
+    'postHogHost': _redactUrlHost(AppConfig.postHogHost),
   });
 }
 

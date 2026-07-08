@@ -41,7 +41,7 @@ class PostHogAnalyticsService implements AnalyticsService {
   @override
   Future<void> identify(String userId, {Map<String, dynamic>? traits}) async {
     _distinctId = userId;
-    if (!AppConfig.isPostHogConfigured) return;
+    if (!AppConfig.isPostHogActive) return;
 
     try {
       await _http.post(
@@ -61,7 +61,7 @@ class PostHogAnalyticsService implements AnalyticsService {
 
   @override
   Future<void> track(String event, {Map<String, dynamic>? properties}) async {
-    if (!AppConfig.isPostHogConfigured) return;
+    if (!AppConfig.isPostHogActive) return;
 
     try {
       await _http.post(
@@ -103,7 +103,7 @@ class CompositeAnalyticsService implements AnalyticsService {
 
 AnalyticsService createAnalyticsService() {
   final services = <AnalyticsService>[ConsoleAnalyticsService()];
-  if (AppConfig.isPostHogConfigured) {
+  if (AppConfig.isPostHogActive) {
     services.add(PostHogAnalyticsService());
   }
   return CompositeAnalyticsService(services);
