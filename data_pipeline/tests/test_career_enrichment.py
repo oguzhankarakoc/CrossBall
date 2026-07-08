@@ -30,11 +30,14 @@ def test_build_enriched_career_rows_from_manual_and_base(tmp_path: Path):
         ),
         encoding='utf-8',
     )
+    enriched = tmp_path / 'enriched.csv'
+    enriched.write_text('id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source\n', encoding='utf-8')
 
     deltas, reconciled = build_enriched_career_rows(
         players_csv=players_csv,
         manual_patches_path=manual,
         api_patches_path=api_csv,
+        enriched_patches_path=enriched,
     )
 
     teams = {row['team'] for row in reconciled}

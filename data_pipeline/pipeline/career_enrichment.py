@@ -30,11 +30,16 @@ def build_enriched_career_rows(
     players_csv: Path | None = None,
     manual_patches_path: Path | None = None,
     api_patches_path: Path | None = None,
+    enriched_patches_path: Path | None = None,
 ) -> tuple[list[dict], list[dict]]:
     """Merge base + patches, reconcile overlaps, return (deltas, full_reconciled)."""
     base_path = players_csv or DEFAULT_PLAYERS_CSV
     base_rows = load_base_career_rows(base_path)
-    patch_rows = load_all_career_patches(manual_patches_path, api_patches_path)
+    patch_rows = load_all_career_patches(
+        manual_patches_path,
+        api_patches_path,
+        enriched_patches_path,
+    )
 
     merged, _ = merge_career_patches(base_rows, patch_rows)
     reconciled = reconcile_career_rows(merged)
