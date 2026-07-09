@@ -1140,7 +1140,6 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
 
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
-    unawaited(_ref.read(searchRepositoryProvider).recordPick(player));
 
     if (answer.correct) {
       final cellScore = ScoringEngine.calculateCellScore(

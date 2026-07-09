@@ -14,6 +14,7 @@ import '../../features/puzzle/presentation/puzzle_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/stats/presentation/stats_screen.dart';
 import '../../features/tournament/presentation/tournament_screen.dart';
+import '../../shared/components/components.dart';
 import '../../shared/widgets/splash_screen.dart';
 import 'app_routes.dart';
 import 'main_shell_scaffold.dart';
@@ -114,7 +115,14 @@ GoRouter createAppRouter({required bool onboardingComplete}) {
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
-      body: Center(child: Text('Route not found: ${state.uri}')),
+      body: AppScreenBody(
+        child: Center(
+          child: AppErrorState(
+            error: state.error,
+            onRetry: () => context.go(AppRoutes.home),
+          ),
+        ),
+      ),
     ),
   );
 }

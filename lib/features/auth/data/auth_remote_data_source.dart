@@ -1,9 +1,7 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../../../core/config/app_config.dart';
 import '../../../core/debug/crossball_debug_log.dart';
+import '../../../core/errors/app_failure.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 
 class SyncUserException implements Exception {
   SyncUserException(this.errorCode, this.statusCode);
@@ -16,10 +14,10 @@ class SyncUserException implements Exception {
 }
 
 class AuthRemoteDataSource {
-  AuthRemoteDataSource({http.Client? httpClient})
-      : _http = httpClient ?? http.Client();
+  AuthRemoteDataSource({ApiHttpClient? httpClient})
+      : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   Future<Map<String, dynamic>> syncUser({
     required String userUuid,
@@ -31,7 +29,7 @@ class AuthRemoteDataSource {
     bool? pushOptIn,
     bool clearDisplayName = false,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) {
+    if (!ApiConfig.isConfigured) {
       cbDebug('Auth', 'syncUser skipped — supabase not configured');
       throw SyncUserException('supabase_not_configured', 0);
     }
@@ -43,11 +41,11 @@ class AuthRemoteDataSource {
 
     final body = <String, dynamic>{
       'user_uuid': userUuid,
-      'onboarding_complete': ?onboardingComplete,
-      'locale': ?locale,
-      'theme_preference': ?themePreference,
-      'timezone_offset_minutes': ?timezoneOffsetMinutes,
-      'push_opt_in': ?pushOptIn,
+      if (onboardingComplete != null) 'onboarding_complete': onboardingComplete,
+      if (locale != null) 'locale': locale,
+      if (themePreference != null) 'theme_preference': themePreference,
+      if (timezoneOffsetMinutes != null) 'timezone_offset_minutes': timezoneOffsetMinutes,
+      if (pushOptIn != null) 'push_opt_in': pushOptIn,
     };
 
     if (clearDisplayName) {
@@ -56,38 +54,22 @@ class AuthRemoteDataSource {
       body['display_name'] = displayName;
     }
 
-    final response = await _http.post(
-      Uri.parse('${AppConfig.supabaseUrl}/functions/v1/sync-user'),
-      headers: {
-        ...AppConfig.supabaseFunctionHeaders,
-        'x-user-uuid': userUuid,
-      },
-      body: jsonEncode(body),
-    );
-
-    final decoded = response.body.isNotEmpty
-        ? jsonDecode(response.body)
-        : <String, dynamic>{};
-
-    if (response.statusCode == 200 && decoded is Map<String, dynamic>) {
+    try {
+      final decoded = await _http.postJson(
+        'sync-user',
+        body: body,
+        headers: ApiConfig.userHeaders(userUuid),
+      );
       cbDebug('Auth', 'syncUser OK', {
         'is_premium': decoded['is_premium'],
         'display_name': decoded['display_name'],
       });
       return decoded;
+    } on AppFailure catch (e) {
+      final code = e is ValidationFailure ? 'sync_failed' : e.message;
+      cbDebug('Auth', 'syncUser failed', {'error': code});
+      throw SyncUserException(code, 0);
     }
-
-    final errorCode = decoded is Map
-        ? (decoded['error'] as String? ?? 'sync_failed')
-        : 'sync_failed';
-    cbDebug('Auth', 'syncUser failed', {
-      'status': response.statusCode,
-      'error': errorCode,
-      'bodyPreview': response.body.length > 200
-          ? '${response.body.substring(0, 200)}…'
-          : response.body,
-    });
-    throw SyncUserException(errorCode, response.statusCode);
   }
 
   Future<void> syncPreferences({
@@ -102,7 +84,6 @@ class AuthRemoteDataSource {
     );
   }
 
-  /// Activates premium server-side after IAP (or dev/staging bypass).
   Future<void> verifyPremium({
     required String userUuid,
     required String platform,
@@ -110,31 +91,22 @@ class AuthRemoteDataSource {
     String? verificationData,
     String? source,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return;
+    if (!ApiConfig.isConfigured) return;
 
-    final response = await _http.post(
-      Uri.parse('${AppConfig.supabaseUrl}/functions/v1/verify-premium'),
-      headers: {
-        ...AppConfig.supabaseFunctionHeaders,
-        'x-user-uuid': userUuid,
-      },
-      body: jsonEncode({
-        'user_uuid': userUuid,
-        'platform': platform,
-        'product_id': productId,
-        'verification_data': ?verificationData,
-        'source': ?source,
-      }),
-    );
-
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final decoded = response.body.isNotEmpty
-          ? jsonDecode(response.body)
-          : <String, dynamic>{};
-      final errorCode = decoded is Map
-          ? (decoded['error'] as String? ?? 'verify_failed')
-          : 'verify_failed';
-      throw SyncUserException(errorCode, response.statusCode);
+    try {
+      await _http.postJson(
+        'verify-premium',
+        body: {
+          'user_uuid': userUuid,
+          'platform': platform,
+          'product_id': productId,
+          if (verificationData != null) 'verification_data': verificationData,
+          if (source != null) 'source': source,
+        },
+        headers: ApiConfig.userHeaders(userUuid),
+      );
+    } on AppFailure catch (e) {
+      throw SyncUserException(e.message, 0);
     }
   }
 }

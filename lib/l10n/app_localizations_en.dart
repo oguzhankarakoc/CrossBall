@@ -380,6 +380,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintChipClub => 'Club';
 
   @override
+  String get hintValueUnknown => 'Unknown';
+
+  @override
+  String get hintStatusActive => 'Active';
+
+  @override
+  String get hintStatusRetired => 'Retired';
+
+  @override
   String get hintLimitReached =>
       'All hints for this cell are already revealed.';
 
@@ -590,6 +599,32 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorNetwork => 'Network error. Check your connection.';
+
+  @override
+  String get errorOffline =>
+      'You\'re offline. Check your connection and try again.';
+
+  @override
+  String get errorTimeout => 'The request took too long. Please try again.';
+
+  @override
+  String get errorServer =>
+      'Our servers are having trouble. Please try again shortly.';
+
+  @override
+  String get errorAuth => 'Your session expired. Restart the app to continue.';
+
+  @override
+  String get errorValidation => 'Please check your input and try again.';
+
+  @override
+  String get errorNotFound => 'We couldn\'t find what you\'re looking for.';
+
+  @override
+  String get bootLoading => 'Loading CrossBall…';
+
+  @override
+  String get bootFailed => 'CrossBall couldn\'t start. Please try again.';
 
   @override
   String get themeDarkGold => 'Gold Stadium';

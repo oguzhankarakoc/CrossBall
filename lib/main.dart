@@ -50,6 +50,9 @@ Future<void> main() async {
   final container = ProviderContainer();
   installCrashHandlers(createCrashReportingService(container.read(analyticsProvider)));
 
+  // One-time migration: remove legacy cross-session search picks (competitive integrity).
+  unawaited(container.read(offlineCacheProvider).clearRecentPicks());
+
   try {
     final profile = await container.read(userProfileProvider.future);
     await container.read(authRepositoryProvider).syncDeviceProfile(

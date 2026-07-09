@@ -1,12 +1,13 @@
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/cache/offline_cache.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/debug/crossball_debug_log.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/debug/practice_debug_log.dart';
 import '../domain/puzzle.dart';
@@ -71,35 +72,36 @@ PuzzleFetchException _dailyFetchExceptionFromResponse(int statusCode, String bod
 }
 
 class PuzzleApiService {
-  PuzzleApiService({SupabaseClient? client, http.Client? httpClient})
+  PuzzleApiService({SupabaseClient? client, ApiHttpClient? httpClient})
       : _client = client,
-        _http = httpClient ?? http.Client();
+        _api = httpClient ?? ApiHttpClient();
 
   final SupabaseClient? _client;
-  final http.Client _http;
+  final ApiHttpClient _api;
   final _uuid = const Uuid();
 
-  String get _baseUrl => AppConfig.supabaseUrl;
-
-  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
+  Map<String, String> get _headers => ApiConfig.defaultHeaders;
 
   Future<Map<String, dynamic>> fetchDailyPuzzle({String? userUuid}) async {
     cbDebug('Daily', 'fetchDailyPuzzle start', {
       'userUuid': userUuid,
       'supabaseConfigured': AppConfig.isSupabaseConfigured,
       'hasClient': _client != null,
-      'baseHost': Uri.tryParse(_baseUrl)?.host ?? _baseUrl,
+      'baseHost': Uri.tryParse(ApiConfig.baseUrl)?.host ?? ApiConfig.baseUrl,
     });
 
     if (_client != null && AppConfig.isSupabaseConfigured) {
       final stopwatch = Stopwatch()..start();
       try {
-        final query = userUuid != null ? '?user_uuid=$userUuid' : '';
-        final uri = Uri.parse('$_baseUrl/functions/v1/daily-puzzle$query');
-        cbDebug('Daily', 'HTTP GET', uri.toString());
+        final query = userUuid != null ? {'user_uuid': userUuid} : null;
+        cbDebug('Daily', 'HTTP GET', 'daily-puzzle');
 
-        final response = await _http
-            .get(uri, headers: _headers)
+        final response = await _api
+            .getRaw(
+              'daily-puzzle',
+              query: query,
+              timeout: const Duration(seconds: 30),
+            )
             .timeout(
               const Duration(seconds: 30),
               onTimeout: () {
@@ -110,14 +112,14 @@ class PuzzleApiService {
         cbDebugHttpResponse(
           'Daily',
           'daily-puzzle response',
-          uri: uri.toString(),
+          uri: 'daily-puzzle',
           statusCode: response.statusCode,
           elapsedMs: stopwatch.elapsedMilliseconds,
           body: response.body,
         );
 
         if (response.statusCode == 200) {
-          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          final decoded = response.jsonMap ?? <String, dynamic>{};
           cbDebug('Daily', 'fetchDailyPuzzle OK', {
             'puzzle_id': decoded['puzzle_id'] ?? decoded['id'],
             'date': decoded['date'],
@@ -156,26 +158,25 @@ class PuzzleApiService {
       };
     }
 
-    final uri = Uri.parse('$_baseUrl/functions/v1/daily-puzzle?status_only=true');
-    cbDebug('Daily', 'HTTP GET rollout status', uri.toString());
-
     final stopwatch = Stopwatch()..start();
-    final response = await _http
-        .get(uri, headers: _headers)
-        .timeout(const Duration(seconds: 15));
+    final response = await _api.getRaw(
+      'daily-puzzle',
+      query: {'status_only': 'true'},
+      timeout: const Duration(seconds: 15),
+    );
     stopwatch.stop();
 
     cbDebugHttpResponse(
       'Daily',
       'daily-puzzle status',
-      uri: uri.toString(),
+      uri: 'daily-puzzle?status_only=true',
       statusCode: response.statusCode,
       elapsedMs: stopwatch.elapsedMilliseconds,
       body: response.body,
     );
 
     if (response.statusCode == 200 || response.statusCode == 503) {
-      return jsonDecode(response.body) as Map<String, dynamic>;
+      return response.jsonMap ?? <String, dynamic>{};
     }
 
     throw _dailyFetchExceptionFromResponse(response.statusCode, response.body);
@@ -184,18 +185,15 @@ class PuzzleApiService {
   Future<Map<String, dynamic>> fetchPuzzleById(String puzzleId) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
-        final response = await _http.get(
-          Uri.parse('$_baseUrl/functions/v1/puzzle-by-id?id=$puzzleId'),
-          headers: _headers,
-        );
+        final response = await _api.getRaw('puzzle-by-id', query: {'id': puzzleId});
         if (response.statusCode == 200) {
-          return jsonDecode(response.body) as Map<String, dynamic>;
+          return response.jsonMap ?? <String, dynamic>{};
         }
         String detail = 'puzzle-by-id failed (${response.statusCode})';
-        try {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final body = response.jsonMap;
+        if (body != null) {
           detail = body['error']?.toString() ?? detail;
-        } catch (_) {}
+        }
         throw PuzzleFetchException(detail, statusCode: response.statusCode);
       } on PuzzleFetchException {
         rethrow;
@@ -209,12 +207,12 @@ class PuzzleApiService {
   Future<String?> fetchChallengePuzzleId(String challengeCode) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
-        final response = await _http.get(
-          Uri.parse('$_baseUrl/functions/v1/challenge-get?code=$challengeCode'),
-          headers: _headers,
+        final response = await _api.getRaw(
+          'challenge-get',
+          query: {'code': challengeCode},
         );
         if (response.statusCode == 200) {
-          final data = jsonDecode(response.body) as Map<String, dynamic>;
+          final data = response.jsonMap ?? <String, dynamic>{};
           return data['puzzle_id'] as String?;
         }
       } catch (_) {}
@@ -233,20 +231,17 @@ class PuzzleApiService {
   }) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
-        final response = await _http.post(
-          Uri.parse('$_baseUrl/functions/v1/validate-answer'),
-          headers: {
-            ..._headers,
-            'x-user-uuid': userUuid,
-          },
-          body: jsonEncode({
+        final response = await _api.postRaw(
+          'validate-answer',
+          headers: ApiConfig.userHeaders(userUuid),
+          body: {
             'row_club_id': rowClubId,
             'col_club_id': colClubId,
             'player_id': playerId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
-            'response_time_ms': ?responseTimeMs,
-          }),
+            if (responseTimeMs != null) 'response_time_ms': responseTimeMs,
+          },
         );
         cbDebug('Session', 'validate-answer response', {
           'status': response.statusCode,
@@ -256,15 +251,13 @@ class PuzzleApiService {
               : response.body,
         });
         if (response.statusCode == 200) {
-          return AnswerResult.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
+          return AnswerResult.fromJson(response.jsonMap ?? <String, dynamic>{});
         }
         String detail = 'validate-answer failed (${response.statusCode})';
-        try {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final body = response.jsonMap;
+        if (body != null) {
           detail = body['error']?.toString() ?? detail;
-        } catch (_) {}
+        }
         throw PuzzleFetchException(detail, statusCode: response.statusCode);
       } on PuzzleFetchException {
         rethrow;
@@ -291,22 +284,19 @@ class PuzzleApiService {
     });
 
     final stopwatch = Stopwatch()..start();
-    final uri = Uri.parse('$_baseUrl/functions/v1/start-session');
     try {
-      final response = await _http
-          .post(
-            uri,
-            headers: {
-              ..._headers,
-              'x-user-uuid': userUuid,
-            },
-            body: jsonEncode({
+      final response = await _api
+          .postRaw(
+            'start-session',
+            headers: ApiConfig.userHeaders(userUuid),
+            body: {
               'user_uuid': userUuid,
               'puzzle_id': puzzleId,
               'mode': mode,
               'grid_size': gridSize,
               if (forceNew) 'force_new': true,
-            }),
+            },
+            timeout: const Duration(seconds: 20),
           )
           .timeout(
             const Duration(seconds: 20),
@@ -318,14 +308,14 @@ class PuzzleApiService {
       cbDebugHttpResponse(
         'Session',
         'start-session response',
-        uri: uri.toString(),
+        uri: 'start-session',
         statusCode: response.statusCode,
         elapsedMs: stopwatch.elapsedMilliseconds,
         body: response.body,
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        final data = response.jsonMap ?? <String, dynamic>{};
         final sessionId = data['session_id'] as String?;
         final startedAtRaw = data['started_at'] as String?;
         if (sessionId != null &&
@@ -346,11 +336,11 @@ class PuzzleApiService {
 
       String detail = '';
       String? errorCode;
-      try {
-        final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final body = response.jsonMap;
+      if (body != null) {
         detail = body['error']?.toString() ?? '';
         errorCode = detail.isNotEmpty ? detail : null;
-      } catch (_) {}
+      }
 
       throw PuzzleFetchException(
         detail.isNotEmpty
@@ -416,21 +406,20 @@ class PuzzleApiService {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       final stopwatch = Stopwatch()..start();
       try {
-        final excludeQuery = excludePuzzleId != null && excludePuzzleId.isNotEmpty
-            ? '&exclude_puzzle_id=$excludePuzzleId'
-            : '';
-        final uri = Uri.parse(
-          '$_baseUrl/functions/v1/practice-puzzle?grid_size=$gridSize&user_uuid=$userUuid$excludeQuery',
-        );
-        practiceDebug('HTTP GET', uri.toString());
+        final query = <String, String>{
+          'grid_size': '$gridSize',
+          'user_uuid': userUuid,
+          if (excludePuzzleId != null && excludePuzzleId.isNotEmpty)
+            'exclude_puzzle_id': excludePuzzleId,
+        };
+        practiceDebug('HTTP GET', 'practice-puzzle');
 
-        final response = await _http
-            .get(
-              uri,
-              headers: {
-                ..._headers,
-                'x-user-uuid': userUuid,
-              },
+        final response = await _api
+            .getRaw(
+              'practice-puzzle',
+              query: query,
+              headers: ApiConfig.userHeaders(userUuid),
+              timeout: const Duration(seconds: 60),
             )
             .timeout(
               const Duration(seconds: 60),
@@ -450,7 +439,7 @@ class PuzzleApiService {
         });
 
         if (response.statusCode == 200) {
-          final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+          final decoded = response.jsonMap ?? <String, dynamic>{};
           practiceDebug('fetchPracticePuzzle OK', {
             'puzzle_id': decoded['puzzle_id'] ?? decoded['id'],
             'row_clubs': (decoded['row_clubs'] as List?)?.length,
@@ -459,11 +448,9 @@ class PuzzleApiService {
           return decoded;
         }
         String detail = '';
-        try {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final body = response.jsonMap;
+        if (body != null) {
           detail = body['error']?.toString() ?? '';
-        } catch (parseErr) {
-          practiceDebug('error body parse failed', parseErr);
         }
         practiceDebug('HTTP non-200', {'detail': detail, 'status': response.statusCode});
         throw PuzzleFetchException(
@@ -583,13 +570,11 @@ class PuzzleApiService {
     String? adToken,
   }) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
-      final uri = Uri.parse('$_baseUrl/functions/v1/request-hint');
       final stopwatch = Stopwatch()..start();
       try {
-        final headers = {
-          ..._headers,
-          if (userUuid != null) 'x-user-uuid': userUuid,
-        };
+        final headers = userUuid != null
+            ? ApiConfig.userHeaders(userUuid)
+            : _headers;
         cbDebug('Session', 'requestHint POST', {
           'puzzleCellId': puzzleCellId,
           'sessionId': sessionId,
@@ -598,10 +583,10 @@ class PuzzleApiService {
           'colClubId': colClubId,
           'hasAdToken': adToken != null,
         });
-        final response = await _http.post(
-          uri,
+        final response = await _api.postRaw(
+          'request-hint',
           headers: headers,
-          body: jsonEncode({
+          body: {
             'row_club_id': rowClubId,
             'col_club_id': colClubId,
             'puzzle_cell_id': puzzleCellId,
@@ -609,29 +594,27 @@ class PuzzleApiService {
             'hint_type': _hintTypeToApi(hintType),
             if (adToken != null) 'ad_token': adToken,
             if (userUuid != null) 'user_uuid': userUuid,
-          }),
+          },
         );
         stopwatch.stop();
         cbDebugHttpResponse(
           'Session',
           'request-hint response',
-          uri: uri.toString(),
+          uri: 'request-hint',
           statusCode: response.statusCode,
           elapsedMs: stopwatch.elapsedMilliseconds,
           body: response.body,
         );
         if (response.statusCode == 200) {
-          return HintResult.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
+          return HintResult.fromJson(response.jsonMap ?? <String, dynamic>{});
         }
         String detail = 'request-hint failed (${response.statusCode})';
         String? errorCode;
-        try {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
+        final body = response.jsonMap;
+        if (body != null) {
           detail = body['error']?.toString() ?? detail;
           errorCode = detail;
-        } catch (_) {}
+        }
         throw HintRequestException(
           detail,
           statusCode: response.statusCode,
@@ -658,26 +641,22 @@ class PuzzleApiService {
   }) async {
     if (_client == null || !AppConfig.isSupabaseConfigured) return false;
 
-    final uri = Uri.parse('$_baseUrl/functions/v1/grant-hint-ad');
     final stopwatch = Stopwatch()..start();
     try {
-      final response = await _http.post(
-        uri,
-        headers: {
-          ..._headers,
-          'x-user-uuid': userUuid,
-        },
-        body: jsonEncode({
+      final response = await _api.postRaw(
+        'grant-hint-ad',
+        headers: ApiConfig.userHeaders(userUuid),
+        body: {
           'ad_token': adToken,
           'user_uuid': userUuid,
           'session_id': sessionId,
-        }),
+        },
       );
       stopwatch.stop();
       cbDebugHttpResponse(
         'Session',
         'grant-hint-ad response',
-        uri: uri.toString(),
+        uri: 'grant-hint-ad',
         statusCode: response.statusCode,
         elapsedMs: stopwatch.elapsedMilliseconds,
         body: response.body,
@@ -751,14 +730,14 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   PuzzleRepositoryImpl({
     required PuzzleApiService api,
     required OfflineCache cache,
-    http.Client? httpClient,
+    ApiHttpClient? httpClient,
   })  : _api = api,
         _cache = cache,
-        _http = httpClient ?? http.Client();
+        _http = httpClient ?? ApiHttpClient();
 
   final PuzzleApiService _api;
   final OfflineCache _cache;
-  final http.Client _http;
+  final ApiHttpClient _http;
   final _uuid = const Uuid();
 
   Future<Puzzle> _withValidatedCells(
@@ -1065,17 +1044,14 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         'finished_early': finishedEarly,
         'challenge_won': ?challengeWon,
       };
-      final response = await _http.post(
-        Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
-        headers: {
-          ...AppConfig.supabaseFunctionHeaders,
-          'x-user-uuid': userUuid,
-        },
-        body: jsonEncode(body),
+      final response = await _http.postRaw(
+        'complete-session',
+        headers: ApiConfig.userHeaders(userUuid),
+        body: body,
       );
       if (response.statusCode == 200) {
         await _cache.removePendingSession(sessionId);
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+        final decoded = response.jsonMap ?? <String, dynamic>{};
         final economy = decoded['economy'] as Map<String, dynamic>?;
         final progression = economy?['progression'] as Map<String, dynamic>?;
         if (progression != null) {
@@ -1088,10 +1064,10 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       }
 
       String errorCode = 'complete_session_${response.statusCode}';
-      try {
-        final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final decoded = response.jsonMap;
+      if (decoded != null) {
         errorCode = decoded['error']?.toString() ?? errorCode;
-      } catch (_) {}
+      }
 
       cbDebug('Session', 'flushSessionCompletion failed', {
         'sessionId': sessionId,

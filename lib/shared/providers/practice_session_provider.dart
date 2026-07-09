@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/constants/game_constants.dart';
 import '../../core/debug/crossball_debug_log.dart';
+import '../../core/network/network_providers.dart';
 import '../../features/auth/presentation/auth_providers.dart';
 import '../../features/practice/data/practice_quota_api.dart';
 
@@ -74,7 +75,9 @@ class PracticeSessionState {
   );
 }
 
-final practiceQuotaApiProvider = Provider<PracticeQuotaApi>((ref) => PracticeQuotaApi());
+final practiceQuotaApiProvider = Provider<PracticeQuotaApi>(
+  (ref) => PracticeQuotaApi(httpClient: ref.watch(apiHttpClientProvider)),
+);
 
 final practiceSessionProvider =
     StateNotifierProvider<PracticeSessionNotifier, PracticeSessionState>(

@@ -790,6 +790,24 @@ abstract class AppLocalizations {
   /// **'Club'**
   String get hintChipClub;
 
+  /// No description provided for @hintValueUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get hintValueUnknown;
+
+  /// No description provided for @hintStatusActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get hintStatusActive;
+
+  /// No description provided for @hintStatusRetired.
+  ///
+  /// In en, this message translates to:
+  /// **'Retired'**
+  String get hintStatusRetired;
+
   /// No description provided for @hintLimitReached.
   ///
   /// In en, this message translates to:
@@ -1161,6 +1179,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Network error. Check your connection.'**
   String get errorNetwork;
+
+  /// No description provided for @errorOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re offline. Check your connection and try again.'**
+  String get errorOffline;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The request took too long. Please try again.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Our servers are having trouble. Please try again shortly.'**
+  String get errorServer;
+
+  /// No description provided for @errorAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Your session expired. Restart the app to continue.'**
+  String get errorAuth;
+
+  /// No description provided for @errorValidation.
+  ///
+  /// In en, this message translates to:
+  /// **'Please check your input and try again.'**
+  String get errorValidation;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'We couldn\'t find what you\'re looking for.'**
+  String get errorNotFound;
+
+  /// No description provided for @bootLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading CrossBall…'**
+  String get bootLoading;
+
+  /// No description provided for @bootFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'CrossBall couldn\'t start. Please try again.'**
+  String get bootFailed;
 
   /// No description provided for @themeDarkGold.
   ///

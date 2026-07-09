@@ -1,21 +1,19 @@
-import 'dart:convert';
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
-
 import '../../../core/cache/offline_cache.dart';
-import '../../../core/config/app_config.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 import '../domain/liveops_snapshot.dart';
 
 class LiveOpsRepositoryImpl implements LiveOpsRepository {
   LiveOpsRepositoryImpl({
     required OfflineCache cache,
-    http.Client? httpClient,
+    ApiHttpClient? httpClient,
   })  : _cache = cache,
-        _http = httpClient ?? http.Client();
+        _http = httpClient ?? ApiHttpClient();
 
   final OfflineCache _cache;
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   @override
   Future<LiveOpsSnapshot> getSnapshot({
@@ -25,35 +23,25 @@ class LiveOpsRepositoryImpl implements LiveOpsRepository {
     String country = '',
     String appVersion = '1.0.0',
   }) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/liveops-config')
-            .replace(queryParameters: {
+    try {
+      final json = await _http.getJson(
+        'liveops-config',
+        query: {
           'user_uuid': userUuid,
           'locale': locale,
           'platform': platform,
           'country': country,
           'app_version': appVersion,
-        });
-
-        final response = await _http.get(
-          uri,
-          headers: {
-            ...AppConfig.supabaseFunctionHeaders,
-            'x-user-uuid': userUuid,
-          },
-        );
-
-        if (response.statusCode == 200) {
-          final json = jsonDecode(response.body) as Map<String, dynamic>;
-          if (json['ok'] == true) {
-            final snapshot = LiveOpsSnapshot.fromJson(json);
-            await _cache.cacheLiveOps(snapshot.toJson());
-            return snapshot;
-          }
-        }
-      } catch (_) {}
-    }
+        },
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
+      );
+      if (json['ok'] == true) {
+        final snapshot = LiveOpsSnapshot.fromJson(json);
+        await _cache.cacheLiveOps(snapshot.toJson());
+        return snapshot;
+      }
+    } catch (_) {}
 
     final cached = await _cache.getLiveOps();
     if (cached != null) {

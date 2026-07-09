@@ -1,17 +1,12 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../../../core/config/app_config.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 import '../domain/challenge.dart';
 
 class ChallengeRepositoryImpl implements ChallengeRepository {
-  ChallengeRepositoryImpl({http.Client? httpClient})
-      : _http = httpClient ?? http.Client();
+  ChallengeRepositoryImpl({ApiHttpClient? httpClient})
+      : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
-
-  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
+  final ApiHttpClient _http;
 
   @override
   Future<Challenge> createChallenge({
@@ -20,25 +15,20 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
     required double creatorScore,
     required String userUuid,
   }) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final response = await _http.post(
-          Uri.parse('${AppConfig.supabaseUrl}/functions/v1/challenge-create'),
-          headers: {..._headers, 'x-user-uuid': userUuid},
-          body: jsonEncode({
-            'puzzle_id': puzzleId,
-            'session_id': sessionId,
-            'creator_score': creatorScore,
-            'user_uuid': userUuid,
-          }),
-        );
-        if (response.statusCode == 200) {
-          return Challenge.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
-        }
-      } catch (_) {}
-    }
+    try {
+      final json = await _http.postJson(
+        'challenge-create',
+        body: {
+          'puzzle_id': puzzleId,
+          'session_id': sessionId,
+          'creator_score': creatorScore,
+          'user_uuid': userUuid,
+        },
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
+      );
+      if (json.isNotEmpty) return Challenge.fromJson(json);
+    } catch (_) {}
 
     final code = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
     return Challenge(
@@ -51,21 +41,14 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
 
   @override
   Future<Challenge> getChallenge(String challengeId) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final response = await _http.get(
-          Uri.parse(
-            '${AppConfig.supabaseUrl}/functions/v1/challenge-get?code=$challengeId',
-          ),
-          headers: _headers,
-        );
-        if (response.statusCode == 200) {
-          return Challenge.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
-        }
-      } catch (_) {}
-    }
+    try {
+      final json = await _http.getJson(
+        'challenge-get',
+        query: {'code': challengeId},
+        throwOnError: false,
+      );
+      if (json.isNotEmpty) return Challenge.fromJson(json);
+    } catch (_) {}
 
     return Challenge(
       id: challengeId,
@@ -84,28 +67,23 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
     required int hintsUsed,
     required int durationMs,
   }) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final response = await _http.post(
-          Uri.parse('${AppConfig.supabaseUrl}/functions/v1/challenge-complete'),
-          headers: {..._headers, 'x-user-uuid': userUuid},
-          body: jsonEncode({
-            'challenge_id': challengeId,
-            'session_id': sessionId,
-            'challenger_score': challengerScore,
-            'user_uuid': userUuid,
-            'mistakes': mistakes,
-            'hints_used': hintsUsed,
-            'duration_ms': durationMs,
-          }),
-        );
-        if (response.statusCode == 200) {
-          return ChallengeResult.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
-        }
-      } catch (_) {}
-    }
+    try {
+      final json = await _http.postJson(
+        'challenge-complete',
+        body: {
+          'challenge_id': challengeId,
+          'session_id': sessionId,
+          'challenger_score': challengerScore,
+          'user_uuid': userUuid,
+          'mistakes': mistakes,
+          'hints_used': hintsUsed,
+          'duration_ms': durationMs,
+        },
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
+      );
+      if (json.isNotEmpty) return ChallengeResult.fromJson(json);
+    } catch (_) {}
 
     return ChallengeResult(
       challengeId: challengeId,

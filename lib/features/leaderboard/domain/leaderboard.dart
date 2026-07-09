@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/utils/player_display_name.dart';
+
 class LeaderboardEntry extends Equatable {
   const LeaderboardEntry({
     required this.rank,
@@ -16,6 +18,11 @@ class LeaderboardEntry extends Equatable {
   final double competitiveRating;
   final String currentLeague;
   final int currentLevel;
+
+  String get displayLabel => resolvePlayerDisplayLabel(
+        displayName: displayName,
+        userUuid: userUuid,
+      );
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
         rank: json['rank'] as int? ?? 0,
@@ -65,6 +72,11 @@ class WeeklyDailyLeaderboardEntry extends Equatable {
   final int totalHints;
   final int totalMistakes;
   final List<WeeklyDailyScoreDay> dailyScores;
+
+  String get displayLabel => resolvePlayerDisplayLabel(
+        displayName: displayName,
+        userUuid: userUuid,
+      );
 
   factory WeeklyDailyLeaderboardEntry.fromJson(Map<String, dynamic> json) =>
       WeeklyDailyLeaderboardEntry(

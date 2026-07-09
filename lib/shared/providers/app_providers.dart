@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/analytics/analytics_service.dart';
 import '../../features/auth/presentation/auth_providers.dart';
+import '../../core/network/network_providers.dart';
 import '../../features/challenge/data/challenge_repository_impl.dart';
 import '../../features/challenge/domain/challenge.dart';
 import '../../features/puzzle/data/puzzle_repository_impl.dart';
@@ -37,33 +38,45 @@ final dailyCompletionStoreProvider = Provider<DailyCompletionStore>(
 final analyticsProvider = Provider<AnalyticsService>((ref) => createAnalyticsService());
 
 final puzzleRepositoryProvider = Provider<PuzzleRepository>((ref) {
+  final apiClient = ref.watch(apiHttpClientProvider);
   return PuzzleRepositoryImpl(
-    api: PuzzleApiService(client: ref.watch(supabaseClientProvider)),
+    api: PuzzleApiService(
+      client: ref.watch(supabaseClientProvider),
+      httpClient: apiClient,
+    ),
     cache: ref.watch(offlineCacheProvider),
+    httpClient: apiClient,
   );
 });
 
 final searchRepositoryProvider = Provider<SearchRepository>((ref) {
+  final apiClient = ref.watch(apiHttpClientProvider);
   return SearchRepositoryImpl(
-    api: SearchApiService(client: ref.watch(supabaseClientProvider)),
+    api: SearchApiService(httpClient: apiClient),
     cache: ref.watch(offlineCacheProvider),
   );
 });
 
 final challengeRepositoryProvider = Provider<ChallengeRepository>((ref) {
-  return ChallengeRepositoryImpl();
+  return ChallengeRepositoryImpl(httpClient: ref.watch(apiHttpClientProvider));
 });
 
 final statsRepositoryProvider = Provider<StatsRepository>((ref) {
-  return StatsRepositoryImpl(cache: ref.watch(offlineCacheProvider));
+  return StatsRepositoryImpl(
+    cache: ref.watch(offlineCacheProvider),
+    httpClient: ref.watch(apiHttpClientProvider),
+  );
 });
 
 final economyRepositoryProvider = Provider<EconomyRepository>((ref) {
-  return EconomyRepositoryImpl(cache: ref.watch(offlineCacheProvider));
+  return EconomyRepositoryImpl(
+    cache: ref.watch(offlineCacheProvider),
+    httpClient: ref.watch(apiHttpClientProvider),
+  );
 });
 
 final socialRepositoryProvider = Provider<SocialRepository>((ref) {
-  return SocialRepositoryImpl();
+  return SocialRepositoryImpl(httpClient: ref.watch(apiHttpClientProvider));
 });
 
 final playerProgressionProvider = FutureProvider((ref) async {

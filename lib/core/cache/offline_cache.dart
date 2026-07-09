@@ -6,9 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../utils/daily_puzzle_schedule.dart';
 
-import '../constants/game_constants.dart';
-
-/// Offline-first cache for daily puzzles, stats, and recent picks.
+/// Offline-first cache for daily puzzles, stats, and session data.
 class OfflineCache {
   OfflineCache({SharedPreferences? prefs}) : _prefsOverride = prefs;
 
@@ -19,7 +17,8 @@ class OfflineCache {
   static const _keyStats = 'cache_user_stats';
   static const _keyProgression = 'cache_player_progression_v1';
   static const _keyLiveOps = 'cache_liveops_snapshot_v1';
-  static const _keyRecentPicks = 'cache_recent_picks';
+  static const _keyRecentPicks = 'cache_recent_picks_retired_v7';
+  static const _legacyRecentPicksKey = 'cache_recent_picks';
   static const _keyPendingAnswers = 'cache_pending_answers';
 
   Future<SharedPreferences> get _prefs async =>
@@ -102,21 +101,18 @@ class OfflineCache {
 
   Future<List<Map<String, dynamic>>> getRecentPicks() async {
     final prefs = await _prefs;
-    final raw = prefs.getString(_keyRecentPicks);
-    if (raw == null) return [];
-    final list = jsonDecode(raw) as List<dynamic>;
-    return list.cast<Map<String, dynamic>>();
+    await prefs.remove(_legacyRecentPicksKey);
+    return [];
   }
 
   Future<void> addRecentPick(Map<String, dynamic> player) async {
-    final picks = await getRecentPicks();
-    picks.removeWhere((p) => p['id'] == player['id']);
-    picks.insert(0, player);
-    if (picks.length > GameConstants.maxRecentPicks) {
-      picks.removeRange(GameConstants.maxRecentPicks, picks.length);
-    }
+    // Retired: competitive search no longer persists cross-session picks.
+  }
+
+  Future<void> clearRecentPicks() async {
     final prefs = await _prefs;
-    await prefs.setString(_keyRecentPicks, jsonEncode(picks));
+    await prefs.remove(_legacyRecentPicksKey);
+    await prefs.remove(_keyRecentPicks);
   }
 
   Future<void> queuePendingAnswer(Map<String, dynamic> answer) async {

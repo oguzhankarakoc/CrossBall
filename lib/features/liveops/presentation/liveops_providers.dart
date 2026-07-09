@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/network/network_providers.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/locale_provider.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -7,7 +8,10 @@ import '../data/liveops_repository_impl.dart';
 import '../domain/liveops_snapshot.dart';
 
 final liveOpsRepositoryProvider = Provider<LiveOpsRepository>((ref) {
-  return LiveOpsRepositoryImpl(cache: ref.watch(offlineCacheProvider));
+  return LiveOpsRepositoryImpl(
+    cache: ref.watch(offlineCacheProvider),
+    httpClient: ref.watch(apiHttpClientProvider),
+  );
 });
 
 final liveOpsSnapshotProvider = FutureProvider<LiveOpsSnapshot>((ref) async {

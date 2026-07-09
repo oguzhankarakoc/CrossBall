@@ -1,18 +1,12 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import '../../../core/config/app_config.dart';
 import '../../../core/cache/offline_cache.dart';
+import '../../../core/network/api_http_client.dart';
 import '../../../core/utils/string_normalizer.dart';
 import '../domain/search.dart';
 
 class SearchApiService {
-  SearchApiService({SupabaseClient? client, http.Client? httpClient})
-      : _http = httpClient ?? http.Client();
+  SearchApiService({ApiHttpClient? httpClient}) : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   Future<SearchResponse> search(
     String query, {
@@ -20,59 +14,47 @@ class SearchApiService {
     SearchContext? context,
     bool competitive = false,
   }) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final params = <String, String>{
-          'q': query,
-          'limit': limit.toString(),
-        };
-        if (!competitive && context?.rowClubId != null) {
-          params['row_club_id'] = context!.rowClubId!;
-        }
-        if (!competitive && context?.colClubId != null) {
-          params['col_club_id'] = context!.colClubId!;
-        }
+    try {
+      final params = <String, String>{
+        'q': query,
+        'limit': limit.toString(),
+      };
+      if (!competitive && context?.rowClubId != null) {
+        params['row_club_id'] = context!.rowClubId!;
+      }
+      if (!competitive && context?.colClubId != null) {
+        params['col_club_id'] = context!.colClubId!;
+      }
 
-        final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/search-players')
-            .replace(queryParameters: params);
-        final response = await _http.get(
-          uri,
-          headers: AppConfig.supabaseFunctionHeaders,
-        );
-        if (response.statusCode == 200) {
-          return SearchResponse.fromJson(
-            jsonDecode(response.body) as Map<String, dynamic>,
-          );
-        }
-      } catch (_) {}
-    }
+      final json = await _http.getJson(
+        'search-players',
+        query: params,
+        throwOnError: false,
+      );
+      if (json.isNotEmpty) return SearchResponse.fromJson(json);
+    } catch (_) {}
     return _demoSearch(query, context: context, limit: limit);
   }
 
   Future<List<Player>> getSuggested(SearchContext context, {int limit = 12}) async {
-    if (AppConfig.isSupabaseConfigured) {
-      try {
-        final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/search-players').replace(
-          queryParameters: {
-            'q': '',
-            'limit': limit.toString(),
-            'mode': 'suggested',
-            'row_club_id': context.rowClubId!,
-            'col_club_id': context.colClubId!,
-          },
-        );
-        final response = await _http.get(
-          uri,
-          headers: AppConfig.supabaseFunctionHeaders,
-        );
-        if (response.statusCode == 200) {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
-          return (body['suggested'] as List<dynamic>? ?? body['results'] as List<dynamic>? ?? [])
-              .map((e) => Player.fromJson(e as Map<String, dynamic>))
-              .toList();
-        }
-      } catch (_) {}
-    }
+    try {
+      final json = await _http.getJson(
+        'search-players',
+        query: {
+          'q': '',
+          'limit': '$limit',
+          'mode': 'suggested',
+          'row_club_id': context.rowClubId!,
+          'col_club_id': context.colClubId!,
+        },
+        throwOnError: false,
+      );
+      if (json.isNotEmpty) {
+        return (json['suggested'] as List<dynamic>? ?? json['results'] as List<dynamic>? ?? [])
+            .map((e) => Player.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } catch (_) {}
     return _demoSearch('', context: context, limit: limit).suggested;
   }
 

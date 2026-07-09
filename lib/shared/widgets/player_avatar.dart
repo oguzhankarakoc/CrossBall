@@ -2,8 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_tokens.dart';
+import '../../core/utils/country_flags.dart';
+import 'country_flag_badge.dart';
 
 /// Legal-safe procedural player silhouette — no real photos.
 class PlayerAvatar extends StatelessWidget {
@@ -47,24 +48,14 @@ class PlayerAvatar extends StatelessWidget {
           variant: hash % 5,
           skinTone: HSLColor.fromAHSL(1, (hue + 18) % 360, 0.28, 0.62).toColor(),
         ),
-        child: nationalityCode != null
+        child: nationalityCode != null && CountryFlags.hasKnownNationality(nationalityCode)
             ? Align(
                 alignment: Alignment.bottomRight,
-                child: Container(
-                  margin: const EdgeInsets.all(3),
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: AppColors.pitchDeep.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    nationalityCode!.toUpperCase(),
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.92),
-                      fontSize: size * 0.14,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.2,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: CountryFlagBadge(
+                    code: nationalityCode,
+                    size: CountryFlagSize.xs,
                   ),
                 ),
               )

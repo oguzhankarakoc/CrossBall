@@ -1,9 +1,6 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
 import '../../../core/cache/offline_cache.dart';
-import '../../../core/config/app_config.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 import '../domain/club_mastery.dart';
 import '../domain/player_mission.dart';
 import '../domain/player_progression.dart';
@@ -12,12 +9,12 @@ import '../domain/season_info.dart';
 class EconomyRepositoryImpl implements EconomyRepository {
   EconomyRepositoryImpl({
     required OfflineCache cache,
-    http.Client? httpClient,
+    ApiHttpClient? httpClient,
   })  : _cache = cache,
-        _http = httpClient ?? http.Client();
+        _http = httpClient ?? ApiHttpClient();
 
   final OfflineCache _cache;
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   @override
   Future<PlayerProgression> getProgression(String userUuid) async {
@@ -45,48 +42,32 @@ class EconomyRepositoryImpl implements EconomyRepository {
 
   @override
   Future<SeasonInfo> getSeason(String userUuid) async {
-    if (!AppConfig.isSupabaseConfigured) return const SeasonInfo(slug: '', label: '');
-
     try {
-      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/season')
-          .replace(queryParameters: {'user_uuid': userUuid});
-      final response = await _http.get(
-        uri,
-        headers: {
-          ...AppConfig.supabaseFunctionHeaders,
-          'x-user-uuid': userUuid,
-        },
+      final json = await _http.getJson(
+        'season',
+        query: {'user_uuid': userUuid},
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
       );
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        if (json['ok'] == true) return SeasonInfo.fromJson(json);
-      }
+      if (json['ok'] == true) return SeasonInfo.fromJson(json);
     } catch (_) {}
     return const SeasonInfo(slug: '', label: '');
   }
 
   @override
   Future<List<ClubMasteryEntry>> getClubMastery(String userUuid, {int limit = 12}) async {
-    if (!AppConfig.isSupabaseConfigured) return const [];
-
     try {
-      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/club-mastery')
-          .replace(queryParameters: {'user_uuid': userUuid, 'limit': '$limit'});
-      final response = await _http.get(
-        uri,
-        headers: {
-          ...AppConfig.supabaseFunctionHeaders,
-          'x-user-uuid': userUuid,
-        },
+      final json = await _http.getJson(
+        'club-mastery',
+        query: {'user_uuid': userUuid, 'limit': '$limit'},
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
       );
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        if (json['ok'] == true) {
-          final clubs = json['clubs'] as List<dynamic>? ?? [];
-          return clubs
-              .map((e) => ClubMasteryEntry.fromJson(e as Map<String, dynamic>))
-              .toList();
-        }
+      if (json['ok'] == true) {
+        final clubs = json['clubs'] as List<dynamic>? ?? [];
+        return clubs
+            .map((e) => ClubMasteryEntry.fromJson(e as Map<String, dynamic>))
+            .toList();
       }
     } catch (_) {}
     return const [];
@@ -102,24 +83,16 @@ class EconomyRepositoryImpl implements EconomyRepository {
   }
 
   Future<Map<String, dynamic>?> _fetchProfile(String userUuid) async {
-    if (!AppConfig.isSupabaseConfigured) return null;
-
     try {
-      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/economy-profile')
-          .replace(queryParameters: {'user_uuid': userUuid});
-      final response = await _http.get(
-        uri,
-        headers: {
-          ...AppConfig.supabaseFunctionHeaders,
-          'x-user-uuid': userUuid,
-        },
+      final json = await _http.getJson(
+        'economy-profile',
+        query: {'user_uuid': userUuid},
+        headers: ApiConfig.userHeaders(userUuid),
+        throwOnError: false,
       );
-      if (response.statusCode == 200) {
-        final json = jsonDecode(response.body) as Map<String, dynamic>;
-        if (json['ok'] == true) {
-          await _cache.cacheProgression(json);
-          return json;
-        }
+      if (json['ok'] == true) {
+        await _cache.cacheProgression(json);
+        return json;
       }
     } catch (_) {}
     return null;

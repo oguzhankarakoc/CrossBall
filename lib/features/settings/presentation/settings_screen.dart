@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/validation/validators.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/data/auth_remote_data_source.dart';
 import '../../auth/presentation/auth_providers.dart';
@@ -126,17 +127,15 @@ class SettingsScreen extends ConsumerWidget {
           child: TextFormField(
             controller: controller,
             autofocus: true,
-            maxLength: 20,
+            maxLength: AppValidators.nicknameMaxLength,
             decoration: InputDecoration(
               hintText: l10n.playerNicknameHint,
               helperText: l10n.playerNicknameDesc,
             ),
-            validator: (value) {
-              final trimmed = value?.trim() ?? '';
-              if (trimmed.isEmpty) return null;
-              final valid = RegExp(r'^[\p{L}\p{N}._-]{3,20}$', unicode: true).hasMatch(trimmed);
-              return valid ? null : l10n.playerNicknameInvalid;
-            },
+            validator: (value) => AppValidators.nickname(
+              value,
+              emptyError: l10n.playerNicknameInvalid,
+            ),
           ),
         ),
         actions: [

@@ -8,6 +8,7 @@ import 'features/economy/presentation/achievement_unlock_listener.dart';
 import 'core/theme/theme_resolver.dart';
 import 'features/auth/presentation/auth_providers.dart';
 import 'l10n/app_localizations.dart';
+import 'shared/components/components.dart';
 import 'shared/providers/locale_provider.dart';
 import 'shared/providers/theme_mode_provider.dart';
 import 'shared/widgets/crossball_ui.dart';
@@ -60,12 +61,17 @@ class CrossBallApp extends ConsumerWidget {
         localizationsDelegates: _localizationDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         localeListResolutionCallback: localeListResolutionCallback,
-        home: Scaffold(
-          body: PitchBackground(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text('Failed to initialize: $error'),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: AppScreenBody(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: AppErrorState(
+                    error: error,
+                    onRetry: () => ref.invalidate(onboardingCompleteProvider),
+                  ),
+                ),
               ),
             ),
           ),
@@ -100,17 +106,17 @@ class _BootScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.cb;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      body: PitchBackground(
+      body: AppScreenBody(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const CrossBallLogo(size: 100),
               const SizedBox(height: 24),
-              CircularProgressIndicator(color: colors.accent),
+              AppLoading(message: l10n.bootLoading),
             ],
           ),
         ),
