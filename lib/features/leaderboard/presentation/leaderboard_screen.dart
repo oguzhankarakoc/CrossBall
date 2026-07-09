@@ -5,14 +5,16 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/components/components.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../auth/presentation/auth_providers.dart';
+import '../../../core/network/network_providers.dart';
 import '../data/leaderboard_repository_impl.dart';
 import '../domain/leaderboard.dart';
 
 final leaderboardRepositoryProvider = Provider<LeaderboardRepository>((ref) {
-  return LeaderboardRepositoryImpl();
+  return LeaderboardRepositoryImpl(httpClient: ref.watch(apiHttpClientProvider));
 });
 
 final leaderboardProvider = FutureProvider.family<List<LeaderboardEntry>, String?>(
@@ -68,7 +70,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           ],
         ),
       ),
-      body: PitchBackground(
+      body: AppScreenBody(
+        bottom: false,
         child: TabBarView(
           controller: _tabController,
           children: [
@@ -92,7 +95,7 @@ class _WeeklyDailyLeaderboardTab extends ConsumerWidget {
     final profile = ref.watch(userProfileProvider).valueOrNull;
 
     return snapshotAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const AppListSkeleton(),
       error: (_, __) => Center(
         child: CrossBallErrorPanel(
           message: l10n.errorGeneric,
@@ -220,7 +223,7 @@ class _WeeklyLeaderboardCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      entry.displayName,
+                      entry.displayLabel,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             fontWeight: isMe || highlight ? FontWeight.w900 : FontWeight.w600,
                           ),
@@ -307,7 +310,7 @@ class _RatingLeaderboardTab extends ConsumerWidget {
     final entriesAsync = ref.watch(leaderboardProvider(league));
 
     return entriesAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => const AppListSkeleton(),
       error: (_, __) => Center(
         child: CrossBallErrorPanel(
           message: l10n.errorGeneric,
@@ -336,7 +339,7 @@ class _RatingLeaderboardTab extends ConsumerWidget {
             final isMe = entry.userUuid == profile?.userUuid;
 
             return Semantics(
-              label: '${entry.displayName}, ${entry.competitiveRating.toStringAsFixed(0)}',
+              label: '${entry.displayLabel}, ${entry.competitiveRating.toStringAsFixed(0)}',
               child: CrossBallGlassPanel(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.lg,
@@ -359,7 +362,7 @@ class _RatingLeaderboardTab extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            entry.displayName,
+                            entry.displayLabel,
                             style: Theme.of(context).textTheme.titleSmall?.copyWith(
                                   fontWeight: isMe ? FontWeight.w900 : FontWeight.w600,
                                 ),

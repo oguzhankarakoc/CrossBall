@@ -1,25 +1,23 @@
-import 'dart:convert';
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
 import '../cache/offline_cache.dart';
-import '../config/app_config.dart';
+import '../network/api_config.dart';
+import '../network/api_http_client.dart';
 
 /// Flushes offline queues when connectivity returns.
 class OfflineSyncService {
   OfflineSyncService({
     required OfflineCache cache,
     Connectivity? connectivity,
-    http.Client? httpClient,
+    ApiHttpClient? httpClient,
   })  : _cache = cache,
         _connectivity = connectivity ?? Connectivity(),
-        _http = httpClient ?? http.Client();
+        _http = httpClient ?? ApiHttpClient();
 
   final OfflineCache _cache;
   final Connectivity _connectivity;
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   void startListening() {
     _connectivity.onConnectivityChanged.listen((results) {
@@ -32,25 +30,22 @@ class OfflineSyncService {
   }
 
   Future<void> flushPendingSessions() async {
-    if (!AppConfig.isSupabaseConfigured) return;
+    if (!ApiConfig.isConfigured) return;
 
     final pending = await _cache.flushPendingAnswers();
     if (pending.isEmpty) return;
 
     for (final session in pending) {
       try {
-        final response = await _http.post(
-          Uri.parse('${AppConfig.supabaseUrl}/functions/v1/complete-session'),
-          headers: {
-            ...AppConfig.supabaseFunctionHeaders,
-            if (session['user_uuid'] is String)
-              'x-user-uuid': session['user_uuid'] as String,
-          },
-          body: jsonEncode(session),
+        final userUuid = session['user_uuid'] as String?;
+        final json = await _http.postJson(
+          'complete-session',
+          body: Map<String, dynamic>.from(session),
+          headers: userUuid != null ? ApiConfig.userHeaders(userUuid) : null,
+          throwOnError: false,
         );
-        if (response.statusCode == 200) {
-          final body = jsonDecode(response.body) as Map<String, dynamic>;
-          final economy = body['economy'] as Map<String, dynamic>?;
+        if (json.isNotEmpty) {
+          final economy = json['economy'] as Map<String, dynamic>?;
           final progression = economy?['progression'] as Map<String, dynamic>?;
           if (progression != null) {
             await _cache.cacheProgression(progression);

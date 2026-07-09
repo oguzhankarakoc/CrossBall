@@ -5,7 +5,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/player_display_name.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
-import '../../../shared/widgets/crossball_error_panel.dart';
+import '../../../shared/components/components.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
 class TournamentScreen extends ConsumerWidget {
@@ -20,12 +20,13 @@ class TournamentScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.tournament),
-      body: PitchBackground(
+      body: AppScreenBody(
+        bottom: false,
         child: tournamentAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => Center(
-            child: CrossBallErrorPanel(
-              message: localizedErrorMessage(l10n, 'unknown_error'),
+          loading: () => const AppListSkeleton(),
+          error: (error, _) => Center(
+            child: AppErrorState(
+              error: error,
               onRetry: () => ref.invalidate(tournamentSnapshotProvider),
             ),
           ),

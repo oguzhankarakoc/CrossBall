@@ -381,6 +381,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get hintChipClub => 'Verein';
 
   @override
+  String get hintValueUnknown => 'Unbekannt';
+
+  @override
+  String get hintStatusActive => 'Aktiv';
+
+  @override
+  String get hintStatusRetired => 'Im Ruhestand';
+
+  @override
   String get hintLimitReached =>
       'Alle Hinweise für dieses Feld sind bereits aufgedeckt.';
 
@@ -597,6 +606,34 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get errorNetwork => 'Netzwerkfehler. Verbindung prüfen.';
+
+  @override
+  String get errorOffline =>
+      'Du bist offline. Verbindung prüfen und erneut versuchen.';
+
+  @override
+  String get errorTimeout =>
+      'Die Anfrage hat zu lange gedauert. Bitte erneut versuchen.';
+
+  @override
+  String get errorServer =>
+      'Unsere Server haben Probleme. Bitte später erneut versuchen.';
+
+  @override
+  String get errorAuth => 'Deine Sitzung ist abgelaufen. App neu starten.';
+
+  @override
+  String get errorValidation => 'Bitte Eingabe prüfen und erneut versuchen.';
+
+  @override
+  String get errorNotFound => 'Inhalt nicht gefunden.';
+
+  @override
+  String get bootLoading => 'CrossBall wird geladen…';
+
+  @override
+  String get bootFailed =>
+      'CrossBall konnte nicht starten. Bitte erneut versuchen.';
 
   @override
   String get themeDarkGold => 'Gold-Stadion';

@@ -31,13 +31,15 @@ void main() {
       expect(retrieved!['puzzle_id'], 'test-123');
     });
 
-    test('recent picks maintain order and limit', () async {
-      for (var i = 0; i < 15; i++) {
-        await cache.addRecentPick({'id': 'p$i', 'name': 'Player $i'});
-      }
-      final picks = await cache.getRecentPicks();
-      expect(picks.length, lessThanOrEqualTo(10));
-      expect(picks.first['id'], 'p14');
+    test('recent picks are retired and legacy cache is cleared', () async {
+      SharedPreferences.setMockInitialValues({
+        'cache_recent_picks': '[{"id":"p1","name":"Player 1"}]',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final legacyCache = OfflineCache(prefs: prefs);
+      final picks = await legacyCache.getRecentPicks();
+      expect(picks, isEmpty);
+      expect(prefs.getString('cache_recent_picks'), isNull);
     });
 
     test('pending answers queue and flush', () async {

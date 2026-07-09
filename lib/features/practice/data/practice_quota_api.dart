@@ -1,51 +1,29 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../../../core/config/app_config.dart';
 import '../../../core/debug/crossball_debug_log.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 
 class PracticeQuotaApi {
-  PracticeQuotaApi({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  PracticeQuotaApi({ApiHttpClient? httpClient}) : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   Future<Map<String, dynamic>> fetchQuota(String userUuid) async {
-    final uri = Uri.parse(
-      '${AppConfig.supabaseUrl}/functions/v1/practice-quota?user_uuid=$userUuid',
+    cbDebug('Practice', 'fetchQuota GET', 'practice-quota');
+    final json = await _http.getJson(
+      'practice-quota',
+      query: {'user_uuid': userUuid},
+      headers: ApiConfig.userHeaders(userUuid),
     );
-    cbDebug('Practice', 'fetchQuota GET', uri.toString());
-    final response = await _http.get(uri, headers: _headers(userUuid));
-    cbDebug('Practice', 'fetchQuota response', {
-      'status': response.statusCode,
-      'bodyPreview': response.body.length > 200
-          ? '${response.body.substring(0, 200)}…'
-          : response.body,
-    });
-    return _parseResponse(response);
+    cbDebug('Practice', 'fetchQuota OK', json);
+    return json;
   }
 
   Future<Map<String, dynamic>> grantAdUnlock(String userUuid) async {
-    final response = await _http.post(
-      Uri.parse('${AppConfig.supabaseUrl}/functions/v1/practice-quota'),
-      headers: _headers(userUuid),
-      body: jsonEncode({'action': 'grant_ad_unlock'}),
+    return _http.postJson(
+      'practice-quota',
+      body: {'action': 'grant_ad_unlock'},
+      headers: ApiConfig.userHeaders(userUuid),
     );
-    return _parseResponse(response);
-  }
-
-  Map<String, String> _headers(String userUuid) => {
-        ...AppConfig.supabaseFunctionHeaders,
-        'x-user-uuid': userUuid,
-      };
-
-  Map<String, dynamic> _parseResponse(http.Response response) {
-    final body = jsonDecode(response.body);
-    if (response.statusCode >= 200 && response.statusCode < 300) {
-      return body as Map<String, dynamic>;
-    }
-    final message = body is Map ? (body['error'] as String? ?? 'quota_error') : 'quota_error';
-    throw PracticeQuotaException(message, response.statusCode);
   }
 }
 

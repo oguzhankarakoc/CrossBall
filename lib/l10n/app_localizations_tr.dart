@@ -381,6 +381,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get hintChipClub => 'Kulüp';
 
   @override
+  String get hintValueUnknown => 'Bilinmiyor';
+
+  @override
+  String get hintStatusActive => 'Aktif';
+
+  @override
+  String get hintStatusRetired => 'Emekli';
+
+  @override
   String get hintLimitReached => 'Bu hücre için tüm ipuçları açıldı.';
 
   @override
@@ -592,6 +601,33 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get errorNetwork => 'Ağ hatası. Bağlantını kontrol et.';
+
+  @override
+  String get errorOffline =>
+      'Çevrimdışısın. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get errorTimeout => 'İstek zaman aşımına uğradı. Tekrar dene.';
+
+  @override
+  String get errorServer =>
+      'Sunucularımızda sorun var. Kısa süre sonra tekrar dene.';
+
+  @override
+  String get errorAuth =>
+      'Oturumun sona erdi. Devam etmek için uygulamayı yeniden başlat.';
+
+  @override
+  String get errorValidation => 'Girdiğini kontrol edip tekrar dene.';
+
+  @override
+  String get errorNotFound => 'Aradığın içerik bulunamadı.';
+
+  @override
+  String get bootLoading => 'CrossBall yükleniyor…';
+
+  @override
+  String get bootFailed => 'CrossBall başlatılamadı. Lütfen tekrar dene.';
 
   @override
   String get themeDarkGold => 'Altın Stadyum';

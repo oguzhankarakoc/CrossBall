@@ -13,6 +13,7 @@ import '../../../../shared/providers/app_providers.dart';
 import '../../../../shared/widgets/crossball_ui.dart';
 import '../../../../shared/widgets/club_identity/club_identity_widgets.dart';
 import '../../../../shared/widgets/player_search_card.dart';
+import '../widgets/hint_reveal_chip.dart';
 import '../../domain/puzzle.dart';
 import '../../domain/puzzle_fetch_exception.dart';
 import '../puzzle_providers.dart';
@@ -44,9 +45,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
   final _focusNode = FocusNode();
   Timer? _debounce;
   List<Player> _results = [];
-  List<Player> _recentPicks = [];
   bool _loading = false;
-  bool _browseLoading = true;
   bool _hintLoading = false;
   String? _hintErrorKey;
 
@@ -71,7 +70,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     super.initState();
     _focusNode.requestFocus();
     _controller.addListener(_onQueryChanged);
-    _loadBrowseData();
   }
 
   @override
@@ -79,17 +77,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.cellKey != widget.cellKey) {
       _hintErrorKey = null;
-    }
-  }
-
-  Future<void> _loadBrowseData() async {
-    final repo = ref.read(searchRepositoryProvider);
-    final recent = await repo.getRecentPicks();
-    if (mounted) {
-      setState(() {
-        _recentPicks = recent;
-        _browseLoading = false;
-      });
     }
   }
 
@@ -270,42 +257,22 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                   if (hints.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                      child: Wrap(
-                        spacing: AppSpacing.sm,
-                        runSpacing: AppSpacing.sm,
-                        children: hints
-                            .map(
-                              (hint) => Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.sm + 2,
-                                  vertical: AppSpacing.xs,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: colors.primary.withValues(alpha: 0.15),
-                                  borderRadius: AppRadius.pillBorder,
-                                  border: Border.all(color: colors.primary.withValues(alpha: 0.3)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _hintIcon(hint.hintType),
-                                      size: 14,
-                                      color: colors.primary,
-                                    ),
-                                    const SizedBox(width: AppSpacing.xs),
-                                    Text(
-                                      '${_hintChipShortLabel(hint.hintType, l10n)}: ${hint.hintValue}',
-                                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                            color: colors.primary,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final chipMaxWidth = constraints.maxWidth;
+                          return Wrap(
+                            spacing: AppSpacing.sm,
+                            runSpacing: AppSpacing.sm,
+                            children: hints
+                                .map(
+                                  (hint) => HintRevealChip(
+                                    hint: hint,
+                                    maxWidth: chipMaxWidth,
+                                  ),
+                                )
+                                .toList(),
+                          );
+                        },
                       ),
                     ),
                   if (_hintErrorKey != null)
@@ -399,72 +366,40 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                         bottom: AppSpacing.xl,
                       ),
                       children: [
-                        if (!hasQuery) ...[
-                          if (_browseLoading)
-                            const Padding(
-                              padding: EdgeInsets.all(AppSpacing.xl),
-                              child: Center(child: CircularProgressIndicator()),
-                            )
-                          else ...[
-                            if (_recentPicks.isNotEmpty) ...[
-                              Padding(
-                                padding: const EdgeInsets.fromLTRB(
-                                  AppSpacing.lg,
-                                  AppSpacing.sm,
-                                  AppSpacing.lg,
-                                  AppSpacing.xs,
+                        if (!hasQuery)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.xl,
+                              vertical: AppSpacing.xxl,
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.sports_soccer_rounded,
+                                  size: 56,
+                                  color: colors.textSecondary.withValues(alpha: 0.35),
                                 ),
-                                child: Text(
-                                  l10n.recentPicks,
-                                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                        fontWeight: FontWeight.w700,
+                                const SizedBox(height: AppSpacing.lg),
+                                Text(
+                                  l10n.searchCompetitiveEmpty,
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        color: colors.textSecondary,
                                       ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                              ..._recentPicks.map(
-                                (player) => PlayerSearchCard(
-                                  player: player,
-                                  highlightClubs: _highlightClubs,
-                                  onTap: () => Navigator.pop(context, player),
+                                const SizedBox(height: AppSpacing.sm),
+                                Text(
+                                  '${widget.rowClub.shortLabel} × ${widget.colClub.shortLabel}',
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        color: colors.lime,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.5,
+                                      ),
+                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                            ],
-                            if (_recentPicks.isEmpty)
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.xl,
-                                  vertical: AppSpacing.xxl,
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.sports_soccer_rounded,
-                                      size: 56,
-                                      color: colors.textSecondary.withValues(alpha: 0.35),
-                                    ),
-                                    const SizedBox(height: AppSpacing.lg),
-                                    Text(
-                                      l10n.searchCompetitiveEmpty,
-                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                            color: colors.textSecondary,
-                                          ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                    const SizedBox(height: AppSpacing.sm),
-                                    Text(
-                                      '${widget.rowClub.shortLabel} × ${widget.colClub.shortLabel}',
-                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                            color: colors.lime,
-                                            fontWeight: FontWeight.w700,
-                                            letterSpacing: 0.5,
-                                          ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ],
+                              ],
+                            ),
+                          ),
                         if (hasQuery)
                           ..._results.asMap().entries.map(
                                 (entry) => PlayerSearchCard(
@@ -496,24 +431,6 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
       },
     );
   }
-
-  IconData _hintIcon(HintType type) => switch (type) {
-        HintType.nationality => Icons.flag_outlined,
-        HintType.position => Icons.sports_soccer_outlined,
-        HintType.firstLetter => Icons.abc_outlined,
-        HintType.careerLeague => Icons.emoji_events_outlined,
-        HintType.retiredStatus => Icons.schedule_outlined,
-        HintType.careerClub => Icons.shield_outlined,
-      };
-
-  String _hintChipShortLabel(HintType type, AppLocalizations l10n) => switch (type) {
-        HintType.nationality => l10n.hintChipNationality,
-        HintType.position => l10n.hintChipPosition,
-        HintType.firstLetter => l10n.hintChipFirstLetter,
-        HintType.careerLeague => l10n.league,
-        HintType.retiredStatus => l10n.hintChipStatus,
-        HintType.careerClub => l10n.hintChipClub,
-      };
 
   String _hintErrorMessage(String errorKey, AppLocalizations l10n) => switch (errorKey) {
         'ad_token_required' || 'invalid_ad_token' => l10n.hintAdRequired,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/responsive/app_breakpoints.dart';
 import '../../../core/routing/app_routes.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
@@ -99,7 +100,9 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             children: [
               Expanded(
-                child: ListView(
+                child: ResponsiveContent(
+                  padding: EdgeInsets.zero,
+                  child: ListView(
                   padding: const EdgeInsets.fromLTRB(
                     AppSpacing.containerMargin,
                     AppSpacing.sm,
@@ -254,6 +257,7 @@ class HomeScreen extends ConsumerWidget {
                         ),
                     ],
                   ],
+                ),
                 ),
               ),
             ],

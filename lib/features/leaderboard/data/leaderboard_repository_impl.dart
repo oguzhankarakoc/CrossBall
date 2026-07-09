@@ -1,32 +1,20 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../../../core/config/app_config.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 import '../domain/leaderboard.dart';
 
 class LeaderboardRepositoryImpl implements LeaderboardRepository {
-  LeaderboardRepositoryImpl({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  LeaderboardRepositoryImpl({ApiHttpClient? httpClient})
+      : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
-
-  Map<String, String> get _headers => AppConfig.supabaseFunctionHeaders;
+  final ApiHttpClient _http;
 
   @override
   Future<List<LeaderboardEntry>> getLeaderboard({String? league, int limit = 50}) async {
-    if (!AppConfig.isSupabaseConfigured) return const [];
-
     try {
       final params = <String, String>{'limit': '$limit', 'type': 'rating'};
       if (league != null && league.isNotEmpty) params['league'] = league;
 
-      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/leaderboard')
-          .replace(queryParameters: params);
-      final response = await _http.get(uri, headers: _headers);
-
-      if (response.statusCode != 200) return const [];
-
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final json = await _http.getJson('leaderboard', query: params, throwOnError: false);
       if (json['ok'] != true) return const [];
 
       final entries = json['entries'] as List<dynamic>? ?? [];
@@ -43,28 +31,21 @@ class LeaderboardRepositoryImpl implements LeaderboardRepository {
     String? userUuid,
     int limit = 50,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return null;
-
     try {
       final params = <String, String>{'limit': '$limit', 'type': 'weekly_daily'};
+      final headers = <String, String>{};
       if (userUuid != null && userUuid.isNotEmpty) {
         params['user_uuid'] = userUuid;
+        headers.addAll(ApiConfig.userHeaders(userUuid));
       }
 
-      final headers = Map<String, String>.from(_headers);
-      if (userUuid != null && userUuid.isNotEmpty) {
-        headers['x-user-uuid'] = userUuid;
-      }
-
-      final uri = Uri.parse('${AppConfig.supabaseUrl}/functions/v1/leaderboard')
-          .replace(queryParameters: params);
-      final response = await _http.get(uri, headers: headers);
-
-      if (response.statusCode != 200) return null;
-
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final json = await _http.getJson(
+        'leaderboard',
+        query: params,
+        headers: headers.isEmpty ? null : headers,
+        throwOnError: false,
+      );
       if (json['ok'] != true) return null;
-
       return WeeklyDailyLeaderboardSnapshot.fromJson(json);
     } catch (_) {
       return null;

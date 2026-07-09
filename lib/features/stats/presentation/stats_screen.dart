@@ -14,6 +14,7 @@ import '../../../features/economy/presentation/club_mastery_section.dart';
 import '../../../features/premium/premium_service.dart';
 import '../domain/stats.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/components/components.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
@@ -31,12 +32,13 @@ class StatsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.stats),
-      body: PitchBackground(
+      body: AppScreenBody(
+        bottom: false,
         child: Column(
           children: [
             Expanded(
               child: statsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const AppStatsSkeleton(),
                 error: (e, _) => Center(
                   child: CrossBallErrorPanel(
                     message: localizedErrorMessage(l10n, 'unknown_error'),

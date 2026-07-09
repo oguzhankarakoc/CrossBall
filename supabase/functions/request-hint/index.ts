@@ -195,9 +195,12 @@ Deno.serve(async (req) => {
         hintValue = sample.primary_position ?? 'Unknown'
         break
       case 'first_letter': {
-        const first = sample.name.trim()[0]?.toUpperCase() ?? '?'
-        const length = sample.name.replace(/[^a-zA-Z]/g, '').length
-        hintValue = `${first}${' _'.repeat(Math.max(length - 1, 3))}`.trim()
+        const name = sample.name.trim()
+        const first = name[0]?.toUpperCase() ?? '?'
+        const normalized = name.normalize('NFD').replace(/\p{M}/gu, '')
+        const length = normalized.replace(/[^a-zA-Z]/g, '').length
+        const slots = Math.min(Math.max(length - 1, 3), 8)
+        hintValue = `${first}${' _'.repeat(slots)}`.trim()
         break
       }
       case 'career_league': {

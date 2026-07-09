@@ -1,13 +1,10 @@
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
-import '../../core/config/app_config.dart';
+import '../../../core/network/api_config.dart';
+import '../../../core/network/api_http_client.dart';
 
 class PushTokenApi {
-  PushTokenApi({http.Client? httpClient}) : _http = httpClient ?? http.Client();
+  PushTokenApi({ApiHttpClient? httpClient}) : _http = httpClient ?? ApiHttpClient();
 
-  final http.Client _http;
+  final ApiHttpClient _http;
 
   Future<void> registerToken({
     required String userUuid,
@@ -17,30 +14,18 @@ class PushTokenApi {
     bool? pushOptIn,
     String? appVersion,
   }) async {
-    if (!AppConfig.isSupabaseConfigured) return;
-
-    final response = await _http.post(
-      Uri.parse('${AppConfig.supabaseUrl}/functions/v1/register-push-token'),
-      headers: {
-        ...AppConfig.supabaseFunctionHeaders,
-        'x-user-uuid': userUuid,
-      },
-      body: jsonEncode({
+    await _http.postJson(
+      'register-push-token',
+      body: {
         'user_uuid': userUuid,
         'token': token,
         'platform': platform,
-        'locale': ?locale,
-        'push_opt_in': ?pushOptIn,
-        'app_version': ?appVersion,
-      }),
+        if (locale != null) 'locale': locale,
+        if (pushOptIn != null) 'push_opt_in': pushOptIn,
+        if (appVersion != null) 'app_version': appVersion,
+      },
+      headers: ApiConfig.userHeaders(userUuid),
     );
-
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final body = jsonDecode(response.body);
-      final message =
-          body is Map ? (body['error'] as String? ?? 'push_register_failed') : 'push_register_failed';
-      throw PushTokenException(message, response.statusCode);
-    }
   }
 }
 
