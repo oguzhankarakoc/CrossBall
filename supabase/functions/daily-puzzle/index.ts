@@ -110,6 +110,15 @@ async function getRolloutStatus(
   return (data ?? {}) as RolloutStatus
 }
 
+async function peekRolloutStatus(
+  supabase: ReturnType<typeof createClient>,
+  today: string,
+): Promise<RolloutStatus> {
+  const { data, error } = await supabase.rpc('peek_daily_puzzle_rollout', { p_date: today })
+  if (error) throw error
+  return (data ?? {}) as RolloutStatus
+}
+
 function inProgressPayload(rollout: RolloutStatus, today: string) {
   return {
     code: 'generation_in_progress',
@@ -303,19 +312,6 @@ Deno.serve(async (req) => {
     const today = new Date().toISOString().split('T')[0]
 
     const existingId = await fetchExistingDailyId(supabase, today)
-    if (existingId) {
-      await markRolloutComplete(supabase, today, existingId)
-      if (statusOnly) {
-        return jsonResponse({
-          puzzle_date: today,
-          status: 'ready',
-          puzzle_id: existingId,
-          retry_after: 0,
-        })
-      }
-    }
-
-    const rollout = await getRolloutStatus(supabase, today)
 
     if (statusOnly) {
       if (existingId) {
@@ -326,6 +322,7 @@ Deno.serve(async (req) => {
           retry_after: 0,
         })
       }
+      const rollout = await peekRolloutStatus(supabase, today)
       if (shouldBlockGeneration(rollout, today)) {
         return jsonResponse(inProgressPayload(rollout, today), 503)
       }
@@ -338,7 +335,19 @@ Deno.serve(async (req) => {
         started_at: rollout.started_at ?? null,
         elapsed_seconds: rollout.elapsed_seconds ?? 0,
         retry_after: rollout.retry_after ?? 30,
+        error_message: rollout.error_message ?? null,
       })
+    }
+
+    if (existingId) {
+      await markRolloutComplete(supabase, today, existingId)
+      const { data: puzzle, error } = await supabase
+        .from('puzzles')
+        .select(PUZZLE_SELECT)
+        .eq('id', existingId)
+        .single()
+      if (error) throw error
+      return jsonResponse(formatPuzzleResponse(puzzle as Record<String, unknown>))
     }
 
     let difficultyTier = 'medium'
