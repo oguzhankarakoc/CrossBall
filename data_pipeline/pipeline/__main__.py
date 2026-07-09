@@ -195,7 +195,9 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[b
     conn = get_connection()
     try:
         slug_to_id = upsert_clubs(conn, clubs)
+        print(f'  Upserted {len(slug_to_id)} clubs', flush=True)
         remap_career_club_ids(players, clubs, slug_to_id)
+        print(f'  Upserting {len(players)} players...', flush=True)
         upsert_players(conn, players)
         if light:
             print('  Skipped dedupe + graph refresh (weekly ETL rebuilds the graph).')
@@ -241,6 +243,57 @@ def cmd_sync_api_football(
 
     if load_db:
         cmd_apply_patches(DEFAULT_PATCHES_PATH, clubs_path)
+
+
+def cmd_daily_rollout_fail() -> None:
+    """Mark today's rollout as failed (CI recovery / timeout handler)."""
+    message = os.environ.get('ROLLOUT_FAIL_MESSAGE', 'Scheduled sync failed or timed out')[:500]
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT public.fail_daily_puzzle_rollout(CURRENT_DATE, %s, %s)",
+                (message, 'pipeline'),
+            )
+            row = cur.fetchone()
+        conn.commit()
+        print(f'  Daily rollout marked failed: {row[0] if row else "ok"}')
+    finally:
+        conn.close()
+
+
+def cmd_daily_sync_gate() -> None:
+    """Print SKIP when today's sync already succeeded; otherwise PROCEED."""
+    conn = get_connection()
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT status FROM public.daily_puzzle_rollout
+                WHERE puzzle_date = CURRENT_DATE
+                """
+            )
+            rollout = cur.fetchone()
+            if rollout and rollout[0] == 'ready':
+                print('SKIP')
+                return
+
+            cur.execute(
+                """
+                SELECT 1 FROM public.puzzles
+                WHERE puzzle_date = CURRENT_DATE
+                  AND mode = 'daily'
+                  AND grid_size = 3
+                  AND is_published = TRUE
+                LIMIT 1
+                """
+            )
+            if cur.fetchone():
+                print('SKIP')
+                return
+    finally:
+        conn.close()
+    print('PROCEED')
 
 
 def cmd_daily_rollout_begin() -> None:
@@ -440,6 +493,14 @@ def main():
     af_parser.add_argument('--no-cache', action='store_true', help='Ignore cached API responses')
 
     sub.add_parser('daily-rollout-begin', help='Mark today\'s daily puzzle rollout as generating')
+    sub.add_parser(
+        'daily-rollout-fail',
+        help='Mark today\'s daily puzzle rollout as failed (CI recovery)',
+    )
+    sub.add_parser(
+        'daily-sync-gate',
+        help='Print SKIP when today\'s sync is done, else PROCEED',
+    )
     sub.add_parser('ensure-daily', help='Ensure today\'s global daily puzzle exists in PostgreSQL')
 
     gap_parser = sub.add_parser(
@@ -510,6 +571,10 @@ def main():
         )
     elif args.command == 'daily-rollout-begin':
         cmd_daily_rollout_begin()
+    elif args.command == 'daily-rollout-fail':
+        cmd_daily_rollout_fail()
+    elif args.command == 'daily-sync-gate':
+        cmd_daily_sync_gate()
     elif args.command == 'ensure-daily':
         cmd_ensure_daily()
     elif args.command == 'career-gap-report':

@@ -143,7 +143,8 @@ def sync_transfers_to_career_rows(
         'remaining_daily': None,
     }
 
-    for _club_name, team_id in items:
+    for idx, (club_name, team_id) in enumerate(items, start=1):
+        print(f'  API team {idx}/{len(items)}: {club_name} (id={team_id})', flush=True)
         before = client.requests_made
         try:
             response_items = client.transfers_for_team(team_id, use_cache=use_cache)

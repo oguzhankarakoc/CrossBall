@@ -22,6 +22,10 @@ jobs:
           flutter-version: '3.38.9'
       - name: Create stub .env for analyze (real secrets stay local / GitHub Secrets)
         run: cp .env.example .env
+      - name: Prepare Flutter build directory
+        run: |
+          if [ -L build ] || [ -e build ]; then rm -rf build; fi
+          mkdir -p build
       - run: flutter pub get
       - run: flutter gen-l10n
       - run: flutter analyze --no-fatal-infos

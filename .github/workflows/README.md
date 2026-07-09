@@ -35,12 +35,13 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 
 | | |
 |--|--|
-| **Schedule** | Every day **00:00 UTC** (03:00 Istanbul / TRT) |
+| **Schedule** | **23:30 UTC** (early) + **00:00 UTC** (fallback). GitHub may delay either run; the gate skips if today is already `ready`. |
 | **Manual** | Actions → Data Sync (Daily) → Run workflow |
-| **Script** | `./scripts/run_scheduled_sync.sh` |
-| **Steps** | Pending SQL migrations (001–039, idempotent) → API-Football transfers (30 teams, rotating offset) → **light** patch load → `ensure_daily_puzzle` |
+| **Script** | `./scripts/run_scheduled_sync.sh [phase]` — phases: `gate`, `rollout-begin`, `sync-fetch`, `sync-load`, `ensure-daily`, `all` |
+| **Steps** | Gate → migrations → rollout begin → API fetch (40m) → patch load (35m) → `ensure_daily_puzzle` (30m) |
+| **Recovery** | On any failure after gate, `daily-rollout-fail` marks rollout `failed` (retryable next run) |
 | **API cost** | ~30 requests/day (free tier: 100/day) |
-| **Timeout** | 90 min (light load skips dedupe + graph refresh; weekly ETL rebuilds graph) |
+| **Timeout** | Job 120 min; per-step limits above (light load skips dedupe + graph refresh) |
 
 ### Data ETL (Weekly) — `data-etl-weekly.yml`
 
@@ -105,7 +106,10 @@ Requires `data_pipeline/.env` on the machine. Mac must stay on at scheduled time
 | Issue | Cause | Fix |
 |-------|-------|-----|
 | Workflow fails: missing secret | Secrets not configured | Add `DATABASE_URL` + `API_FOOTBALL_KEY` |
-| Job cancelled after 45–90 min | Full dedupe + graph refresh on large DB | Daily job uses `PATCH_LOAD_LIGHT=1` (default); run weekly ETL for full rebuild |
+| Job cancelled after 45–90 min | Sync or patch load hung | Daily job splits steps with 40/35/30 min limits; check logs for last `API team N/M` line |
+| Rollout stuck on `generating` | Prior run timed out | Failure step calls `daily-rollout-fail`; re-run workflow or wait for next cron |
+| Scheduled run starts hours late | GitHub Actions queue delay | Normal; early cron at 23:30 UTC + 00:00 fallback; gate prevents duplicate work |
+| CI `flutter pub get` / `build` error | Committed `build` symlink to `/tmp/...` | CI removes symlink and creates `build/`; do not commit local `build` |
 | DB deadlock | Two syncs at once (local + Actions) | Run only one sync at a time |
 | API quota exceeded | >100 requests/day | Wait 24h; cache reduces repeat calls |
 | Daily puzzle unchanged | `ensure_daily_puzzle` already ran today | Expected — one puzzle per UTC date |

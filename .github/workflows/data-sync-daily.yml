@@ -2,7 +2,9 @@ name: Data Sync (Daily)
 
 on:
   schedule:
-    # 00:00 UTC daily — new global puzzle + transfer sync batch
+    # Early attempt before UTC midnight (GitHub schedule can lag hours behind cron).
+    - cron: '30 23 * * *'
+    # Fallback window at UTC midnight.
     - cron: '0 0 * * *'
   workflow_dispatch:
 
@@ -16,11 +18,12 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     env:
       PATCH_LOAD_LIGHT: '1'
       ENSURE_DAILY_TIER: medium
       DB_STATEMENT_TIMEOUT: 30min
+      USE_SYSTEM_PYTHON: '1'
     steps:
       - uses: actions/checkout@v5
 
@@ -49,14 +52,53 @@ jobs:
           test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
+      - name: Gate — skip if today's sync already completed
+        id: gate
+        run: |
+          chmod +x scripts/run_scheduled_sync.sh
+          RESULT="$(./scripts/run_scheduled_sync.sh gate)"
+          echo "$RESULT"
+          if [ "$RESULT" = "SKIP" ]; then
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Apply pending database migrations
+        if: steps.gate.outputs.proceed == 'true'
         run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh
 
-      - name: Run scheduled API-Football sync
-        run: chmod +x scripts/run_scheduled_sync.sh && ./scripts/run_scheduled_sync.sh
+      - name: Begin daily puzzle rollout
+        if: steps.gate.outputs.proceed == 'true'
+        timeout-minutes: 5
+        run: ./scripts/run_scheduled_sync.sh rollout-begin
+
+      - name: Fetch API-Football transfers
+        if: steps.gate.outputs.proceed == 'true'
+        timeout-minutes: 40
+        run: ./scripts/run_scheduled_sync.sh sync-fetch
+
+      - name: Apply career patches (light load)
+        if: steps.gate.outputs.proceed == 'true'
+        timeout-minutes: 35
+        run: ./scripts/run_scheduled_sync.sh sync-load
+
+      - name: Ensure today's daily puzzle
+        if: steps.gate.outputs.proceed == 'true'
+        timeout-minutes: 30
+        run: ./scripts/run_scheduled_sync.sh ensure-daily
+
+      - name: Recover rollout on failure
+        if: failure() && steps.gate.outputs.proceed == 'true'
+        env:
+          ROLLOUT_FAIL_MESSAGE: Daily sync step failed or timed out in GitHub Actions
+        run: |
+          cd data_pipeline
+          python -m pipeline daily-rollout-fail
 
       - name: Summary
         if: always()
         run: |
           echo "Daily sync finished at $(date -u)"
+          echo "gate_proceed=${{ steps.gate.outputs.proceed }}"
           echo "PATCH_LOAD_LIGHT=$PATCH_LOAD_LIGHT ENSURE_DAILY_TIER=$ENSURE_DAILY_TIER"
