@@ -706,6 +706,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String activityDailyCompletedAction(String score) {
+    return 'Completed the daily puzzle ($score pts)';
+  }
+
+  @override
+  String get activityChallengeCompletedAction => 'Finished a friend challenge';
+
+  @override
+  String activityTimelineCompletedAction(String score) {
+    return 'Finished timeline training ($score pts)';
+  }
+
+  @override
+  String activityGenericAction(String action) {
+    return '$action';
+  }
+
+  @override
   String get footballFactTitle => 'Did you know?';
 
   @override
@@ -783,5 +801,67 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String weeklyLeaderboardPenalties(int hints, int mistakes) {
     return 'Hints $hints · Mistakes $mistakes';
+  }
+
+  @override
+  String get communityHubTitle => 'Community';
+
+  @override
+  String get communityHubSubtitle =>
+      'Daily missions, shared goals, and what players are doing right now.';
+
+  @override
+  String get communityHubOpen => 'Open';
+
+  @override
+  String get communityHubTeaserEmpty =>
+      'Missions, community goals & player activity';
+
+  @override
+  String communityHubTeaserMissionLine(int completed, int total) {
+    return '$completed/$total missions';
+  }
+
+  @override
+  String communityHubTeaserGoalLine(int count) {
+    return '$count community goals';
+  }
+
+  @override
+  String communityHubTeaserActivityLine(int count) {
+    return '$count recent plays';
+  }
+
+  @override
+  String get communityGoalsEmpty =>
+      'No active community goals right now. Check back during special events.';
+
+  @override
+  String get communityMissionsEmpty =>
+      'No daily missions available yet. Play a puzzle to unlock today\'s tasks.';
+
+  @override
+  String get activityFeedEmpty =>
+      'No recent activity from friends yet. Complete daily puzzles to appear on the feed.';
+
+  @override
+  String get moreGameModes => 'More Modes';
+
+  @override
+  String get timeJustNow => 'Just now';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return '${count}d ago';
   }
 }

@@ -138,31 +138,92 @@ class LiveOpsCommunityGoalBar extends StatelessWidget {
   const LiveOpsCommunityGoalBar({
     super.key,
     required this.goal,
+    this.expanded = false,
   });
 
   final LiveOpsCommunityGoal goal;
+  final bool expanded;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.cb;
+    final progress = (goal.progressPct / 100).clamp(0.0, 1.0);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: CrossBallGlassPanel(
-        padding: const EdgeInsets.all(AppSpacing.md),
+        padding: EdgeInsets.all(expanded ? AppSpacing.lg : AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              goal.title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  goal.isUnlocked ? Icons.emoji_events_rounded : Icons.flag_rounded,
+                  color: goal.isUnlocked ? colors.lime : colors.accent,
+                  size: expanded ? 24 : 20,
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        goal.title,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                      ),
+                      if (expanded && goal.description.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.xs),
+                        Text(
+                          goal.description,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: colors.textSecondary,
+                                height: 1.35,
+                              ),
+                        ),
+                      ],
+                    ],
                   ),
+                ),
+                if (goal.isUnlocked)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colors.lime.withValues(alpha: 0.15),
+                      borderRadius: AppRadius.mdBorder,
+                    ),
+                    child: Text(
+                      '${goal.progressPct.toStringAsFixed(0)}%',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            color: colors.lime,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            ClipRRect(
+              borderRadius: AppRadius.smBorder,
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: expanded ? 8 : 4,
+                backgroundColor: colors.surfaceElevated.withValues(alpha: 0.6),
+                color: goal.isUnlocked ? colors.lime : colors.accent,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            LinearProgressIndicator(value: goal.progressPct / 100),
-            const SizedBox(height: AppSpacing.xs),
             Text(
-              '${goal.progressPct.toStringAsFixed(1)}% · ${goal.currentValue}/${goal.targetValue}',
-              style: Theme.of(context).textTheme.bodySmall,
+              '${goal.currentValue.toString()} / ${goal.targetValue.toString()} · ${goal.progressPct.toStringAsFixed(1)}%',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colors.textSecondary,
+                  ),
             ),
           ],
         ),

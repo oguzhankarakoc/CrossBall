@@ -10,4 +10,5 @@ abstract final class AppRoutes {
   static const settings = '/settings';
   static const premium = '/premium';
   static const tournament = '/tournament';
+  static const community = '/community';
 }

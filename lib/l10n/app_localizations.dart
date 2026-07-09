@@ -1348,6 +1348,30 @@ abstract class AppLocalizations {
   /// **'{name}: {action}'**
   String activityGeneric(String name, String action);
 
+  /// No description provided for @activityDailyCompletedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed the daily puzzle ({score} pts)'**
+  String activityDailyCompletedAction(String score);
+
+  /// No description provided for @activityChallengeCompletedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished a friend challenge'**
+  String get activityChallengeCompletedAction;
+
+  /// No description provided for @activityTimelineCompletedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished timeline training ({score} pts)'**
+  String activityTimelineCompletedAction(String score);
+
+  /// No description provided for @activityGenericAction.
+  ///
+  /// In en, this message translates to:
+  /// **'{action}'**
+  String activityGenericAction(String action);
+
   /// No description provided for @footballFactTitle.
   ///
   /// In en, this message translates to:
@@ -1473,6 +1497,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hints {hints} · Mistakes {mistakes}'**
   String weeklyLeaderboardPenalties(int hints, int mistakes);
+
+  /// No description provided for @communityHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Community'**
+  String get communityHubTitle;
+
+  /// No description provided for @communityHubSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily missions, shared goals, and what players are doing right now.'**
+  String get communityHubSubtitle;
+
+  /// No description provided for @communityHubOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get communityHubOpen;
+
+  /// No description provided for @communityHubTeaserEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Missions, community goals & player activity'**
+  String get communityHubTeaserEmpty;
+
+  /// No description provided for @communityHubTeaserMissionLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed}/{total} missions'**
+  String communityHubTeaserMissionLine(int completed, int total);
+
+  /// No description provided for @communityHubTeaserGoalLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} community goals'**
+  String communityHubTeaserGoalLine(int count);
+
+  /// No description provided for @communityHubTeaserActivityLine.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} recent plays'**
+  String communityHubTeaserActivityLine(int count);
+
+  /// No description provided for @communityGoalsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No active community goals right now. Check back during special events.'**
+  String get communityGoalsEmpty;
+
+  /// No description provided for @communityMissionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily missions available yet. Play a puzzle to unlock today\'s tasks.'**
+  String get communityMissionsEmpty;
+
+  /// No description provided for @activityFeedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recent activity from friends yet. Complete daily puzzles to appear on the feed.'**
+  String get activityFeedEmpty;
+
+  /// No description provided for @moreGameModes.
+  ///
+  /// In en, this message translates to:
+  /// **'More Modes'**
+  String get moreGameModes;
+
+  /// No description provided for @timeJustNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get timeJustNow;
+
+  /// No description provided for @timeMinutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String timeMinutesAgo(int count);
+
+  /// No description provided for @timeHoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String timeHoursAgo(int count);
+
+  /// No description provided for @timeDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String timeDaysAgo(int count);
 }
 
 class _AppLocalizationsDelegate

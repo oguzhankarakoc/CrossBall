@@ -340,6 +340,31 @@
       }
     }
   },
+  "activityDailyCompletedAction": "Günlük bulmacayı tamamladı ({score} puan)",
+  "@activityDailyCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityChallengeCompletedAction": "Bir arkadaş mücadelesi bitirdi",
+  "activityTimelineCompletedAction": "Zaman çizelgesi antrenmanını bitirdi ({score} puan)",
+  "@activityTimelineCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGenericAction": "{action}",
+  "@activityGenericAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "footballFactTitle": "Biliyor muydun?",
   "footballFactTip1": "İki kulübün kesişiminde az bilinen isimler çoğu zaman daha yüksek puan getirir — cesur tahminler seni öne taşır.",
   "footballFactTip2": "Futbol IQ sadece yıldızları bilmek değil; gizli kariyer patikalarını hatırlamaktır.",
@@ -381,6 +406,66 @@
         "type": "int"
       },
       "mistakes": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTitle": "Topluluk",
+  "communityHubSubtitle": "Günlük görevler, ortak hedefler ve oyuncuların son aktiviteleri.",
+  "communityHubOpen": "Aç",
+  "communityHubTeaserEmpty": "Görevler, topluluk hedefleri ve oyuncu aktivitesi",
+  "communityHubTeaserMissionLine": "{completed}/{total} görev",
+  "@communityHubTeaserMissionLine": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserGoalLine": "{count} topluluk hedefi",
+  "@communityHubTeaserGoalLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserActivityLine": "{count} son aktivite",
+  "@communityHubTeaserActivityLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityGoalsEmpty": "Şu an aktif topluluk hedefi yok. Özel etkinliklerde tekrar kontrol et.",
+  "communityMissionsEmpty": "Henüz günlük görev yok. Bugünün görevlerini açmak için bir bulmaca oyna.",
+  "activityFeedEmpty": "Henüz arkadaş aktivitesi yok. Akışta görünmek için günlük bulmacaları tamamla.",
+  "moreGameModes": "Diğer Modlar",
+  "timeJustNow": "Az önce",
+  "timeMinutesAgo": "{count} dk önce",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{count} sa önce",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{count} gün önce",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }

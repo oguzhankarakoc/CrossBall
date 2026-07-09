@@ -4,6 +4,7 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
 import '../domain/social.dart';
 import '../../../shared/widgets/crossball_ui.dart';
+import 'activity_feed_utils.dart';
 
 class ActivityFeedCard extends StatelessWidget {
   const ActivityFeedCard({super.key, required this.events});
@@ -42,7 +43,7 @@ class ActivityFeedCard extends StatelessWidget {
                         const SizedBox(width: AppSpacing.sm),
                         Expanded(
                           child: Text(
-                            _formatEvent(l10n, event),
+                            formatActivityEvent(l10n, event),
                             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                   color: colors.textSecondary,
                                 ),
@@ -56,16 +57,5 @@ class ActivityFeedCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatEvent(AppLocalizations l10n, ActivityEvent event) {
-    final score = (event.payload['final_score'] as num?)?.toDouble();
-    final scoreText = score != null ? score.toStringAsFixed(0) : '';
-    return switch (event.eventType) {
-      'daily_completed' => l10n.activityDailyCompleted(event.displayName, scoreText),
-      'challenge_completed' => l10n.activityChallengeCompleted(event.displayName),
-      'timeline_completed' => l10n.activityTimelineCompleted(event.displayName, scoreText),
-      _ => l10n.activityGeneric(event.displayName, event.eventType.replaceAll('_', ' ')),
-    };
   }
 }

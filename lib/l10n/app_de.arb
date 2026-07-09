@@ -340,6 +340,31 @@
       }
     }
   },
+  "activityDailyCompletedAction": "Daily-Rätsel abgeschlossen ({score} Pkt.)",
+  "@activityDailyCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityChallengeCompletedAction": "Freundes-Herausforderung beendet",
+  "activityTimelineCompletedAction": "Timeline-Training beendet ({score} Pkt.)",
+  "@activityTimelineCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGenericAction": "{action}",
+  "@activityGenericAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "footballFactTitle": "Wusstest du?",
   "footballFactTip1": "Seltene Namen an einer Vereins-Kreuzung bringen oft mehr Punkte — mutige Tipps schlagen offensichtliche.",
   "footballFactTip2": "Fußball-IQ heißt nicht nur Stars kennen, sondern versteckte Karrierepfade erinnern.",
@@ -381,6 +406,66 @@
         "type": "int"
       },
       "mistakes": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTitle": "Community",
+  "communityHubSubtitle": "Tägliche Missionen, gemeinsame Ziele und aktuelle Spieleraktivität.",
+  "communityHubOpen": "Öffnen",
+  "communityHubTeaserEmpty": "Missionen, Community-Ziele & Spieleraktivität",
+  "communityHubTeaserMissionLine": "{completed}/{total} Missionen",
+  "@communityHubTeaserMissionLine": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserGoalLine": "{count} Community-Ziele",
+  "@communityHubTeaserGoalLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserActivityLine": "{count} aktuelle Spiele",
+  "@communityHubTeaserActivityLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityGoalsEmpty": "Derzeit keine Community-Ziele. Schau bei Special Events wieder vorbei.",
+  "communityMissionsEmpty": "Noch keine täglichen Missionen. Spiele ein Rätsel, um die heutigen Aufgaben freizuschalten.",
+  "activityFeedEmpty": "Noch keine Freundesaktivität. Schließe Daily-Rätsel ab, um im Feed zu erscheinen.",
+  "moreGameModes": "Weitere Modi",
+  "timeJustNow": "Gerade eben",
+  "timeMinutesAgo": "vor {count} Min.",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "vor {count} Std.",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "vor {count} Tg.",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }

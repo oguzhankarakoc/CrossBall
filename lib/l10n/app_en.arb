@@ -347,6 +347,31 @@
       }
     }
   },
+  "activityDailyCompletedAction": "Completed the daily puzzle ({score} pts)",
+  "@activityDailyCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityChallengeCompletedAction": "Finished a friend challenge",
+  "activityTimelineCompletedAction": "Finished timeline training ({score} pts)",
+  "@activityTimelineCompletedAction": {
+    "placeholders": {
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "activityGenericAction": "{action}",
+  "@activityGenericAction": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
   "footballFactTitle": "Did you know?",
   "footballFactTip1": "The rarest names at a club crossing often score highest — bold picks beat obvious ones.",
   "footballFactTip2": "Football IQ is not just knowing stars; it is remembering the hidden career paths.",
@@ -388,6 +413,66 @@
         "type": "int"
       },
       "mistakes": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTitle": "Community",
+  "communityHubSubtitle": "Daily missions, shared goals, and what players are doing right now.",
+  "communityHubOpen": "Open",
+  "communityHubTeaserEmpty": "Missions, community goals & player activity",
+  "communityHubTeaserMissionLine": "{completed}/{total} missions",
+  "@communityHubTeaserMissionLine": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserGoalLine": "{count} community goals",
+  "@communityHubTeaserGoalLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityHubTeaserActivityLine": "{count} recent plays",
+  "@communityHubTeaserActivityLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "communityGoalsEmpty": "No active community goals right now. Check back during special events.",
+  "communityMissionsEmpty": "No daily missions available yet. Play a puzzle to unlock today's tasks.",
+  "activityFeedEmpty": "No recent activity from friends yet. Complete daily puzzles to appear on the feed.",
+  "moreGameModes": "More Modes",
+  "timeJustNow": "Just now",
+  "timeMinutesAgo": "{count}m ago",
+  "@timeMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{count}h ago",
+  "@timeHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{count}d ago",
+  "@timeDaysAgo": {
+    "placeholders": {
+      "count": {
         "type": "int"
       }
     }

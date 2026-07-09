@@ -6,12 +6,11 @@ import '../../../core/routing/app_routes.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/daily_puzzle_schedule.dart';
+import '../../../features/community/presentation/widgets/community_hub_teaser.dart';
 import '../../../features/economy/domain/player_progression.dart';
-import '../../../features/economy/presentation/daily_missions_card.dart';
 import '../../../features/economy/presentation/season_card.dart';
 import '../../../features/liveops/domain/liveops_event_extensions.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
-import '../../../features/social/presentation/activity_feed_card.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
 import '../../../features/social/presentation/football_fact_copy.dart';
 import '../../../features/liveops/presentation/widgets/liveops_widgets.dart';
@@ -32,11 +31,9 @@ class HomeScreen extends ConsumerWidget {
     final showFriendChallenge = ref.watch(featureFlagProvider('friend_challenges'));
     final showStats = ref.watch(featureFlagProvider('statistics'));
     final showEvents = ref.watch(featureFlagProvider('special_events'));
-    final showActivityFeed = ref.watch(featureFlagProvider('friend_activity_feed'));
     final showTimeline = ref.watch(featureFlagProvider('timeline_mode'));
     final showTournament = ref.watch(featureFlagProvider('tournament_mode'));
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
-    final activityFeed = ref.watch(activityFeedProvider).valueOrNull ?? const [];
     final localFact = FootballFactCopy.pickTip(l10n);
     final footballFactText = showAiFacts
         ? ref.watch(footballFactProvider('intersection')).maybeWhen(
@@ -47,6 +44,9 @@ class HomeScreen extends ConsumerWidget {
     final progressionAsync = ref.watch(playerProgressionProvider);
     final progression = progressionAsync.valueOrNull;
     final missions = ref.watch(playerMissionsProvider).valueOrNull ?? const [];
+    final dailyMissions = missions.where((m) => m.period == 'daily').toList();
+    final completedMissions = dailyMissions.where((m) => m.isCompleted).length;
+    final activityFeed = ref.watch(activityFeedProvider).valueOrNull ?? const [];
     final season = ref.watch(seasonInfoProvider).valueOrNull;
     final stats = ref.watch(userStatsProvider).valueOrNull;
     final rollout = ref.watch(dailyPuzzleRolloutProvider).valueOrNull;
@@ -81,6 +81,7 @@ class HomeScreen extends ConsumerWidget {
             : streak > 0
                 ? Icons.local_fire_department_rounded
                 : Icons.calendar_today_rounded;
+    final hasMoreModes = showTimeline || showTournament || showFriendChallenge || showStats;
 
     return Scaffold(
       appBar: CrossBallAppBar(
@@ -166,12 +167,28 @@ class HomeScreen extends ConsumerWidget {
                     ),
                     if (season != null && season.isActive) SeasonCard(season: season),
                     FootballFactBanner(text: footballFactText),
-                    if (showActivityFeed && activityFeed.isNotEmpty)
-                      ActivityFeedCard(events: activityFeed),
-                    if (missions.isNotEmpty) ...[
-                      const SizedBox(height: AppSpacing.md),
-                      DailyMissionsCard(missions: missions),
-                    ],
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _QuickStatTile(
+                            label: l10n.experiencePoints,
+                            value: progression?.experiencePoints.toString() ?? '—',
+                            icon: Icons.star_rounded,
+                            tint: colors.accent,
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: _QuickStatTile(
+                            label: l10n.currentStreak,
+                            value: streak.toString(),
+                            icon: Icons.local_fire_department_rounded,
+                            tint: colors.lime,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
                     if (showEvents && liveOps != null && liveOps.activeEvents.isNotEmpty) ...[
                       CrossBallLabelCaps(l10n.activeEvents),
                       const SizedBox(height: AppSpacing.sm),
@@ -197,81 +214,45 @@ class HomeScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.md),
                     ],
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickStatTile(
-                            label: l10n.experiencePoints,
-                            value: progression?.experiencePoints.toString() ?? '—',
-                            icon: Icons.star_rounded,
-                            tint: colors.accent,
-                          ),
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: _QuickStatTile(
-                            label: l10n.currentStreak,
-                            value: streak.toString(),
-                            icon: Icons.local_fire_department_rounded,
-                            tint: colors.lime,
-                          ),
-                        ),
-                      ],
+                    CommunityHubTeaser(
+                      missionCount: dailyMissions.length,
+                      completedMissions: completedMissions,
+                      goalCount: liveOps?.communityGoals.length ?? 0,
+                      activityCount: activityFeed.length,
+                      onTap: () => context.push(AppRoutes.community),
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (liveOps != null && liveOps.communityGoals.isNotEmpty) ...[
-                      CrossBallLabelCaps(l10n.communityGoals),
+                    if (hasMoreModes) ...[
+                      CrossBallLabelCaps(l10n.moreGameModes),
                       const SizedBox(height: AppSpacing.sm),
-                      ...liveOps.communityGoals.map(
-                        (goal) => LiveOpsCommunityGoalBar(goal: goal),
-                      ),
-                      const SizedBox(height: AppSpacing.md),
+                      if (showTimeline)
+                        CrossBallCard(
+                          icon: Icons.timeline_rounded,
+                          title: l10n.timelineMode,
+                          subtitle: l10n.timelineModeDesc,
+                          onTap: () => context.push('${AppRoutes.puzzle}?mode=timeline'),
+                        ),
+                      if (showTournament)
+                        CrossBallCard(
+                          icon: Icons.emoji_events_outlined,
+                          title: l10n.tournament,
+                          subtitle: l10n.tournamentDesc,
+                          onTap: () => context.push(AppRoutes.tournament),
+                        ),
+                      if (showFriendChallenge)
+                        CrossBallCard(
+                          icon: Icons.people_outline_rounded,
+                          title: l10n.friendChallenge,
+                          subtitle: l10n.friendChallengeDesc,
+                          onTap: () => context.push(AppRoutes.challenge),
+                        ),
+                      if (showStats)
+                        CrossBallCard(
+                          icon: Icons.insights_rounded,
+                          title: l10n.stats,
+                          subtitle: l10n.gamesPlayed,
+                          onTap: () => context.push(AppRoutes.stats),
+                        ),
                     ],
-                    CrossBallCard(
-                      icon: Icons.fitness_center_rounded,
-                      title: l10n.practice,
-                      subtitle: l10n.practiceDesc,
-                      onTap: () => context.push('${AppRoutes.puzzle}?mode=practice'),
-                    ),
-                    if (showTimeline)
-                      CrossBallCard(
-                        icon: Icons.timeline_rounded,
-                        title: l10n.timelineMode,
-                        subtitle: l10n.timelineModeDesc,
-                        onTap: () => context.push('${AppRoutes.puzzle}?mode=timeline'),
-                      ),
-                    if (showTournament)
-                      CrossBallCard(
-                        icon: Icons.emoji_events_outlined,
-                        title: l10n.tournament,
-                        subtitle: l10n.tournamentDesc,
-                        onTap: () => context.push(AppRoutes.tournament),
-                      ),
-                    if (showFriendChallenge)
-                      CrossBallCard(
-                        icon: Icons.people_outline_rounded,
-                        title: l10n.friendChallenge,
-                        subtitle: l10n.friendChallengeDesc,
-                        onTap: () => context.push(AppRoutes.challenge),
-                      ),
-                    if (showStats)
-                      CrossBallCard(
-                        icon: Icons.insights_rounded,
-                        title: l10n.stats,
-                        subtitle: l10n.gamesPlayed,
-                        onTap: () => context.push(AppRoutes.stats),
-                      ),
-                    CrossBallCard(
-                      icon: Icons.leaderboard_rounded,
-                      title: l10n.leaderboard,
-                      subtitle: l10n.competitiveRating,
-                      onTap: () => context.push(AppRoutes.leaderboard),
-                    ),
-                    CrossBallCard(
-                      icon: Icons.settings_rounded,
-                      title: l10n.settings,
-                      onTap: () => context.push(AppRoutes.settings),
-                    ),
                   ],
                 ),
               ),

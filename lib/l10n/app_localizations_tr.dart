@@ -707,6 +707,25 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
+  String activityDailyCompletedAction(String score) {
+    return 'Günlük bulmacayı tamamladı ($score puan)';
+  }
+
+  @override
+  String get activityChallengeCompletedAction =>
+      'Bir arkadaş mücadelesi bitirdi';
+
+  @override
+  String activityTimelineCompletedAction(String score) {
+    return 'Zaman çizelgesi antrenmanını bitirdi ($score puan)';
+  }
+
+  @override
+  String activityGenericAction(String action) {
+    return '$action';
+  }
+
+  @override
   String get footballFactTitle => 'Biliyor muydun?';
 
   @override
@@ -784,5 +803,67 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String weeklyLeaderboardPenalties(int hints, int mistakes) {
     return 'İpucu $hints · Hata $mistakes';
+  }
+
+  @override
+  String get communityHubTitle => 'Topluluk';
+
+  @override
+  String get communityHubSubtitle =>
+      'Günlük görevler, ortak hedefler ve oyuncuların son aktiviteleri.';
+
+  @override
+  String get communityHubOpen => 'Aç';
+
+  @override
+  String get communityHubTeaserEmpty =>
+      'Görevler, topluluk hedefleri ve oyuncu aktivitesi';
+
+  @override
+  String communityHubTeaserMissionLine(int completed, int total) {
+    return '$completed/$total görev';
+  }
+
+  @override
+  String communityHubTeaserGoalLine(int count) {
+    return '$count topluluk hedefi';
+  }
+
+  @override
+  String communityHubTeaserActivityLine(int count) {
+    return '$count son aktivite';
+  }
+
+  @override
+  String get communityGoalsEmpty =>
+      'Şu an aktif topluluk hedefi yok. Özel etkinliklerde tekrar kontrol et.';
+
+  @override
+  String get communityMissionsEmpty =>
+      'Henüz günlük görev yok. Bugünün görevlerini açmak için bir bulmaca oyna.';
+
+  @override
+  String get activityFeedEmpty =>
+      'Henüz arkadaş aktivitesi yok. Akışta görünmek için günlük bulmacaları tamamla.';
+
+  @override
+  String get moreGameModes => 'Diğer Modlar';
+
+  @override
+  String get timeJustNow => 'Az önce';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return '$count dk önce';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return '$count sa önce';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return '$count gün önce';
   }
 }

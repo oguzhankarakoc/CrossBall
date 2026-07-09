@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/utils/player_display_name.dart';
+
 /// Anonymous user profile (no mandatory login).
 class UserProfile extends Equatable {
   const UserProfile({
@@ -17,13 +19,10 @@ class UserProfile extends Equatable {
   final bool pushOptIn;
 
   /// Nickname or anonymous fallback (e.g. Player #A1B2).
-  String get displayLabel {
-    final nickname = displayName?.trim();
-    if (nickname != null && nickname.isNotEmpty) return nickname;
-    final compact = userUuid.replaceAll('-', '');
-    final suffix = compact.length >= 4 ? compact.substring(0, 4).toUpperCase() : compact.toUpperCase();
-    return 'Player #$suffix';
-  }
+  String get displayLabel => resolvePlayerDisplayLabel(
+        displayName: displayName,
+        userUuid: userUuid,
+      );
 
   UserProfile copyWith({
     String? userUuid,

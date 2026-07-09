@@ -1,8 +1,11 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../core/utils/player_display_name.dart';
+
 class ActivityEvent extends Equatable {
   const ActivityEvent({
     required this.id,
+    required this.userUuid,
     required this.displayName,
     required this.eventType,
     required this.payload,
@@ -10,14 +13,22 @@ class ActivityEvent extends Equatable {
   });
 
   final String id;
+  final String userUuid;
   final String displayName;
   final String eventType;
   final Map<String, dynamic> payload;
   final DateTime createdAt;
 
+  /// Nickname when set, otherwise `Player #XXXX` derived from [userUuid].
+  String get displayLabel => resolvePlayerDisplayLabel(
+        displayName: displayName,
+        userUuid: userUuid,
+      );
+
   factory ActivityEvent.fromJson(Map<String, dynamic> json) => ActivityEvent(
         id: json['id'] as String,
-        displayName: json['display_name'] as String? ?? 'Player',
+        userUuid: json['user_uuid'] as String? ?? '',
+        displayName: json['display_name'] as String? ?? kAnonymousPlayerPrefix,
         eventType: json['event_type'] as String? ?? '',
         payload: (json['payload'] as Map<String, dynamic>?) ?? {},
         createdAt: DateTime.parse(json['created_at'] as String),
@@ -47,25 +58,33 @@ class FootballFact extends Equatable {
 class TournamentEntry extends Equatable {
   const TournamentEntry({
     required this.rank,
+    required this.userUuid,
     required this.displayName,
     required this.bestScore,
     required this.sessionsCount,
   });
 
   final int rank;
+  final String userUuid;
   final String displayName;
   final double bestScore;
   final int sessionsCount;
 
+  String get displayLabel => resolvePlayerDisplayLabel(
+        displayName: displayName,
+        userUuid: userUuid,
+      );
+
   factory TournamentEntry.fromJson(Map<String, dynamic> json) => TournamentEntry(
         rank: json['rank'] as int? ?? 0,
-        displayName: json['display_name'] as String? ?? 'Player',
+        userUuid: json['user_uuid'] as String? ?? '',
+        displayName: json['display_name'] as String? ?? kAnonymousPlayerPrefix,
         bestScore: (json['best_score'] as num?)?.toDouble() ?? 0,
         sessionsCount: json['sessions_count'] as int? ?? 0,
       );
 
   @override
-  List<Object?> get props => [rank, displayName];
+  List<Object?> get props => [rank, userUuid, displayName];
 }
 
 class TournamentSnapshot extends Equatable {

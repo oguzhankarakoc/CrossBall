@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_tokens.dart';
+import '../../../core/utils/player_display_name.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
@@ -126,12 +127,30 @@ class TournamentScreen extends ConsumerWidget {
                                 ),
                               ),
                             ),
+                            CircleAvatar(
+                              radius: 16,
+                              backgroundColor: isResolvedAnonymousLabel(entry.displayLabel)
+                                  ? colors.surfaceElevated.withValues(alpha: 0.65)
+                                  : colors.primary.withValues(alpha: 0.25),
+                              child: Text(
+                                playerAvatarInitial(entry.displayLabel),
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  color: isResolvedAnonymousLabel(entry.displayLabel)
+                                      ? colors.textSecondary
+                                      : colors.accent,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.sm),
                             Expanded(
                               child: Text(
-                                entry.displayName,
+                                entry.displayLabel,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                                 style: theme.textTheme.titleSmall?.copyWith(
                                   color: colors.textPrimary,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),

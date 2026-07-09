@@ -714,6 +714,25 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String activityDailyCompletedAction(String score) {
+    return 'Daily-Rätsel abgeschlossen ($score Pkt.)';
+  }
+
+  @override
+  String get activityChallengeCompletedAction =>
+      'Freundes-Herausforderung beendet';
+
+  @override
+  String activityTimelineCompletedAction(String score) {
+    return 'Timeline-Training beendet ($score Pkt.)';
+  }
+
+  @override
+  String activityGenericAction(String action) {
+    return '$action';
+  }
+
+  @override
   String get footballFactTitle => 'Wusstest du?';
 
   @override
@@ -791,5 +810,67 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String weeklyLeaderboardPenalties(int hints, int mistakes) {
     return 'Hinweise $hints · Fehler $mistakes';
+  }
+
+  @override
+  String get communityHubTitle => 'Community';
+
+  @override
+  String get communityHubSubtitle =>
+      'Tägliche Missionen, gemeinsame Ziele und aktuelle Spieleraktivität.';
+
+  @override
+  String get communityHubOpen => 'Öffnen';
+
+  @override
+  String get communityHubTeaserEmpty =>
+      'Missionen, Community-Ziele & Spieleraktivität';
+
+  @override
+  String communityHubTeaserMissionLine(int completed, int total) {
+    return '$completed/$total Missionen';
+  }
+
+  @override
+  String communityHubTeaserGoalLine(int count) {
+    return '$count Community-Ziele';
+  }
+
+  @override
+  String communityHubTeaserActivityLine(int count) {
+    return '$count aktuelle Spiele';
+  }
+
+  @override
+  String get communityGoalsEmpty =>
+      'Derzeit keine Community-Ziele. Schau bei Special Events wieder vorbei.';
+
+  @override
+  String get communityMissionsEmpty =>
+      'Noch keine täglichen Missionen. Spiele ein Rätsel, um die heutigen Aufgaben freizuschalten.';
+
+  @override
+  String get activityFeedEmpty =>
+      'Noch keine Freundesaktivität. Schließe Daily-Rätsel ab, um im Feed zu erscheinen.';
+
+  @override
+  String get moreGameModes => 'Weitere Modi';
+
+  @override
+  String get timeJustNow => 'Gerade eben';
+
+  @override
+  String timeMinutesAgo(int count) {
+    return 'vor $count Min.';
+  }
+
+  @override
+  String timeHoursAgo(int count) {
+    return 'vor $count Std.';
+  }
+
+  @override
+  String timeDaysAgo(int count) {
+    return 'vor $count Tg.';
   }
 }

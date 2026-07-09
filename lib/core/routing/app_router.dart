@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../features/challenge/presentation/challenge_screen.dart';
+import '../../features/community/presentation/community_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/leaderboard/presentation/leaderboard_screen.dart';
 import '../../features/onboarding/presentation/onboarding_screen.dart';
@@ -106,6 +107,10 @@ GoRouter createAppRouter({required bool onboardingComplete}) {
       GoRoute(
         path: AppRoutes.tournament,
         builder: (context, state) => const TournamentScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.community,
+        builder: (context, state) => const CommunityScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
