@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 120
     env:
       PATCH_LOAD_LIGHT: '1'
-      ENSURE_DAILY_TIER: medium
+      ENSURE_DAILY_TIER: hard
       DB_STATEMENT_TIMEOUT: 30min
       USE_SYSTEM_PYTHON: '1'
     steps:
@@ -85,7 +85,7 @@ jobs:
 
       - name: Ensure today's daily puzzle
         if: steps.gate.outputs.proceed == 'true'
-        timeout-minutes: 30
+        timeout-minutes: 45
         run: ./scripts/run_scheduled_sync.sh ensure-daily
 
       - name: Recover rollout on failure

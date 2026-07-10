@@ -177,7 +177,7 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[b
     light = _patch_load_light() if light is None else light
     include_enriched = not light
     if light:
-        mode = 'light (manual + API-Football only; skip enriched, dedupe, graph refresh)'
+        mode = 'light (manual + API-Football; refresh club graph; skip enriched + dedupe)'
     else:
         mode = 'full (manual + API-Football + enriched)'
     print(f'  Applying career patches — {mode}')
@@ -207,7 +207,9 @@ def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[b
         print(f'  Upserting {len(players)} players...', flush=True)
         upsert_players(conn, players)
         if light:
-            print('  Skipped dedupe + graph refresh (weekly ETL rebuilds the graph).')
+            refresh_intersections(conn)
+            refresh_club_relationships(conn)
+            print('  Skipped dedupe; refreshed intersections + club graph for daily puzzles.')
         else:
             merged = dedupe_players(conn)
             if merged:
@@ -318,7 +320,7 @@ def cmd_daily_rollout_begin() -> None:
 
 def cmd_ensure_daily() -> None:
     """Ensure today's global daily puzzle exists (after data refresh)."""
-    tier = os.environ.get('ENSURE_DAILY_TIER', 'medium').strip() or 'medium'
+    tier = os.environ.get('ENSURE_DAILY_TIER', 'hard').strip() or 'hard'
     conn = get_connection()
     try:
         with conn.cursor() as cur:
@@ -352,16 +354,16 @@ def cmd_ensure_daily() -> None:
                     ('pipeline',),
                 )
 
+            print('  Refreshing club graph for puzzle generation...')
+            refresh_intersections(conn)
+            refresh_club_relationships(conn)
             cur.execute('SELECT COUNT(*) FROM club_relationships')
             rel_count = cur.fetchone()[0]
-            if rel_count < 100:
-                print(
-                    f'  club_relationships sparse ({rel_count} pairs) — refreshing graph...'
+            print(f'  club_relationships pairs: {rel_count}')
+            if rel_count < 50:
+                raise SystemExit(
+                    f'club_relationships too sparse ({rel_count} pairs) after graph refresh'
                 )
-                cur.execute('SELECT public.ensure_club_relationship_graph(100)')
-                refreshed = cur.fetchone()[0]
-                conn.commit()
-                print(f'  Graph refreshed: {refreshed} pairs')
 
             print(f'  Generating daily puzzle (tier={tier})...')
             try:

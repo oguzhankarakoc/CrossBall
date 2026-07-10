@@ -219,7 +219,7 @@ SELECT public.refresh_player_club_intersections();
 | `career-gap-report` | Detect stale/missing career stints → `reports/career_gaps.csv` |
 | `career-enrich` | API sync (all teams) + reconcile + write `enriched_careers.csv` (+ optional `--load`) |
 | `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
-| `apply-patches --light` | Daily sync: manual + API-Football only (skip enriched, dedupe, graph refresh) |
+| `apply-patches --light` | Daily sync: manual + API-Football, refresh club graph, skip dedupe/enriched |
 | `run` | Validate + upsert to PostgreSQL |
 | `run-all` | All of the above |
 
