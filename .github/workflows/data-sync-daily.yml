@@ -80,7 +80,7 @@ jobs:
 
       - name: Apply career patches (light load)
         if: steps.gate.outputs.proceed == 'true'
-        timeout-minutes: 35
+        timeout-minutes: 50
         run: ./scripts/run_scheduled_sync.sh sync-load
 
       - name: Ensure today's daily puzzle

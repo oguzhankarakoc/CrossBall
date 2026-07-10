@@ -175,9 +175,16 @@ def _patch_load_light() -> bool:
 def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[bool] = None) -> None:
     """Apply curated career patches to PostgreSQL without a full Kaggle re-download."""
     light = _patch_load_light() if light is None else light
-    mode = 'light (skip dedupe + graph refresh)' if light else 'full'
-    print(f'  Applying career patches (manual + API-Football + enriched) — {mode}')
-    patches = load_all_career_patches(manual_path=patches_path)
+    include_enriched = not light
+    if light:
+        mode = 'light (manual + API-Football only; skip enriched, dedupe, graph refresh)'
+    else:
+        mode = 'full (manual + API-Football + enriched)'
+    print(f'  Applying career patches — {mode}')
+    patches = load_all_career_patches(
+        manual_path=patches_path,
+        include_enriched=include_enriched,
+    )
     if not patches:
         raise SystemExit(f'No patches found at {patches_path}')
 
@@ -242,7 +249,7 @@ def cmd_sync_api_football(
     )
 
     if load_db:
-        cmd_apply_patches(DEFAULT_PATCHES_PATH, clubs_path)
+        cmd_apply_patches(DEFAULT_PATCHES_PATH, clubs_path, light=False)
 
 
 def cmd_daily_rollout_fail() -> None:
@@ -473,7 +480,7 @@ def main():
     patch_parser.add_argument(
         '--light',
         action='store_true',
-        help='Skip dedupe + graph refresh (for daily CI sync; weekly ETL does full rebuild)',
+        help='Daily sync: manual + API-Football only (skip enriched, dedupe, graph refresh)',
     )
 
     af_parser = sub.add_parser(
@@ -595,7 +602,7 @@ def main():
         for key, value in summary.items():
             print(f'  {key}: {value}')
         if args.load:
-            cmd_apply_patches(DEFAULT_PATCHES_PATH, args.clubs, light=_patch_load_light())
+            cmd_apply_patches(DEFAULT_PATCHES_PATH, args.clubs, light=False)
     else:
         parser.print_help()
 

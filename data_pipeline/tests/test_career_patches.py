@@ -2,7 +2,11 @@
 
 from pathlib import Path
 
-from pipeline.career_patches import load_career_patches, merge_career_patches
+from pipeline.career_patches import (
+    load_all_career_patches,
+    load_career_patches,
+    merge_career_patches,
+)
 
 
 def test_merge_career_patches_overrides_and_adds():
@@ -63,3 +67,36 @@ def test_load_default_patches_file():
         Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'career_patches.csv'
     )
     assert any(p['id'] == '231677' and p['team'] == 'FC Barcelona' for p in patches)
+
+
+def test_load_all_career_patches_can_skip_enriched():
+    patches_dir = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches'
+    manual_path = patches_dir / 'career_patches.csv'
+    api_path = patches_dir / 'api_football_careers.csv'
+    enriched_path = patches_dir / 'enriched_careers.csv'
+
+    manual_ids = {row['id'] for row in load_career_patches(manual_path)}
+    api_ids = {row['id'] for row in load_career_patches(api_path)}
+    enriched_only_ids = {
+        row['id']
+        for row in load_career_patches(enriched_path)
+        if row['id'] not in manual_ids and row['id'] not in api_ids
+    }
+    assert enriched_only_ids
+
+    with_enriched = load_all_career_patches(
+        manual_path=manual_path,
+        api_football_path=api_path,
+        enriched_path=enriched_path,
+        include_enriched=True,
+    )
+    without_enriched = load_all_career_patches(
+        manual_path=manual_path,
+        api_football_path=api_path,
+        enriched_path=enriched_path,
+        include_enriched=False,
+    )
+
+    assert len(without_enriched) < len(with_enriched)
+    without_ids = {row['id'] for row in without_enriched}
+    assert enriched_only_ids.isdisjoint(without_ids)

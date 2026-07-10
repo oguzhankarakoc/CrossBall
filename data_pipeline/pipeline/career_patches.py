@@ -68,14 +68,17 @@ def load_all_career_patches(
     manual_path: Path | None = None,
     api_football_path: Path | None = None,
     enriched_path: Path | None = None,
+    *,
+    include_enriched: bool = True,
 ) -> list[dict]:
-    """Load manual, API-Football, then reconciled enrichment deltas."""
+    """Load manual, API-Football, and optionally reconciled enrichment deltas."""
     combined: list[dict] = []
     combined.extend(load_career_patches(manual_path or DEFAULT_PATCHES_PATH))
     api_path = api_football_path or API_FOOTBALL_PATCHES_PATH
     combined.extend(load_career_patches(api_path))
-    enriched = enriched_path or ENRICHED_PATCHES_PATH
-    combined.extend(load_career_patches(enriched))
+    if include_enriched:
+        enriched = enriched_path or ENRICHED_PATCHES_PATH
+        combined.extend(load_career_patches(enriched))
     return combined
 
 
