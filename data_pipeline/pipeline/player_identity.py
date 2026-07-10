@@ -14,6 +14,20 @@ def _first_name_token(first: str) -> str:
     return cleaned[0]
 
 
+_SURNAME_PARTICLES = frozenset({
+    'de', 'da', 'do', 'dos', 'das', 'van', 'von', 'der', 'di', 'del', 'la', 'le',
+    'mc', 'mac', 'jr', 'junior', 'júnior', 'filho', 'neto', 'silva', 'santos',
+    'ribeiro',
+})
+
+
+def _significant_surname(parts: list[str]) -> str:
+    for part in reversed(parts):
+        if part.lower() not in _SURNAME_PARTICLES:
+            return part
+    return parts[-1]
+
+
 _DOT_GLUE = re.compile(r'\.(?=\S)')
 
 
@@ -28,10 +42,11 @@ def player_identity_key(name: str) -> str:
     parts = [part for part in normalized.split() if part]
     if not parts:
         return normalized
-    surname = parts[-1]
+    surname = _significant_surname(parts)
     if len(parts) == 1:
-        return surname
-    return f'{surname}|{_first_name_token(parts[0])}'
+        token = _first_name_token(parts[0])
+        return f'{parts[0].lower()}|{token}'
+    return f'{_significant_surname(parts).lower()}|{_first_name_token(parts[0])}'
 
 
 def names_likely_same_person(left: str, right: str) -> bool:

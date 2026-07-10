@@ -405,7 +405,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                 (entry) => PlayerSearchCard(
                                   player: entry.value,
                                   highlightClubs: _highlightClubs,
-                                  showRelevanceBadge: false,
+                                  showRelevanceBadge: entry.value.isCellRelevant,
                                   animationDelay: entry.key * 40,
                                   onTap: () => Navigator.pop(context, entry.value),
                                 ),

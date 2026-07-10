@@ -214,6 +214,53 @@ function scorePlayer(player: EnrichedPlayer, normalized: string): number {
   return score
 }
 
+async function resolveIdentitySiblingMap(
+  supabase: ReturnType<typeof createClient>,
+  playerIds: string[],
+): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>()
+  if (playerIds.length === 0) return map
+
+  const { data: rows } = await supabase
+    .from('players')
+    .select('id, identity_key')
+    .in('id', playerIds)
+
+  const keys = new Set<string>()
+  const idToKey = new Map<string, string>()
+  for (const row of rows ?? []) {
+    const id = row.id as string
+    const key = (row.identity_key as string | null)?.trim()
+    if (key) {
+      keys.add(key)
+      idToKey.set(id, key)
+    }
+  }
+
+  const siblingsByKey = new Map<string, string[]>()
+  if (keys.size > 0) {
+    const { data: siblings } = await supabase
+      .from('players')
+      .select('id, identity_key')
+      .in('identity_key', [...keys])
+
+    for (const row of siblings ?? []) {
+      const key = (row.identity_key as string | null)?.trim()
+      const id = row.id as string
+      if (!key) continue
+      const list = siblingsByKey.get(key) ?? []
+      list.push(id)
+      siblingsByKey.set(key, list)
+    }
+  }
+
+  for (const id of playerIds) {
+    const key = idToKey.get(id)
+    map.set(id, key ? (siblingsByKey.get(key) ?? [id]) : [id])
+  }
+  return map
+}
+
 async function enrichPlayers(
   supabase: ReturnType<typeof createClient>,
   players: RawPlayer[],
@@ -223,21 +270,23 @@ async function enrichPlayers(
   if (players.length === 0) return []
 
   const ids = players.map((p) => p.id)
+  const siblingMap = await resolveIdentitySiblingMap(supabase, ids)
+  const expandedIds = [...new Set([...siblingMap.values()].flat())]
 
   const [{ data: careers }, { data: popularity }, intersectionIds] = await Promise.all([
     supabase
       .from('player_career_history')
       .select('player_id, appearances, clubs (short_name, name, is_top_club)')
-      .in('player_id', ids)
+      .in('player_id', expandedIds)
       .eq('is_senior', true)
       .eq('is_youth', false)
       .eq('is_reserve', false),
     supabase
       .from('player_popularity')
       .select('player_id, global_selection_count')
-      .in('player_id', ids),
+      .in('player_id', expandedIds),
     rowClubId && colClubId
-      ? fetchIntersectionIds(supabase, ids, rowClubId, colClubId)
+      ? fetchIntersectionIds(supabase, expandedIds, rowClubId, colClubId)
       : Promise.resolve(new Set<string>()),
   ])
 
@@ -262,12 +311,26 @@ async function enrichPlayers(
     popByPlayer.set(row.player_id as string, (row.global_selection_count as number) ?? 0)
   }
 
-  return players.map((player) => ({
-    ...player,
-    clubs_preview: (clubsByPlayer.get(player.id) ?? []).slice(0, 4),
-    popularity_score: popByPlayer.get(player.id) ?? 0,
-    is_cell_relevant: intersectionIds.has(player.id),
-  }))
+  return players.map((player) => {
+    const siblingIds = siblingMap.get(player.id) ?? [player.id]
+    const mergedClubs: string[] = []
+    let popularityScore = 0
+    for (const siblingId of siblingIds) {
+      for (const club of clubsByPlayer.get(siblingId) ?? []) {
+        if (!mergedClubs.includes(club)) mergedClubs.push(club)
+      }
+      popularityScore = Math.max(popularityScore, popByPlayer.get(siblingId) ?? 0)
+    }
+
+    const isCellRelevant = siblingIds.some((siblingId) => intersectionIds.has(siblingId))
+
+    return {
+      ...player,
+      clubs_preview: mergedClubs.slice(0, 4),
+      popularity_score: popularityScore,
+      is_cell_relevant: isCellRelevant,
+    }
+  })
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -353,7 +416,7 @@ async function fetchIntersectionIds(
     if (hasPair) relevant.add(row.player_id as string)
   }
 
-  // Materialized view may be stale; verify remaining candidates via RPC when available.
+  // Materialized view may be stale; verify candidates via RPC (identity-aware on DB).
   const unchecked = playerIds.filter((id) => !relevant.has(id))
   if (unchecked.length === 0) return relevant
 

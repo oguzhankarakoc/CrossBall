@@ -23,3 +23,8 @@ def test_names_likely_same_person():
 def test_pick_preferred_name():
     assert pick_preferred_name('Z. Ibrahimović', 'Zlatan Ibrahimović') == 'Zlatan Ibrahimović'
     assert pick_preferred_name('Zlatan Ibrahimović', 'Z. Ibrahimović') == 'Zlatan Ibrahimović'
+
+
+def test_player_identity_key_groups_portuguese_legal_names():
+    assert player_identity_key('Neymar') == player_identity_key('Neymar da Silva Santos Júnior')
+    assert player_identity_key('Darwin Gabriel Núñez Ribeiro') == player_identity_key('D. Núñez')

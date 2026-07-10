@@ -150,11 +150,12 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
                                     runSpacing: AppSpacing.xs,
                                     children: player.clubsPreview.take(3).map((club) {
                                       final normalized = club.toLowerCase();
-                                      final highlight = widget.highlightClubs.any(
-                                        (h) =>
-                                            normalized.contains(h.toLowerCase()) ||
-                                            h.toLowerCase().contains(normalized),
-                                      );
+                                      final highlight = player.isCellRelevant &&
+                                          widget.highlightClubs.any(
+                                            (h) =>
+                                                normalized.contains(h.toLowerCase()) ||
+                                                h.toLowerCase().contains(normalized),
+                                          );
                                       return ClubChip(label: club, highlighted: highlight);
                                     }).toList(),
                                   ),
