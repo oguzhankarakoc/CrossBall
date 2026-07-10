@@ -73,10 +73,33 @@ jobs:
         timeout-minutes: 5
         run: ./scripts/run_scheduled_sync.sh rollout-begin
 
+      - name: Restore API-Football response cache
+        if: steps.gate.outputs.proceed == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: data_pipeline/data/cache/api_football
+          key: api-football-cache-${{ github.run_id }}
+          restore-keys: |
+            api-football-cache-
+
+      - name: Check API-Football quota
+        if: steps.gate.outputs.proceed == 'true'
+        working-directory: data_pipeline
+        run: python -m pipeline api-football-status
+
       - name: Fetch API-Football transfers
         if: steps.gate.outputs.proceed == 'true'
         timeout-minutes: 40
+        env:
+          API_FOOTBALL_MIN_REMAINING: '30'
         run: ./scripts/run_scheduled_sync.sh sync-fetch
+
+      - name: Save API-Football response cache
+        if: always() && steps.gate.outputs.proceed == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: data_pipeline/data/cache/api_football
+          key: api-football-cache-${{ github.run_id }}
 
       - name: Apply career patches (light load)
         if: steps.gate.outputs.proceed == 'true'

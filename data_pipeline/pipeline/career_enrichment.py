@@ -53,8 +53,10 @@ def sync_api_football_careers(
     offset: int = 0,
     limit: int | None = None,
     use_cache: bool = True,
+    cache_only: bool = False,
+    min_remaining: int | None = None,
     output_path: Path | None = None,
-) -> dict[str, int]:
+) -> dict[str, int | str]:
     team_map = load_team_id_map()
     if limit is None:
         limit = len(team_map)
@@ -64,10 +66,24 @@ def sync_api_football_careers(
         offset=offset,
         limit=limit,
         use_cache=use_cache,
+        cache_only=cache_only,
+        min_remaining=min_remaining,
         players_csv=players_csv or DEFAULT_PLAYERS_CSV,
     )
-    write_career_csv(rows, output_path or API_FOOTBALL_OUTPUT)
-    return {key: int(value or 0) for key, value in stats.items()}  # type: ignore[arg-type]
+    target = output_path or API_FOOTBALL_OUTPUT
+    preserved = not write_career_csv(rows, target, preserve_existing=True)
+    summary = {key: int(value or 0) for key, value in stats.items()}  # type: ignore[arg-type]
+    summary['csv_preserved'] = int(preserved)
+    summary['output'] = str(target)
+    if (
+        not rows
+        and int(stats.get('teams_ok', 0) or 0) == 0
+        and int(stats.get('cache_hits', 0) or 0) == 0
+    ):
+        summary['api_warning'] = (
+            'API-Football sync produced no rows; using existing patch CSV if available.'
+        )
+    return summary
 
 
 def run_career_enrichment(
@@ -79,6 +95,8 @@ def run_career_enrichment(
     api_offset: int = 0,
     api_limit: int | None = None,
     use_cache: bool = True,
+    cache_only: bool = False,
+    min_remaining: int | None = None,
 ) -> dict[str, int | str]:
     players_path = players_csv or DEFAULT_PLAYERS_CSV
     enriched_path = enriched_output or DEFAULT_ENRICHED_PATH
@@ -92,8 +110,13 @@ def run_career_enrichment(
             offset=api_offset,
             limit=api_limit,
             use_cache=use_cache,
+            cache_only=cache_only,
+            min_remaining=min_remaining,
         )
         summary.update({f'api_{key}': value for key, value in api_stats.items()})
+        warning = api_stats.get('api_warning')
+        if warning:
+            print(f'  WARNING: {warning}', flush=True)
 
     deltas, reconciled = build_enriched_career_rows(players_csv=players_path)
     write_career_csv(deltas, enriched_path)

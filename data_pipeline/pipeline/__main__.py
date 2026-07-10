@@ -7,9 +7,10 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-from .api_football_client import ApiFootballError
+from .api_football_client import ApiFootballClient, ApiFootballError
 from .api_football_sync import (
     DEFAULT_OUTPUT as API_FOOTBALL_OUTPUT,
+    ApiFootballSyncError,
     sync_transfers_to_career_rows,
     write_career_csv,
 )
@@ -249,6 +250,7 @@ def cmd_sync_api_football(
     load_db: bool,
     clubs_path: Path,
     no_cache: bool,
+    cache_only: bool,
 ) -> None:
     print('  Syncing transfers from API-Football (free tier: 100 req/day)')
     try:
@@ -256,21 +258,59 @@ def cmd_sync_api_football(
             offset=offset,
             limit=limit,
             use_cache=not no_cache,
+            cache_only=cache_only,
+            min_remaining=limit,
             players_csv=players_csv,
         )
+    except ApiFootballSyncError as exc:
+        raise SystemExit(str(exc)) from exc
     except ApiFootballError as exc:
         raise SystemExit(str(exc)) from exc
 
-    write_career_csv(rows, output)
+    write_career_csv(rows, output, preserve_existing=False)
     print(f'  Wrote {len(rows)} career rows → {output}')
     print(
-        f'  Stats: teams={stats["teams_requested"]} players={stats["players_seen"]} '
-        f'api_requests={stats["api_requests"]} cache_hits={stats["cache_hits"]} '
-        f'remaining_today={stats["remaining_daily"]}'
+        '  Stats: '
+        f"teams={stats['teams_requested']} ok={stats.get('teams_ok', 0)} "
+        f"failed={stats.get('teams_failed', 0)} empty={stats.get('teams_empty', 0)} "
+        f"players={stats['players_seen']} unresolved={stats.get('players_unresolved', 0)} "
+        f"api_requests={stats['api_requests']} cache_hits={stats['cache_hits']} "
+        f"remaining_today={stats['remaining_daily']}"
     )
+
+    if (
+        not rows
+        and int(stats.get('teams_ok', 0) or 0) == 0
+        and int(stats.get('cache_hits', 0) or 0) == 0
+    ):
+        raise SystemExit(
+            'API-Football sync produced no career rows. '
+            'Likely causes: daily quota exhausted, invalid API key, or network failure. '
+            'Check logs above for per-team errors.'
+        )
 
     if load_db:
         cmd_apply_patches(DEFAULT_PATCHES_PATH, clubs_path, light=False)
+
+
+def cmd_api_football_status() -> None:
+    try:
+        client = ApiFootballClient()
+        status = client.fetch_status(use_cache=False)
+    except ApiFootballError as exc:
+        raise SystemExit(str(exc)) from exc
+
+    requests_info = status.get('requests') or {}
+    subscription = status.get('subscription') or {}
+    current = int(requests_info.get('current') or 0)
+    limit_day = int(requests_info.get('limit_day') or 0)
+    remaining = client.remaining_daily
+    if remaining is None and limit_day:
+        remaining = max(limit_day - current, 0)
+
+    print('  API-Football status OK')
+    print(f'  plan={subscription.get("plan")} active={subscription.get("active")}')
+    print(f'  requests_today={current}/{limit_day} remaining={remaining}')
 
 
 def cmd_daily_rollout_fail() -> None:
@@ -524,6 +564,13 @@ def main():
         help='After fetch, apply all patches to PostgreSQL',
     )
     af_parser.add_argument('--no-cache', action='store_true', help='Ignore cached API responses')
+    af_parser.add_argument(
+        '--cache-only',
+        action='store_true',
+        help='Never call live API; use on-disk cache and fail on cache miss',
+    )
+
+    sub.add_parser('api-football-status', help='Check API-Football key and daily request quota')
 
     sub.add_parser('daily-rollout-begin', help='Mark today\'s daily puzzle rollout as generating')
     sub.add_parser(
@@ -567,6 +614,11 @@ def main():
     enrich_parser.add_argument('--api-limit', type=int, default=0, help='0 = all mapped teams')
     enrich_parser.add_argument('--no-cache', action='store_true')
     enrich_parser.add_argument(
+        '--cache-only',
+        action='store_true',
+        help='Use cached API responses only (for low daily quota days)',
+    )
+    enrich_parser.add_argument(
         '--load',
         action='store_true',
         help='After enrichment, apply all patches to PostgreSQL',
@@ -606,7 +658,10 @@ def main():
             load_db=args.load,
             clubs_path=args.clubs,
             no_cache=args.no_cache,
+            cache_only=args.cache_only,
         )
+    elif args.command == 'api-football-status':
+        cmd_api_football_status()
     elif args.command == 'daily-rollout-begin':
         cmd_daily_rollout_begin()
     elif args.command == 'daily-rollout-fail':
@@ -629,6 +684,7 @@ def main():
             api_offset=args.api_offset,
             api_limit=api_limit,
             use_cache=not args.no_cache,
+            cache_only=args.cache_only,
         )
         for key, value in summary.items():
             print(f'  {key}: {value}')

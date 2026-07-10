@@ -4,9 +4,15 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from pathlib import Path
 
-from .api_football_client import ApiFootballClient, ApiFootballError
+from .api_football_client import (
+    ApiFootballClient,
+    ApiFootballError,
+    is_auth_error,
+    is_quota_error,
+)
 from .club_metadata import canonical_club_name
 from .kaggle_transform import MIN_CAREER_YEAR, TOP_CLUB_NAMES
 from .normalize import normalize_name
@@ -17,6 +23,14 @@ TEAM_IDS_PATH = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'api_foot
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / 'data' / 'raw' / 'patches' / 'api_football_careers.csv'
 
 TOP_CLUB_SET = {canonical_club_name(c) for c in TOP_CLUB_NAMES}
+CAREER_CSV_FIELDS = (
+    'id', 'name', 'team', 'nationality', 'position',
+    'start_date', 'end_date', 'is_loan', 'appearances', 'source',
+)
+
+
+class ApiFootballSyncError(RuntimeError):
+    """Raised when API sync fails completely and no usable fallback exists."""
 
 
 def load_team_id_map(path: Path | None = None) -> dict[str, int]:
@@ -108,6 +122,41 @@ def _load_player_lookups(
     return by_name, by_identity
 
 
+def load_career_csv(path: Path) -> list[dict]:
+    if not path.is_file():
+        return []
+    with path.open(newline='', encoding='utf-8') as f:
+        return list(csv.DictReader(f))
+
+
+def _empty_stats(teams_requested: int) -> dict[str, int | None]:
+    return {
+        'teams_requested': teams_requested,
+        'teams_ok': 0,
+        'teams_failed': 0,
+        'teams_empty': 0,
+        'teams_skipped_quota': 0,
+        'players_seen': 0,
+        'players_unresolved': 0,
+        'career_rows': 0,
+        'api_requests': 0,
+        'cache_hits': 0,
+        'remaining_daily': None,
+    }
+
+
+def _resolve_min_remaining(explicit: int | None) -> int | None:
+    if explicit is not None:
+        return explicit
+    raw = os.environ.get('API_FOOTBALL_MIN_REMAINING', '').strip()
+    if not raw:
+        return None
+    try:
+        return int(raw)
+    except ValueError:
+        return None
+
+
 def sync_transfers_to_career_rows(
     *,
     team_map: dict[str, int] | None = None,
@@ -115,8 +164,10 @@ def sync_transfers_to_career_rows(
     offset: int = 0,
     limit: int | None = 30,
     use_cache: bool = True,
+    cache_only: bool = False,
+    min_remaining: int | None = None,
     players_csv: Path | None = None,
-) -> tuple[list[dict], dict[str, int]]:
+) -> tuple[list[dict], dict[str, int | None]]:
     """Fetch transfers for mapped teams and return career patch rows + stats."""
     team_map = team_map or load_team_id_map()
     client = client or ApiFootballClient()
@@ -133,24 +184,70 @@ def sync_transfers_to_career_rows(
     if limit is not None:
         items = items[:limit]
 
+    stats = _empty_stats(len(items))
+    min_remaining = _resolve_min_remaining(min_remaining)
+    allow_live = not cache_only
+    sample_errors: list[str] = []
+
+    if allow_live and min_remaining is not None:
+        try:
+            client.fetch_status(use_cache=False)
+        except ApiFootballError as exc:
+            print(f'  API-Football status check failed: {exc}', flush=True)
+        else:
+            remaining = client.remaining_daily
+            print(f'  API-Football quota check: remaining={remaining}', flush=True)
+            if remaining is not None and remaining < min_remaining:
+                print(
+                    f'  Switching to cache-only mode '
+                    f'(remaining={remaining} < required={min_remaining})',
+                    flush=True,
+                )
+                allow_live = False
+
     career_rows: dict[tuple, dict] = {}
-    stats: dict[str, int | None] = {
-        'teams_requested': len(items),
-        'players_seen': 0,
-        'career_rows': 0,
-        'api_requests': 0,
-        'cache_hits': 0,
-        'remaining_daily': None,
-    }
 
     for idx, (club_name, team_id) in enumerate(items, start=1):
-        print(f'  API team {idx}/{len(items)}: {club_name} (id={team_id})', flush=True)
-        before = client.requests_made
-        try:
-            response_items = client.transfers_for_team(team_id, use_cache=use_cache)
-        except ApiFootballError:
+        if not allow_live and client.quota_exhausted:
+            stats['teams_skipped_quota'] = int(stats['teams_skipped_quota']) + 1
             continue
-        stats['api_requests'] = int(stats['api_requests']) + (client.requests_made - before)
+
+        print(f'  API team {idx}/{len(items)}: {club_name} (id={team_id})', flush=True)
+        before_requests = client.requests_made
+        try:
+            response_items = client.transfers_for_team(
+                team_id,
+                use_cache=use_cache,
+                allow_live=allow_live,
+            )
+        except ApiFootballError as exc:
+            stats['teams_failed'] = int(stats['teams_failed']) + 1
+            stats['api_requests'] = int(stats['api_requests']) + (client.requests_made - before_requests)
+            message = f'{club_name} (id={team_id}): {exc}'
+            if len(sample_errors) < 5:
+                sample_errors.append(message)
+            print(f'  API team failed: {message}', flush=True)
+            if is_auth_error(exc):
+                raise ApiFootballSyncError(
+                    f'API-Football authentication failed — check API_FOOTBALL_KEY. {exc}'
+                ) from exc
+            if is_quota_error(exc) or client.quota_exhausted:
+                allow_live = False
+                remaining = len(items) - idx
+                stats['teams_skipped_quota'] = int(stats['teams_skipped_quota']) + remaining
+                print(
+                    '  API-Football daily quota exhausted; '
+                    'remaining teams will use cache-only or be skipped.',
+                    flush=True,
+                )
+                break
+            continue
+        else:
+            stats['api_requests'] = int(stats['api_requests']) + (client.requests_made - before_requests)
+            if not response_items:
+                stats['teams_empty'] = int(stats['teams_empty']) + 1
+            else:
+                stats['teams_ok'] = int(stats['teams_ok']) + 1
 
         for item in response_items:
             player = item.get('player') or {}
@@ -171,6 +268,7 @@ def sync_transfers_to_career_rows(
             if not ext_id:
                 continue
             if ext_id.startswith('af-'):
+                stats['players_unresolved'] = int(stats['players_unresolved']) + 1
                 continue
 
             display_name = preferred_names.get(ext_id, player_name)
@@ -182,8 +280,6 @@ def sync_transfers_to_career_rows(
             )
 
             for stint in stints:
-                if not ext_id:
-                    continue
                 key = (ext_id, stint['team'], stint['start_date'], stint['is_loan'])
                 career_rows[key] = {
                     'id': ext_id,
@@ -201,17 +297,44 @@ def sync_transfers_to_career_rows(
     stats['cache_hits'] = client.requests_from_cache
     stats['career_rows'] = len(career_rows)
     stats['remaining_daily'] = client.remaining_daily
-    return list(career_rows.values()), stats  # type: ignore[return-value]
+
+    print(
+        '  API sync summary: '
+        f"ok={stats['teams_ok']} failed={stats['teams_failed']} "
+        f"empty={stats['teams_empty']} skipped_quota={stats['teams_skipped_quota']} "
+        f"players={stats['players_seen']} unresolved={stats['players_unresolved']} "
+        f"career_rows={stats['career_rows']} api_requests={stats['api_requests']} "
+        f"cache_hits={stats['cache_hits']} remaining={stats['remaining_daily']}",
+        flush=True,
+    )
+    if sample_errors:
+        print('  API sample errors:', flush=True)
+        for message in sample_errors:
+            print(f'    - {message}', flush=True)
+
+    return list(career_rows.values()), stats
 
 
-def write_career_csv(rows: list[dict], output_path: Path) -> None:
+def write_career_csv(
+    rows: list[dict],
+    output_path: Path,
+    *,
+    preserve_existing: bool = False,
+) -> bool:
+    """Write career patch CSV. Returns False when an existing file was preserved."""
+    if preserve_existing and not rows and output_path.is_file():
+        existing = load_career_csv(output_path)
+        if existing:
+            print(
+                f'  Preserving existing API patch CSV ({len(existing)} rows) at {output_path}',
+                flush=True,
+            )
+            return False
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    fieldnames = [
-        'id', 'name', 'team', 'nationality', 'position',
-        'start_date', 'end_date', 'is_loan', 'appearances', 'source',
-    ]
     with output_path.open('w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=CAREER_CSV_FIELDS)
         writer.writeheader()
         for row in rows:
-            writer.writerow({k: row.get(k, '') for k in fieldnames})
+            writer.writerow({k: row.get(k, '') for k in CAREER_CSV_FIELDS})
+    return True

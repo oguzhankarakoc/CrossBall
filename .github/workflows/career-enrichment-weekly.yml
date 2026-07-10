@@ -50,11 +50,32 @@ jobs:
           test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
+      - name: Restore API-Football response cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data_pipeline/data/cache/api_football
+          key: api-football-cache-${{ github.run_id }}
+          restore-keys: |
+            api-football-cache-
+
+      - name: Check API-Football quota
+        working-directory: data_pipeline
+        run: python -m pipeline api-football-status
+
       - name: Reconcile careers and write enriched CSV
         timeout-minutes: 90
+        env:
+          API_FOOTBALL_MIN_REMAINING: '54'
         run: |
           chmod +x scripts/run_career_enrichment.sh
           CAREER_ENRICH_LOAD=0 ./scripts/run_career_enrichment.sh
+
+      - name: Save API-Football response cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data_pipeline/data/cache/api_football
+          key: api-football-cache-${{ github.run_id }}
 
       - name: Apply enriched patches to database
         timeout-minutes: 90
