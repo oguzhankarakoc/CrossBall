@@ -11,13 +11,16 @@ import '../../../features/community/presentation/widgets/community_hub_teaser.da
 import '../../../features/economy/domain/player_progression.dart';
 import '../../../features/economy/presentation/season_card.dart';
 import '../../../features/leaderboard/presentation/leaderboard_screen.dart';
+import '../../../features/liveops/domain/liveops_snapshot.dart';
 import '../../../features/liveops/domain/liveops_event_extensions.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
 import '../../../features/social/presentation/football_fact_copy.dart';
+import '../../../features/liveops/presentation/widgets/coming_modes_panel.dart';
 import '../../../features/liveops/presentation/widgets/liveops_widgets.dart';
 import '../../../features/puzzle/presentation/daily_puzzle_rollout_provider.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/components/app_snackbar.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
@@ -30,11 +33,7 @@ class HomeScreen extends ConsumerWidget {
     final colors = context.cb;
     final liveOps = ref.watch(liveOpsSnapshotProvider).valueOrNull;
     final announcement = ref.watch(topAnnouncementProvider);
-    final showFriendChallenge = ref.watch(featureFlagProvider('friend_challenges'));
-    final showStats = ref.watch(featureFlagProvider('statistics'));
     final showEvents = ref.watch(featureFlagProvider('special_events'));
-    final showTimeline = ref.watch(featureFlagProvider('timeline_mode'));
-    final showTournament = ref.watch(featureFlagProvider('tournament_mode'));
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
     final localFact = FootballFactCopy.pickTip(l10n);
     final footballFactText = showAiFacts
@@ -90,14 +89,23 @@ class HomeScreen extends ConsumerWidget {
             : streak > 0
                 ? Icons.local_fire_department_rounded
                 : Icons.calendar_today_rounded;
-    final hasMoreModes = showTimeline || showTournament || showFriendChallenge || showStats;
+    final allEvents =
+        showEvents && liveOps != null ? liveOps.activeEvents : const <LiveOpsEvent>[];
+    final playableEvents = allEvents.where((e) => !e.isLocked).toList();
+    final lockedEvents = allEvents.where((e) => e.isLocked).toList();
 
     return Scaffold(
       appBar: CrossBallAppBar(
         title: l10n.homeTitle,
         actions: [
           IconButton(
+            icon: Icon(Icons.insights_rounded, color: colors.accent),
+            tooltip: l10n.stats,
+            onPressed: () => context.push(AppRoutes.stats),
+          ),
+          IconButton(
             icon: Icon(Icons.emoji_events_rounded, color: colors.accent),
+            tooltip: l10n.premium,
             onPressed: () => context.push(AppRoutes.premium),
           ),
         ],
@@ -111,164 +119,156 @@ class HomeScreen extends ConsumerWidget {
                 child: ResponsiveContent(
                   padding: EdgeInsets.zero,
                   child: ListView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.containerMargin,
-                    AppSpacing.sm,
-                    AppSpacing.containerMargin,
-                    AppSpacing.xl,
-                  ),
-                  children: [
-                    CrossBallLevelStrip(
-                      level: progression?.currentLevel ?? 1,
-                      progress: progression?.levelProgress ?? 0,
-                      label: progression != null ? '${l10n.level} ${progression.currentLevel}' : l10n.level,
-                      isLoading: progressionAsync.isLoading,
+                    padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.containerMargin,
+                      AppSpacing.sm,
+                      AppSpacing.containerMargin,
+                      AppSpacing.xl,
                     ),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (announcement != null)
-                      LiveOpsAnnouncementBanner(announcement: announcement),
-                    if (liveOps?.isMaintenanceMode == true)
-                      CrossBallGlassPanel(
-                        padding: const EdgeInsets.all(AppSpacing.md),
-                        child: Row(
-                          children: [
-                            Icon(Icons.build_circle_outlined, color: colors.error),
-                            const SizedBox(width: AppSpacing.md),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(l10n.maintenanceNotice,
-                                      style: Theme.of(context).textTheme.titleMedium),
-                                  Text(
-                                    liveOps?.emergency['message'] as String? ??
-                                        l10n.maintenanceNoticeBody,
-                                    style: Theme.of(context).textTheme.bodySmall,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                    children: [
+                      CrossBallLevelStrip(
+                        level: progression?.currentLevel ?? 1,
+                        progress: progression?.levelProgress ?? 0,
+                        label: progression != null
+                            ? '${l10n.level} ${progression.currentLevel}'
+                            : l10n.level,
+                        isLoading: progressionAsync.isLoading,
                       ),
-                    if (liveOps?.isMaintenanceMode == true)
-                      const SizedBox(height: AppSpacing.md),
-                    CrossBallHeroCard(
-                      title: l10n.dailyChallenge,
-                      subtitle: dailySubtitle,
-                      actionLabel: isDailyRefreshing
-                          ? l10n.dailyPuzzleRefreshCheckAgain
-                          : dailyCompleted
-                              ? l10n.dailyAlreadyCompletedViewSummary
-                              : l10n.continueButton,
-                      badge: dailyBadge,
-                      badgeIcon: dailyBadgeIcon,
-                      onTap: () async {
-                        ref.invalidate(dailyPuzzleRolloutProvider);
-                        ref.invalidate(userStatsProvider);
-                        ref.invalidate(dailyCompletedTodayProvider);
-                        ref.invalidate(playerProgressionProvider);
-                        ref.invalidate(seasonInfoProvider);
-                        final completed =
-                            await ref.read(dailyCompletedTodayProvider.future);
-                        cbDebug('Daily', 'home → open daily puzzle', {
-                          'dailyCompleted': completed,
-                        });
-                        if (!context.mounted) return;
-                        context.push('${AppRoutes.puzzle}?mode=daily');
-                      },
-                    ),
-                    if (season != null && season.isActive) SeasonCard(season: season),
-                    FootballFactBanner(text: footballFactText),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickStatTile(
-                            label: l10n.homeWeeklyScoreLabel,
-                            value: weeklyScoreLabel,
-                            icon: Icons.leaderboard_rounded,
-                            tint: colors.accent,
-                            onTap: () => context.go(AppRoutes.leaderboard),
+                      const SizedBox(height: AppSpacing.lg),
+                      if (announcement != null) ...[
+                        LiveOpsAnnouncementBanner(announcement: announcement),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                      if (liveOps?.isMaintenanceMode == true) ...[
+                        CrossBallGlassPanel(
+                          padding: const EdgeInsets.all(AppSpacing.md),
+                          child: Row(
+                            children: [
+                              Icon(Icons.build_circle_outlined, color: colors.error),
+                              const SizedBox(width: AppSpacing.md),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.maintenanceNotice,
+                                      style: Theme.of(context).textTheme.titleMedium,
+                                    ),
+                                    Text(
+                                      liveOps?.emergency['message'] as String? ??
+                                          l10n.maintenanceNoticeBody,
+                                      style: Theme.of(context).textTheme.bodySmall,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: _QuickStatTile(
-                            label: l10n.currentStreak,
-                            value: streak.toString(),
-                            icon: Icons.local_fire_department_rounded,
-                            tint: colors.lime,
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                      CrossBallHeroCard(
+                        title: l10n.dailyChallenge,
+                        subtitle: dailySubtitle,
+                        actionLabel: isDailyRefreshing
+                            ? l10n.dailyPuzzleRefreshCheckAgain
+                            : dailyCompleted
+                                ? l10n.dailyAlreadyCompletedViewSummary
+                                : l10n.continueButton,
+                        badge: dailyBadge,
+                        badgeIcon: dailyBadgeIcon,
+                        onTap: () async {
+                          ref.invalidate(dailyPuzzleRolloutProvider);
+                          ref.invalidate(userStatsProvider);
+                          ref.invalidate(dailyCompletedTodayProvider);
+                          ref.invalidate(playerProgressionProvider);
+                          ref.invalidate(seasonInfoProvider);
+                          final completed =
+                              await ref.read(dailyCompletedTodayProvider.future);
+                          cbDebug('Daily', 'home → open daily puzzle', {
+                            'dailyCompleted': completed,
+                          });
+                          if (!context.mounted) return;
+                          context.push('${AppRoutes.puzzle}?mode=daily');
+                        },
+                      ),
+                      if (playableEvents.isNotEmpty) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        CrossBallLabelCaps(l10n.activeEvents),
+                        const SizedBox(height: AppSpacing.sm),
+                        ...playableEvents.map(
+                          (event) => LiveOpsEventCard(
+                            event: event,
+                            isLocked: false,
+                            onTap: () {
+                              if (event.eventType == 'tournament') {
+                                context.push(AppRoutes.tournament);
+                              } else {
+                                context.push('${AppRoutes.puzzle}?mode=daily');
+                              }
+                            },
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    if (showEvents && liveOps != null && liveOps.activeEvents.isNotEmpty) ...[
-                      CrossBallLabelCaps(l10n.activeEvents),
-                      const SizedBox(height: AppSpacing.sm),
-                      ...liveOps.activeEvents.map(
-                        (event) => LiveOpsEventCard(
-                          event: event,
-                          isLocked: event.isLocked,
-                          lockedBadge: event.isLocked ? l10n.eventLockedBadge : null,
-                          onTap: () {
-                            if (event.isLocked) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l10n.eventLockedMessage)),
-                              );
-                              return;
-                            }
-                            if (event.eventType == 'tournament') {
-                              context.push(AppRoutes.tournament);
-                            } else {
-                              context.push('${AppRoutes.puzzle}?mode=daily');
-                            }
-                          },
-                        ),
-                      ),
                       const SizedBox(height: AppSpacing.md),
-                    ],
-                    CommunityHubTeaser(
-                      missionCount: dailyMissions.length,
-                      completedMissions: completedMissions,
-                      goalCount: liveOps?.communityGoals.length ?? 0,
-                      activityCount: activityFeed.length,
-                      onTap: () => context.push(AppRoutes.community),
-                    ),
-                    if (hasMoreModes) ...[
-                      CrossBallLabelCaps(l10n.moreGameModes),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _QuickStatTile(
+                              label: l10n.homeWeeklyScoreLabel,
+                              value: weeklyScoreLabel,
+                              icon: Icons.leaderboard_rounded,
+                              tint: colors.accent,
+                              onTap: () => context.go(AppRoutes.leaderboard),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: _QuickStatTile(
+                              label: l10n.currentStreak,
+                              value: streak.toString(),
+                              icon: Icons.local_fire_department_rounded,
+                              tint: colors.lime,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      CommunityHubTeaser(
+                        missionCount: dailyMissions.length,
+                        completedMissions: completedMissions,
+                        goalCount: liveOps?.communityGoals.length ?? 0,
+                        activityCount: activityFeed.length,
+                        onTap: () => context.push(AppRoutes.community),
+                      ),
+                      if (season != null && season.isActive) ...[
+                        const SizedBox(height: AppSpacing.md),
+                        SeasonCard(season: season),
+                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      CrossBallLabelCaps(l10n.comingModesTitle),
                       const SizedBox(height: AppSpacing.sm),
-                      if (showTimeline)
-                        CrossBallCard(
-                          icon: Icons.timeline_rounded,
-                          title: l10n.timelineMode,
-                          subtitle: l10n.timelineModeDesc,
-                          onTap: () => context.push('${AppRoutes.puzzle}?mode=timeline'),
+                      if (lockedEvents.isNotEmpty) ...[
+                        ...lockedEvents.map(
+                          (event) => LiveOpsEventCard(
+                            event: event,
+                            isLocked: true,
+                            lockedBadge: l10n.eventLockedBadge,
+                            onTap: () => AppSnackbar.show(
+                              context,
+                              message: l10n.eventLockedMessage,
+                              icon: Icons.lock_outline_rounded,
+                            ),
+                          ),
                         ),
-                      if (showTournament)
-                        CrossBallCard(
-                          icon: Icons.emoji_events_outlined,
-                          title: l10n.tournament,
-                          subtitle: l10n.tournamentDesc,
-                          onTap: () => context.push(AppRoutes.tournament),
-                        ),
-                      if (showFriendChallenge)
-                        CrossBallCard(
-                          icon: Icons.people_outline_rounded,
-                          title: l10n.friendChallenge,
-                          subtitle: l10n.friendChallengeDesc,
-                          onTap: () => context.push(AppRoutes.challenge),
-                        ),
-                      if (showStats)
-                        CrossBallCard(
-                          icon: Icons.insights_rounded,
-                          title: l10n.stats,
-                          subtitle: l10n.gamesPlayed,
-                          onTap: () => context.push(AppRoutes.stats),
-                        ),
+                      ],
+                      const ComingModesPanel(),
+                      if (isNewPlayer) ...[
+                        const SizedBox(height: AppSpacing.lg),
+                        FootballFactBanner(text: footballFactText),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
                 ),
               ),
             ],

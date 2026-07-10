@@ -941,6 +941,37 @@ class AppLocalizationsDe extends AppLocalizations {
   String get moreGameModes => 'Weitere Modi';
 
   @override
+  String get comingModesTitle => 'Demnächst';
+
+  @override
+  String get comingModesSubtitle =>
+      'Neue Raster-Achsen und Event-Modi sind unterwegs.';
+
+  @override
+  String get comingModesLearnMore => 'Mehr erfahren';
+
+  @override
+  String get modeWorldXiTitle => 'World XI';
+
+  @override
+  String get modeWorldXiBody =>
+      'Dasselbe Raster, neue Achsen — Spieler, die zu Verein und Nation passen.';
+
+  @override
+  String get modeThemedWeekTitle => 'Themenwoche';
+
+  @override
+  String get modeThemedWeekBody =>
+      'Kalendergebundene Vereinsraster für große Fußballmomente.';
+
+  @override
+  String get modeBlitzTitle => 'Blitz';
+
+  @override
+  String get modeBlitzBody =>
+      'Schnellere Sessions mit knapper Zeit — Hardcore-Wochen-Energie.';
+
+  @override
   String get timeJustNow => 'Gerade eben';
 
   @override

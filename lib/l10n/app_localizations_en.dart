@@ -929,6 +929,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreGameModes => 'More Modes';
 
   @override
+  String get comingModesTitle => 'Coming soon';
+
+  @override
+  String get comingModesSubtitle =>
+      'New grid axes and event modes are on the way.';
+
+  @override
+  String get comingModesLearnMore => 'Learn more';
+
+  @override
+  String get modeWorldXiTitle => 'World XI';
+
+  @override
+  String get modeWorldXiBody =>
+      'Same grid, new axes — find players who fit both the club and the country.';
+
+  @override
+  String get modeThemedWeekTitle => 'Themed Week';
+
+  @override
+  String get modeThemedWeekBody =>
+      'Calendar-tied club grids for big football moments.';
+
+  @override
+  String get modeBlitzTitle => 'Blitz';
+
+  @override
+  String get modeBlitzBody =>
+      'Faster sessions with a tighter clock — hardcore week energy.';
+
+  @override
   String get timeJustNow => 'Just now';
 
   @override

@@ -932,6 +932,37 @@ class AppLocalizationsTr extends AppLocalizations {
   String get moreGameModes => 'Diğer Modlar';
 
   @override
+  String get comingModesTitle => 'Yakında';
+
+  @override
+  String get comingModesSubtitle =>
+      'Yeni ızgara eksenleri ve etkinlik modları yolda.';
+
+  @override
+  String get comingModesLearnMore => 'Daha fazla';
+
+  @override
+  String get modeWorldXiTitle => 'Dünya 11\'i';
+
+  @override
+  String get modeWorldXiBody =>
+      'Aynı ızgara, yeni eksenler — hem kulüp hem milliyet uyan oyuncuyu bul.';
+
+  @override
+  String get modeThemedWeekTitle => 'Temalı Hafta';
+
+  @override
+  String get modeThemedWeekBody =>
+      'Büyük futbol anlarına özel kulüp ızgaraları.';
+
+  @override
+  String get modeBlitzTitle => 'Blitz';
+
+  @override
+  String get modeBlitzBody =>
+      'Daha kısa süre, daha hızlı turlar — hardcore hafta enerjisi.';
+
+  @override
   String get timeJustNow => 'Az önce';
 
   @override

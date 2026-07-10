@@ -1714,6 +1714,60 @@ abstract class AppLocalizations {
   /// **'More Modes'**
   String get moreGameModes;
 
+  /// No description provided for @comingModesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Coming soon'**
+  String get comingModesTitle;
+
+  /// No description provided for @comingModesSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New grid axes and event modes are on the way.'**
+  String get comingModesSubtitle;
+
+  /// No description provided for @comingModesLearnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn more'**
+  String get comingModesLearnMore;
+
+  /// No description provided for @modeWorldXiTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'World XI'**
+  String get modeWorldXiTitle;
+
+  /// No description provided for @modeWorldXiBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Same grid, new axes — find players who fit both the club and the country.'**
+  String get modeWorldXiBody;
+
+  /// No description provided for @modeThemedWeekTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Themed Week'**
+  String get modeThemedWeekTitle;
+
+  /// No description provided for @modeThemedWeekBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar-tied club grids for big football moments.'**
+  String get modeThemedWeekBody;
+
+  /// No description provided for @modeBlitzTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Blitz'**
+  String get modeBlitzTitle;
+
+  /// No description provided for @modeBlitzBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Faster sessions with a tighter clock — hardcore week energy.'**
+  String get modeBlitzBody;
+
   /// No description provided for @timeJustNow.
   ///
   /// In en, this message translates to:

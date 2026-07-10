@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/routing/app_routes.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../features/economy/presentation/daily_missions_card.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
@@ -35,6 +37,8 @@ class CommunityScreen extends ConsumerWidget {
     final missions = ref.watch(playerMissionsProvider).valueOrNull ?? const [];
     final dailyMissions = missions.where((m) => m.period == 'daily').toList();
     final showActivityFeed = ref.watch(featureFlagProvider('friend_activity_feed'));
+    final showFriendChallenge = ref.watch(featureFlagProvider('friend_challenges'));
+    final showTournament = ref.watch(featureFlagProvider('tournament_mode'));
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
     final activityFeed = ref.watch(activityFeedProvider).valueOrNull ?? const [];
     final localFact = FootballFactCopy.pickTip(l10n);
@@ -44,6 +48,7 @@ class CommunityScreen extends ConsumerWidget {
             orElse: () => localFact,
           )
         : localFact;
+    final hasSocialModes = showFriendChallenge || showTournament;
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.communityHubTitle),
@@ -69,6 +74,23 @@ class CommunityScreen extends ConsumerWidget {
                         height: 1.4,
                       ),
                 ),
+                if (hasSocialModes) ...[
+                  const SizedBox(height: AppSpacing.lg),
+                  if (showFriendChallenge)
+                    CrossBallCard(
+                      icon: Icons.people_outline_rounded,
+                      title: l10n.friendChallenge,
+                      subtitle: l10n.friendChallengeDesc,
+                      onTap: () => context.push(AppRoutes.challenge),
+                    ),
+                  if (showTournament)
+                    CrossBallCard(
+                      icon: Icons.emoji_events_outlined,
+                      title: l10n.tournament,
+                      subtitle: l10n.tournamentDesc,
+                      onTap: () => context.push(AppRoutes.tournament),
+                    ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
                 if (dailyMissions.isNotEmpty)
                   DailyMissionsCard(missions: missions)
