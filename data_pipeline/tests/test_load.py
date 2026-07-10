@@ -1,7 +1,9 @@
 from unittest.mock import MagicMock, patch
 
 from pipeline.load import (
+    _build_existing_player_index,
     _find_existing_player,
+    _find_existing_player_cached,
     _update_player_record,
     normalize_database_url,
 )
@@ -87,3 +89,45 @@ def test_update_player_record_merges_when_external_id_owned_elsewhere(mock_merge
     ]
     assert update_calls
     assert update_calls[-1][0][1]['id'] == 'owner-uuid'
+
+
+def test_find_existing_player_cached_prefers_external_id():
+    incoming = {
+        'external_id': '213956',
+        'identity_key': 'silva|g',
+        'name': 'Gabriel Silva',
+    }
+    by_external = {
+        '213956': {
+            'id': 'owner-uuid',
+            'external_id': '213956',
+            'name': 'Gabriel Silva',
+            'identity_key': 'silva|g',
+        },
+    }
+    existing = _find_existing_player_cached(
+        incoming,
+        by_external=by_external,
+        by_identity={},
+    )
+    assert existing is not None
+    assert existing['id'] == 'owner-uuid'
+
+
+def test_build_existing_player_index_batches_queries():
+    cur = MagicMock()
+    cur.fetchall.side_effect = [
+        [('owner-uuid', '213956', 'Gabriel Silva', 'BR', 'ST', 'silva|g')],
+        [],
+    ]
+    players = [
+        {
+            'external_id': '213956',
+            'identity_key': 'silva|g',
+            'name': 'Gabriel Silva',
+        },
+    ]
+    by_external, by_identity = _build_existing_player_index(cur, players)
+    assert by_external['213956']['id'] == 'owner-uuid'
+    assert by_identity == {}
+    assert cur.execute.call_count == 2

@@ -22,16 +22,24 @@ if [[ ! -f .env && -z "${DATABASE_URL:-}" ]]; then
   exit 1
 fi
 
-LOAD_FLAG=""
-if [[ "${CAREER_ENRICH_LOAD:-}" == "1" ]]; then
-  LOAD_FLAG="--load"
-fi
-
 PYTHON="python3"
 if [[ -n "${VIRTUAL_ENV:-}" ]] && command -v python >/dev/null 2>&1; then
   PYTHON="python"
 elif [[ -x "$PIPELINE_DIR/.venv/bin/python" ]]; then
   PYTHON="$PIPELINE_DIR/.venv/bin/python"
+fi
+
+if [[ "${1:-}" == "load-only" ]]; then
+  shift
+  echo "=== Applying enriched career patches to database ==="
+  "$PYTHON" -m pipeline apply-patches --enriched-only "$@"
+  echo "=== Enriched patch load complete ==="
+  exit 0
+fi
+
+LOAD_FLAG=""
+if [[ "${CAREER_ENRICH_LOAD:-}" == "1" ]]; then
+  LOAD_FLAG="--load"
 fi
 
 echo "=== Career enrichment (API sync + reconcile + gap report) ==="

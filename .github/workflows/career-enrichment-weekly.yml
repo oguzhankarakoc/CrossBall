@@ -16,11 +16,12 @@ permissions:
 jobs:
   enrich:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 180
     env:
       CAREER_ENRICH_LOAD: '1'
       PATCH_LOAD_LIGHT: '0'
-      DB_STATEMENT_TIMEOUT: 45min
+      DB_STATEMENT_TIMEOUT: 60min
+      USE_SYSTEM_PYTHON: '1'
     steps:
       - uses: actions/checkout@v5
 
@@ -49,8 +50,15 @@ jobs:
           test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
-      - name: Run career enrichment
-        run: chmod +x scripts/run_career_enrichment.sh && ./scripts/run_career_enrichment.sh
+      - name: Reconcile careers and write enriched CSV
+        timeout-minutes: 90
+        run: |
+          chmod +x scripts/run_career_enrichment.sh
+          CAREER_ENRICH_LOAD=0 ./scripts/run_career_enrichment.sh
+
+      - name: Apply enriched patches to database
+        timeout-minutes: 90
+        run: ./scripts/run_career_enrichment.sh load-only
 
       - name: Upload gap report artifact
         if: always()

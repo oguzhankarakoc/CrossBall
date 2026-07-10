@@ -9,6 +9,7 @@ from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import psycopg2
 from dotenv import load_dotenv
+from psycopg2.extras import execute_batch
 
 from .normalize import normalize_name
 from .player_identity import (
@@ -174,6 +175,69 @@ def _find_existing_player(cur, player: dict) -> dict | None:
     return None
 
 
+def _build_existing_player_index(
+    cur,
+    players: list[dict],
+) -> tuple[dict[str, dict], dict[str, list[dict]]]:
+    """Prefetch existing players by external_id and identity_key for bulk upserts."""
+    external_ids = list({p.get('external_id') for p in players if p.get('external_id')})
+    identity_keys = list({p.get('identity_key') for p in players if p.get('identity_key')})
+
+    by_external: dict[str, dict] = {}
+    by_identity: dict[str, list[dict]] = {}
+
+    for start in range(0, len(external_ids), 1000):
+        chunk = external_ids[start:start + 1000]
+        cur.execute(
+            """
+            SELECT id, external_id, name, nationality_code, primary_position, identity_key
+            FROM players
+            WHERE external_id = ANY(%s)
+            """,
+            (chunk,),
+        )
+        for row in cur.fetchall():
+            existing = _existing_from_db_row(row)
+            if existing.get('external_id'):
+                by_external[existing['external_id']] = existing
+
+    for start in range(0, len(identity_keys), 1000):
+        chunk = identity_keys[start:start + 1000]
+        cur.execute(
+            """
+            SELECT id, external_id, name, nationality_code, primary_position, identity_key
+            FROM players
+            WHERE identity_key = ANY(%s)
+            """,
+            (chunk,),
+        )
+        for row in cur.fetchall():
+            existing = _existing_from_db_row(row)
+            key = existing.get('identity_key')
+            if key:
+                by_identity.setdefault(key, []).append(existing)
+
+    return by_external, by_identity
+
+
+def _find_existing_player_cached(
+    incoming: dict,
+    *,
+    by_external: dict[str, dict],
+    by_identity: dict[str, list[dict]],
+) -> dict | None:
+    ext_id = incoming.get('external_id')
+    if ext_id and ext_id in by_external:
+        return by_external[ext_id]
+
+    identity_key = incoming.get('identity_key')
+    if identity_key:
+        for existing in by_identity.get(identity_key, []):
+            if names_likely_same_person(existing['name'], incoming['name']):
+                return existing
+    return None
+
+
 def _merge_player_into_owner(cur, drop_id: str, keep_id: str) -> None:
     """Move careers and stats from drop_id to keep_id, then delete drop_id."""
     if drop_id == keep_id:
@@ -252,40 +316,48 @@ def _update_player_record(cur, player_id: str, existing: dict, incoming: dict) -
     return player_id
 
 
+_CAREER_UPSERT_SQL = """
+INSERT INTO player_career_history
+  (player_id, club_id, start_date, end_date, is_loan,
+   is_senior, is_youth, is_reserve, appearances, source)
+VALUES (%(player_id)s, %(club_id)s, %(start_date)s, %(end_date)s,
+        %(is_loan)s, %(is_senior)s, false, false, %(appearances)s,
+        %(source)s)
+ON CONFLICT (player_id, club_id, start_date, is_loan) DO UPDATE SET
+  end_date = EXCLUDED.end_date,
+  appearances = GREATEST(
+    COALESCE(player_career_history.appearances, 0),
+    COALESCE(EXCLUDED.appearances, 0)
+  ),
+  source = EXCLUDED.source
+"""
+
+
 def _insert_careers(cur, player_id: str, careers: list[dict]) -> None:
+    rows = []
     for career in careers:
         if career.get('is_youth') or career.get('is_reserve'):
             continue
-        cur.execute(
-            """
-            INSERT INTO player_career_history
-              (player_id, club_id, start_date, end_date, is_loan,
-               is_senior, is_youth, is_reserve, appearances, source)
-            VALUES (%(player_id)s, %(club_id)s, %(start_date)s, %(end_date)s,
-                    %(is_loan)s, %(is_senior)s, false, false, %(appearances)s,
-                    %(source)s)
-            ON CONFLICT (player_id, club_id, start_date, is_loan) DO UPDATE SET
-              end_date = EXCLUDED.end_date,
-              appearances = GREATEST(
-                COALESCE(player_career_history.appearances, 0),
-                COALESCE(EXCLUDED.appearances, 0)
-              ),
-              source = EXCLUDED.source
-            """,
-            {
-                **career,
-                'player_id': player_id,
-                'source': career.get('source') or 'kaggle_sofifa',
-            },
-        )
+        rows.append({
+            **career,
+            'player_id': player_id,
+            'source': career.get('source') or 'kaggle_sofifa',
+        })
+    if rows:
+        execute_batch(cur, _CAREER_UPSERT_SQL, rows, page_size=100)
 
 
 def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
     total = 0
     with conn.cursor() as cur:
+        by_external, by_identity = _build_existing_player_index(cur, players)
         for index, player in enumerate(players, start=1):
             incoming = _player_row(player)
-            existing = _find_existing_player(cur, incoming)
+            existing = _find_existing_player_cached(
+                incoming,
+                by_external=by_external,
+                by_identity=by_identity,
+            )
 
             if existing:
                 player_id = _update_player_record(cur, existing['id'], existing, incoming)
@@ -313,11 +385,24 @@ def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
                 )
                 player_id = str(cur.fetchone()[0])
 
+            merged = {
+                'id': player_id,
+                'external_id': incoming.get('external_id'),
+                'name': incoming['name'],
+                'nationality_code': incoming.get('nationality_code'),
+                'primary_position': incoming.get('primary_position'),
+                'identity_key': incoming.get('identity_key'),
+            }
+            if merged.get('external_id'):
+                by_external[merged['external_id']] = merged
+            if merged.get('identity_key'):
+                by_identity.setdefault(merged['identity_key'], []).append(merged)
+
             _insert_careers(cur, player_id, player.get('careers', []))
             total += 1
             if index % batch_size == 0:
                 conn.commit()
-                print(f'  Loaded {index}/{len(players)} players...')
+                print(f'  Loaded {index}/{len(players)} players...', flush=True)
 
     conn.commit()
     return total

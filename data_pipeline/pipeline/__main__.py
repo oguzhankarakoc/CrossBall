@@ -15,7 +15,12 @@ from .api_football_sync import (
 )
 from .career_enrichment import run_career_enrichment
 from .career_gap_report import detect_career_gaps, write_gap_report
-from .career_patches import DEFAULT_PATCHES_PATH, load_all_career_patches
+from .career_patches import (
+    DEFAULT_PATCHES_PATH,
+    ENRICHED_PATCHES_PATH,
+    load_all_career_patches,
+    load_career_patches,
+)
 from .fetch_kaggle import fetch_kaggle_dataset
 from .kaggle_transform import transform_kaggle_files, write_pipeline_csv
 from .load import (
@@ -172,21 +177,35 @@ def _patch_load_light() -> bool:
     return os.environ.get('PATCH_LOAD_LIGHT', '').strip().lower() in ('1', 'true', 'yes')
 
 
-def cmd_apply_patches(patches_path: Path, clubs_path: Path, *, light: Optional[bool] = None) -> None:
+def cmd_apply_patches(
+    patches_path: Path,
+    clubs_path: Path,
+    *,
+    light: Optional[bool] = None,
+    enriched_only: bool = False,
+) -> None:
     """Apply curated career patches to PostgreSQL without a full Kaggle re-download."""
     light = _patch_load_light() if light is None else light
     include_enriched = not light
-    if light:
+    if enriched_only:
+        mode = 'enriched deltas only (weekly reconcile output)'
+        patches = load_career_patches(ENRICHED_PATCHES_PATH)
+    elif light:
         mode = 'light (manual + API-Football; refresh club graph; skip enriched + dedupe)'
+        patches = load_all_career_patches(
+            manual_path=patches_path,
+            include_enriched=False,
+        )
     else:
         mode = 'full (manual + API-Football + enriched)'
+        patches = load_all_career_patches(
+            manual_path=patches_path,
+            include_enriched=include_enriched,
+        )
     print(f'  Applying career patches — {mode}')
-    patches = load_all_career_patches(
-        manual_path=patches_path,
-        include_enriched=include_enriched,
-    )
     if not patches:
-        raise SystemExit(f'No patches found at {patches_path}')
+        source = ENRICHED_PATCHES_PATH if enriched_only else patches_path
+        raise SystemExit(f'No patches found at {source}')
 
     raw_clubs = ingest_csv(clubs_path)
     clubs = normalize_clubs(raw_clubs)
@@ -484,6 +503,11 @@ def main():
         action='store_true',
         help='Daily sync: manual + API-Football only (skip enriched, dedupe, graph refresh)',
     )
+    patch_parser.add_argument(
+        '--enriched-only',
+        action='store_true',
+        help='Weekly enrichment: load reconciled enriched_careers.csv only (daily sync covers manual+API)',
+    )
 
     af_parser = sub.add_parser(
         'sync-api-football',
@@ -567,7 +591,12 @@ def main():
     elif args.command == 'dedupe-players':
         cmd_dedupe_players()
     elif args.command == 'apply-patches':
-        cmd_apply_patches(args.patches, args.clubs, light=args.light or _patch_load_light())
+        cmd_apply_patches(
+            args.patches,
+            args.clubs,
+            light=args.light or _patch_load_light(),
+            enriched_only=args.enriched_only,
+        )
     elif args.command == 'sync-api-football':
         cmd_sync_api_football(
             offset=args.offset,
@@ -604,7 +633,12 @@ def main():
         for key, value in summary.items():
             print(f'  {key}: {value}')
         if args.load:
-            cmd_apply_patches(DEFAULT_PATCHES_PATH, args.clubs, light=False)
+            cmd_apply_patches(
+                DEFAULT_PATCHES_PATH,
+                args.clubs,
+                light=False,
+                enriched_only=True,
+            )
     else:
         parser.print_help()
 
