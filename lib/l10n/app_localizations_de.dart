@@ -189,6 +189,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get experiencePoints => 'XP';
 
   @override
+  String get homeWeeklyScoreLabel => 'Diese Woche';
+
+  @override
   String get competitiveRating => 'Rating';
 
   @override
@@ -567,6 +570,32 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dailyMissions => 'Tägliche Missionen';
+
+  @override
+  String get missionDailyPlayOneTitle => 'Täglicher Spieler';
+
+  @override
+  String get missionDailyPlayOneDesc => 'Löse das heutige Daily-Rätsel';
+
+  @override
+  String get missionDailyNoHintsTitle => 'Ohne Hilfe';
+
+  @override
+  String get missionDailyNoHintsDesc => 'Beende ein Rätsel ohne Hinweise';
+
+  @override
+  String get missionDailyLegendaryTitle => 'Legendenjäger';
+
+  @override
+  String get missionDailyLegendaryDesc =>
+      'Finde heute eine legendäre oder seltenere Antwort';
+
+  @override
+  String get missionWeeklyHard3Title => 'Hard Mode';
+
+  @override
+  String get missionWeeklyHard3Desc =>
+      'Schließe diese Woche 3 schwere Rätsel ab';
 
   @override
   String missionsProgress(int completed, int total) {

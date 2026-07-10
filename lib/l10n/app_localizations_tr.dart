@@ -189,6 +189,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get experiencePoints => 'XP';
 
   @override
+  String get homeWeeklyScoreLabel => 'Bu hafta';
+
+  @override
   String get competitiveRating => 'Derece';
 
   @override
@@ -564,6 +567,31 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get dailyMissions => 'Günlük Görevler';
+
+  @override
+  String get missionDailyPlayOneTitle => 'Günlük Oyuncu';
+
+  @override
+  String get missionDailyPlayOneDesc => 'Bugünün daily bulmacasını tamamla';
+
+  @override
+  String get missionDailyNoHintsTitle => 'Yardım Yok';
+
+  @override
+  String get missionDailyNoHintsDesc => 'İpucu kullanmadan bir bulmaca bitir';
+
+  @override
+  String get missionDailyLegendaryTitle => 'Efsane Avcısı';
+
+  @override
+  String get missionDailyLegendaryDesc =>
+      'Bugün efsanevi veya daha nadir bir cevap bul';
+
+  @override
+  String get missionWeeklyHard3Title => 'Zor Mod';
+
+  @override
+  String get missionWeeklyHard3Desc => 'Bu hafta 3 zor bulmaca tamamla';
 
   @override
   String missionsProgress(int completed, int total) {

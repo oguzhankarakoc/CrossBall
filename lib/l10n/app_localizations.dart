@@ -418,6 +418,12 @@ abstract class AppLocalizations {
   /// **'XP'**
   String get experiencePoints;
 
+  /// No description provided for @homeWeeklyScoreLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get homeWeeklyScoreLabel;
+
   /// No description provided for @competitiveRating.
   ///
   /// In en, this message translates to:
@@ -1113,6 +1119,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Daily Missions'**
   String get dailyMissions;
+
+  /// No description provided for @missionDailyPlayOneTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Player'**
+  String get missionDailyPlayOneTitle;
+
+  /// No description provided for @missionDailyPlayOneDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete today\'s daily puzzle'**
+  String get missionDailyPlayOneDesc;
+
+  /// No description provided for @missionDailyNoHintsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No Help Needed'**
+  String get missionDailyNoHintsTitle;
+
+  /// No description provided for @missionDailyNoHintsDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish a puzzle without using hints'**
+  String get missionDailyNoHintsDesc;
+
+  /// No description provided for @missionDailyLegendaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Legend Hunter'**
+  String get missionDailyLegendaryTitle;
+
+  /// No description provided for @missionDailyLegendaryDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Find one legendary or better answer today'**
+  String get missionDailyLegendaryDesc;
+
+  /// No description provided for @missionWeeklyHard3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Hard Mode'**
+  String get missionWeeklyHard3Title;
+
+  /// No description provided for @missionWeeklyHard3Desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete 3 hard puzzles this week'**
+  String get missionWeeklyHard3Desc;
 
   /// No description provided for @missionsProgress.
   ///

@@ -137,15 +137,17 @@ Deno.serve(async (req) => {
 
     let economyResult: Record<string, unknown> | null = null
 
-    if (!suspicious && userRow?.id) {
+    // Practice / timeline: show session score only — no competitive writes.
+    const isCompetitiveMode =
+      resolvedMode === 'daily' || resolvedMode === 'challenge'
+    const isPracticeLike =
+      resolvedMode === 'practice' || resolvedMode === 'timeline'
+
+    if (!suspicious && userRow?.id && isCompetitiveMode) {
       const eventType =
         resolvedMode === 'daily'
           ? 'daily_completed'
-          : resolvedMode === 'practice'
-            ? 'practice_completed'
-            : resolvedMode === 'timeline'
-              ? 'timeline_completed'
-              : 'puzzle_completed'
+          : 'puzzle_completed'
 
       const payload = {
         final_score: finalScore,
@@ -253,12 +255,7 @@ Deno.serve(async (req) => {
         (activeTournament as { ok?: boolean }).ok === true
       ) {
         const slug = (activeTournament as { slug?: string }).slug
-        if (
-          slug &&
-          fullGrid &&
-          !suspicious &&
-          ['daily', 'practice', 'timeline'].includes(resolvedMode)
-        ) {
+        if (slug && fullGrid && !suspicious && resolvedMode === 'daily') {
           await supabase.rpc('upsert_tournament_score', {
             p_tournament_slug: slug,
             p_user_uuid: user_uuid,
@@ -266,6 +263,18 @@ Deno.serve(async (req) => {
           })
         }
       }
+    } else if (!suspicious && userRow?.id && isPracticeLike) {
+      // Non-competitive: activity only (no rating / weekly / tournament / career totals).
+      await supabase.rpc('log_player_activity', {
+        p_user_uuid: user_uuid,
+        p_event_type: `${resolvedMode}_completed`,
+        p_payload: {
+          final_score: finalScore,
+          mode: resolvedMode,
+          is_perfect: isPerfect,
+          competitive: false,
+        },
+      })
     }
 
     let practiceQuota: Record<string, unknown> | null = null

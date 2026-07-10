@@ -24,12 +24,17 @@ async function bestEffortRpc(
   }
 }
 
-function tierFromUsage(pct: number): string {
-  if (pct > 50) return 'common'
-  if (pct > 25) return 'rare'
-  if (pct > 10) return 'epic'
-  if (pct > 3) return 'legendary'
-  return 'mythic'
+function tierFromQuality(quality: number): string {
+  if (quality >= 80) return 'mythic'
+  if (quality >= 65) return 'legendary'
+  if (quality >= 50) return 'epic'
+  if (quality >= 35) return 'rare'
+  return 'common'
+}
+
+function answerQuality(obscurity: number, usagePercentage: number): number {
+  const inv = Math.max(0, 100 - usagePercentage)
+  return Math.max(0, Math.min(100, obscurity * 0.55 + inv * 0.45))
 }
 
 Deno.serve(async (req) => {
@@ -154,13 +159,18 @@ Deno.serve(async (req) => {
         p_user_uuid: userUuid,
       })
     } else {
-      const [{ data: rarity }, { data: serverResponseMs, error: timingError }] =
+      const [{ data: rarity }, { data: playerMeta }, { data: serverResponseMs, error: timingError }] =
         await Promise.all([
           supabase
             .from('rarity_stats')
             .select('usage_percentage')
             .eq('puzzle_cell_id', puzzle_cell_id)
             .eq('player_id', player_id)
+            .maybeSingle(),
+          supabase
+            .from('players')
+            .select('obscurity_score')
+            .eq('id', player_id)
             .maybeSingle(),
           supabase.rpc('compute_answer_response_time_ms', {
             p_session_id: session_id,
@@ -172,9 +182,15 @@ Deno.serve(async (req) => {
         console.error('compute_answer_response_time_ms failed:', timingError.message)
       }
 
-      usagePercentage = rarity?.usage_percentage ?? 100
-      rarityScore = Math.max(0, 100 - usagePercentage)
-      const tier = tierFromUsage(usagePercentage)
+      const obscurity = Number(playerMeta?.obscurity_score ?? 50)
+      // Cold-start: no cell history → treat as inverse of obscurity (not 100% common).
+      usagePercentage =
+        rarity?.usage_percentage != null
+          ? Number(rarity.usage_percentage)
+          : Math.max(0, Math.min(100, 100 - obscurity))
+      const quality = answerQuality(obscurity, usagePercentage)
+      rarityScore = Math.round(quality)
+      const tier = tierFromQuality(quality)
 
       const { error: upsertError } = await supabase.from('answers').upsert(
         {

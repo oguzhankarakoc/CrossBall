@@ -87,6 +87,7 @@
   "gamesPlayed": "Games Played",
   "level": "Level",
   "experiencePoints": "XP",
+  "homeWeeklyScoreLabel": "This week",
   "competitiveRating": "Rating",
   "league": "League",
   "currentStreak": "Current Streak",
@@ -237,6 +238,14 @@
   "achievementUnlocked": "Achievement unlocked!",
   "noAchievementsYet": "Complete puzzles to unlock achievements.",
   "dailyMissions": "Daily Missions",
+  "missionDailyPlayOneTitle": "Daily Player",
+  "missionDailyPlayOneDesc": "Complete today's daily puzzle",
+  "missionDailyNoHintsTitle": "No Help Needed",
+  "missionDailyNoHintsDesc": "Finish a puzzle without using hints",
+  "missionDailyLegendaryTitle": "Legend Hunter",
+  "missionDailyLegendaryDesc": "Find one legendary or better answer today",
+  "missionWeeklyHard3Title": "Hard Mode",
+  "missionWeeklyHard3Desc": "Complete 3 hard puzzles this week",
   "missionsProgress": "{completed}/{total} done",
   "@missionsProgress": {
     "placeholders": {

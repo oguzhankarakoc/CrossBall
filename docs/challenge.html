@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CrossBall Challenge</title>
+  <meta name="description" content="Open this friend challenge in CrossBall — or get the app." />
+  <style>
+    :root {
+      --bg: #0b1f14;
+      --card: #122a1c;
+      --lime: #b8f24a;
+      --text: #f4f7f2;
+      --muted: #a8b5a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "SF Pro Display", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, #1a3d28, var(--bg));
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; letter-spacing: .04em; }
+    p { margin: 0 0 16px; color: var(--muted); line-height: 1.45; }
+    .code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      background: rgba(184,242,74,.12);
+      color: var(--lime);
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      word-break: break-all;
+    }
+    a.btn {
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .primary { background: var(--lime); color: #0b1f14; }
+    .secondary { background: transparent; color: var(--lime); border: 1px solid rgba(184,242,74,.4); }
+    .note { font-size: .85rem; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>CROSSBALL</h1>
+    <p>Your friend challenged you to the same puzzle. Open the app to play — or install CrossBall first.</p>
+    <div class="code" id="codeLabel">Loading challenge…</div>
+    <a class="btn primary" id="openApp" href="#">Open in CrossBall</a>
+    <a class="btn secondary" id="storeLink"
+       href="https://apps.apple.com/app/crossball">Get on the App Store</a>
+    <p class="note">If the app is installed, tap “Open in CrossBall”. After installing, return to this link to join the challenge.</p>
+  </main>
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      var code = params.get('c') || params.get('code') || '';
+      var pathMatch = window.location.pathname.match(/\/c\/([a-z0-9]+)/i);
+      if (!code && pathMatch) code = pathMatch[1];
+      var deep = code ? ('crossball://challenge/' + encodeURIComponent(code)) : 'crossball://';
+      document.getElementById('codeLabel').textContent = code
+        ? ('Challenge: ' + code)
+        : 'No challenge code in this link';
+      var open = document.getElementById('openApp');
+      open.href = deep;
+      if (code) {
+        // Best-effort: try opening the app immediately on mobile.
+        setTimeout(function () { window.location.href = deep; }, 400);
+      }
+    })();
+  </script>
+</body>
+</html>

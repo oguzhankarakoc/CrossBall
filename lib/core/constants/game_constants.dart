@@ -17,16 +17,17 @@ abstract final class GameConstants {
   static const int idealValidAnswersPerCell = 8;
 
   static const int mistakePenalty = 15;
+  /// Fallback flat hint penalty when hint types are unknown.
   static const int hintScorePenalty = 5;
 
-  /// Guaranteed floor per correct cell so common picks still earn points.
-  static const int baseCellScore = 12;
+  /// Base points per correct cell before quality/speed (scoring v2).
+  static const int baseCellScore = 10;
 
-  /// Extra points from rarity: (100 - usage%) * multiplier.
+  /// Extra points from rarity: (100 - usage%) * multiplier (legacy preview).
   static const double rarityScoreMultiplier = 0.45;
 
-  /// Bonus for completing the full daily/challenge grid.
-  static const int dailyCompletionBonus = 30;
+  /// Bonus for completing the full daily/challenge grid (scoring v2).
+  static const int dailyCompletionBonus = 25;
 
   static const int interstitialEveryNPractice = 3;
 

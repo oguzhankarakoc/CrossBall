@@ -94,7 +94,7 @@ class LiveOpsEventCard extends StatelessWidget {
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(
-              isLocked ? Icons.lock_outline_rounded : Icons.local_fire_department,
+              _eventIcon(event.slug, isLocked),
               color: isLocked ? colors.textSecondary : colors.accent,
             ),
             title: Text(event.title, style: titleStyle),
@@ -132,6 +132,18 @@ class LiveOpsEventCard extends StatelessWidget {
       ),
     );
   }
+}
+
+IconData _eventIcon(String slug, bool isLocked) {
+  if (isLocked && slug != 'champions_league_week') {
+    return Icons.lock_outline_rounded;
+  }
+  return switch (slug) {
+    'champions_league_week' => Icons.sports_soccer_rounded,
+    'matchday-weekend' => Icons.stadium_outlined,
+    _ when slug.contains('tournament') => Icons.emoji_events_outlined,
+    _ => isLocked ? Icons.lock_outline_rounded : Icons.local_fire_department,
+  };
 }
 
 class LiveOpsCommunityGoalBar extends StatelessWidget {
@@ -205,6 +217,14 @@ class LiveOpsCommunityGoalBar extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                     ),
+                  )
+                else
+                  Text(
+                    '${goal.progressPct.toStringAsFixed(0)}%',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
                   ),
               ],
             ),

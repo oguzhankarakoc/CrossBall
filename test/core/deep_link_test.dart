@@ -16,4 +16,11 @@ void main() {
   test('unknown scheme returns null', () {
     expect(DeepLinkService.routeFromUri(Uri.parse('https://example.com')), isNull);
   });
+
+  test('https challenge landing opens challenge puzzle', () {
+    final route = DeepLinkService.routeFromUri(
+      Uri.parse('https://oguzhankarakoc.github.io/CrossBall/challenge.html?c=abc123'),
+    );
+    expect(route, '/puzzle?mode=challenge&id=abc123');
+  });
 }

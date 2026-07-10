@@ -66,6 +66,8 @@ class _MissionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.cb;
+    final l10n = AppLocalizations.of(context)!;
+    final (title, description) = _localizedMission(l10n, mission);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
@@ -83,14 +85,14 @@ class _MissionRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  mission.title,
+                  title,
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                         decoration: mission.isCompleted ? TextDecoration.lineThrough : null,
                       ),
                 ),
                 Text(
-                  mission.description,
+                  description,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: colors.textSecondary,
                       ),
@@ -98,6 +100,13 @@ class _MissionRow extends StatelessWidget {
                 if (!mission.isCompleted && mission.progressTarget > 1) ...[
                   const SizedBox(height: AppSpacing.xs),
                   LinearProgressIndicator(value: mission.progressFraction),
+                  const SizedBox(height: 2),
+                  Text(
+                    '${mission.progressCurrent}/${mission.progressTarget}',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: colors.textSecondary,
+                        ),
+                  ),
                 ],
               ],
             ),
@@ -114,4 +123,14 @@ class _MissionRow extends StatelessWidget {
       ),
     );
   }
+}
+
+(String, String) _localizedMission(AppLocalizations l10n, PlayerMission mission) {
+  return switch (mission.slug) {
+    'daily_play_one' => (l10n.missionDailyPlayOneTitle, l10n.missionDailyPlayOneDesc),
+    'daily_no_hints' => (l10n.missionDailyNoHintsTitle, l10n.missionDailyNoHintsDesc),
+    'daily_legendary' => (l10n.missionDailyLegendaryTitle, l10n.missionDailyLegendaryDesc),
+    'weekly_hard_3' => (l10n.missionWeeklyHard3Title, l10n.missionWeeklyHard3Desc),
+    _ => (mission.title, mission.description),
+  };
 }

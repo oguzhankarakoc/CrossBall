@@ -94,12 +94,18 @@ Deno.serve(async (req) => {
 
     if (error) throw error
 
+    const shareBase =
+      Deno.env.get('CHALLENGE_SHARE_BASE_URL')?.replace(/\/$/, '') ??
+      'https://oguzhankarakoc.github.io/CrossBall/challenge.html'
+    const shareUrl = `${shareBase}?c=${challenge.challenge_code}`
+
     return new Response(
       JSON.stringify({
         challenge_id: challenge.challenge_code,
         puzzle_id,
         creator_score: creatorScore,
-        share_url: `crossball://challenge/${challenge.challenge_code}`,
+        share_url: shareUrl,
+        deep_link: `crossball://challenge/${challenge.challenge_code}`,
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )

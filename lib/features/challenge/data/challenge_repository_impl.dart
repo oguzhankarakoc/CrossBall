@@ -34,7 +34,7 @@ class ChallengeRepositoryImpl implements ChallengeRepository {
     return Challenge(
       id: code,
       puzzleId: puzzleId,
-      shareUrl: 'crossball://challenge/$code',
+      shareUrl: 'https://oguzhankarakoc.github.io/CrossBall/challenge.html?c=$code',
       creatorScore: creatorScore,
     );
   }

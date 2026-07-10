@@ -159,7 +159,10 @@ class _WeeklyDailyLeaderboardTab extends ConsumerWidget {
                 ],
               ),
             ),
-            if (myEntry != null) ...[
+            // Pin a compact "you" summary only when the player is outside the
+            // visible top list; never duplicate the same card in the ranking.
+            if (myEntry != null &&
+                !entries.any((e) => e.userUuid == myEntry.userUuid)) ...[
               const SizedBox(height: AppSpacing.md),
               _WeeklyLeaderboardCard(
                 entry: myEntry,
@@ -174,6 +177,7 @@ class _WeeklyDailyLeaderboardTab extends ConsumerWidget {
                 child: _WeeklyLeaderboardCard(
                   entry: entry,
                   isMe: entry.userUuid == profile?.userUuid,
+                  highlight: entry.userUuid == profile?.userUuid,
                 ),
               ),
             ),

@@ -11,11 +11,13 @@ type RawPlayer = {
   nationality_code?: string | null
   primary_position?: string | null
   identity_key?: string | null
+  obscurity_score?: number | null
 }
 
 type EnrichedPlayer = RawPlayer & {
   clubs_preview: string[]
   popularity_score: number
+  obscurity_score: number
   is_cell_relevant: boolean
 }
 
@@ -99,6 +101,7 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
     primary_position: primary.primary_position ?? secondary.primary_position ?? null,
     clubs_preview: clubs.slice(0, 4),
     popularity_score: Math.max(primary.popularity_score, secondary.popularity_score),
+    obscurity_score: Math.max(primary.obscurity_score ?? 50, secondary.obscurity_score ?? 50),
     is_cell_relevant: primary.is_cell_relevant || secondary.is_cell_relevant,
   }
 }
@@ -202,9 +205,10 @@ async function fillMissingPlayerMetadata(
 
 function scorePlayer(player: EnrichedPlayer, normalized: string): number {
   const name = player.name.toLowerCase()
-  let score = player.popularity_score
+  // Prefer intersection-valid + obscure picks over global popularity.
+  let score = (player.obscurity_score ?? 50) * 3 - player.popularity_score * 2
 
-  if (player.is_cell_relevant) score += 300
+  if (player.is_cell_relevant) score += 400
   if (!normalized) return score
 
   if (name === normalized) score += 1000
@@ -315,6 +319,7 @@ async function enrichPlayers(
     const siblingIds = siblingMap.get(player.id) ?? [player.id]
     const mergedClubs: string[] = []
     let popularityScore = 0
+    let obscurityScore = Number(player.obscurity_score ?? 50)
     for (const siblingId of siblingIds) {
       for (const club of clubsByPlayer.get(siblingId) ?? []) {
         if (!mergedClubs.includes(club)) mergedClubs.push(club)
@@ -328,6 +333,7 @@ async function enrichPlayers(
       ...player,
       clubs_preview: mergedClubs.slice(0, 4),
       popularity_score: popularityScore,
+      obscurity_score: obscurityScore,
       is_cell_relevant: isCellRelevant,
     }
   })
@@ -519,7 +525,7 @@ Deno.serve(async (req) => {
 
     const { data: rawResults } = await supabase
       .from('players')
-      .select('id, name, nationality_code, primary_position, identity_key')
+      .select('id, name, nationality_code, primary_position, identity_key, obscurity_score')
       .ilike('normalized_name', `%${normalized}%`)
       .limit(Math.min(limit * 3, 60))
 

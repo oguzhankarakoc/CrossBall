@@ -87,6 +87,7 @@
   "gamesPlayed": "Gespielte Spiele",
   "level": "Level",
   "experiencePoints": "XP",
+  "homeWeeklyScoreLabel": "Diese Woche",
   "competitiveRating": "Rating",
   "league": "Liga",
   "currentStreak": "Aktuelle Serie",
@@ -230,6 +231,14 @@
   "achievementUnlocked": "Erfolg freigeschaltet!",
   "noAchievementsYet": "Schließe Rätsel ab, um Erfolge freizuschalten.",
   "dailyMissions": "Tägliche Missionen",
+  "missionDailyPlayOneTitle": "Täglicher Spieler",
+  "missionDailyPlayOneDesc": "Löse das heutige Daily-Rätsel",
+  "missionDailyNoHintsTitle": "Ohne Hilfe",
+  "missionDailyNoHintsDesc": "Beende ein Rätsel ohne Hinweise",
+  "missionDailyLegendaryTitle": "Legendenjäger",
+  "missionDailyLegendaryDesc": "Finde heute eine legendäre oder seltenere Antwort",
+  "missionWeeklyHard3Title": "Hard Mode",
+  "missionWeeklyHard3Desc": "Schließe diese Woche 3 schwere Rätsel ab",
   "missionsProgress": "{completed}/{total} erledigt",
   "@missionsProgress": {
     "placeholders": {

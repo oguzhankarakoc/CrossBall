@@ -472,7 +472,13 @@ class AnswerResultSheet extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
     final correct = result.correct;
-    final tier = RarityTier.fromUsagePercentage(result.usagePercentage);
+    final tier = switch (result.rarityTier) {
+      'mythic' => RarityTier.mythic,
+      'legendary' => RarityTier.legendary,
+      'epic' => RarityTier.epic,
+      'rare' => RarityTier.rare,
+      _ => RarityTier.common,
+    };
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),

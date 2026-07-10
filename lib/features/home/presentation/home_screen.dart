@@ -10,6 +10,7 @@ import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../features/community/presentation/widgets/community_hub_teaser.dart';
 import '../../../features/economy/domain/player_progression.dart';
 import '../../../features/economy/presentation/season_card.dart';
+import '../../../features/leaderboard/presentation/leaderboard_screen.dart';
 import '../../../features/liveops/domain/liveops_event_extensions.dart';
 import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../features/social/presentation/football_fact_banner.dart';
@@ -57,6 +58,13 @@ class HomeScreen extends ConsumerWidget {
         (dailyCompletedAsync.valueOrNull ?? stats?.dailyCompletedToday ?? false);
     final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
     final streak = stats?.currentStreak ?? 0;
+    final weeklySnapshot = ref.watch(weeklyDailyLeaderboardProvider).valueOrNull;
+    final myWeekly = weeklySnapshot?.myEntry;
+    final weeklyScoreLabel = myWeekly == null
+        ? '—'
+        : myWeekly.rank > 0
+            ? '${myWeekly.totalScore.round()} · #${myWeekly.rank}'
+            : '${myWeekly.totalScore.round()}';
     final localeName = Localizations.localeOf(context).toString();
     final dailySubtitle = [
       if (isDailyRefreshing)
@@ -174,10 +182,11 @@ class HomeScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: _QuickStatTile(
-                            label: l10n.experiencePoints,
-                            value: progression?.experiencePoints.toString() ?? '—',
-                            icon: Icons.star_rounded,
+                            label: l10n.homeWeeklyScoreLabel,
+                            value: weeklyScoreLabel,
+                            icon: Icons.leaderboard_rounded,
                             tint: colors.accent,
+                            onTap: () => context.go(AppRoutes.leaderboard),
                           ),
                         ),
                         const SizedBox(width: AppSpacing.md),
@@ -274,16 +283,18 @@ class _QuickStatTile extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.tint,
+    this.onTap,
   });
 
   final String label;
   final String value;
   final IconData icon;
   final Color tint;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return CrossBallGlassPanel(
+    final child = CrossBallGlassPanel(
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,6 +311,15 @@ class _QuickStatTile extends StatelessWidget {
                 ),
           ),
         ],
+      ),
+    );
+    if (onTap == null) return child;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: AppRadius.lgBorder,
+        child: child,
       ),
     );
   }

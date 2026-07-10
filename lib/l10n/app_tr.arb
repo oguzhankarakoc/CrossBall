@@ -87,6 +87,7 @@
   "gamesPlayed": "Oynanan Oyun",
   "level": "Seviye",
   "experiencePoints": "XP",
+  "homeWeeklyScoreLabel": "Bu hafta",
   "competitiveRating": "Derece",
   "league": "Lig",
   "currentStreak": "Mevcut Seri",
@@ -230,6 +231,14 @@
   "achievementUnlocked": "Başarım açıldı!",
   "noAchievementsYet": "Başarımları açmak için bulmacaları tamamla.",
   "dailyMissions": "Günlük Görevler",
+  "missionDailyPlayOneTitle": "Günlük Oyuncu",
+  "missionDailyPlayOneDesc": "Bugünün daily bulmacasını tamamla",
+  "missionDailyNoHintsTitle": "Yardım Yok",
+  "missionDailyNoHintsDesc": "İpucu kullanmadan bir bulmaca bitir",
+  "missionDailyLegendaryTitle": "Efsane Avcısı",
+  "missionDailyLegendaryDesc": "Bugün efsanevi veya daha nadir bir cevap bul",
+  "missionWeeklyHard3Title": "Zor Mod",
+  "missionWeeklyHard3Desc": "Bu hafta 3 zor bulmaca tamamla",
   "missionsProgress": "{completed}/{total} tamamlandı",
   "@missionsProgress": {
     "placeholders": {
