@@ -160,6 +160,8 @@
   "hintStatusRetired": "Im Ruhestand",
   "hintLimitReached": "Alle Hinweise für dieses Feld sind bereits aufgedeckt.",
   "hintUnavailable": "Hinweis gerade nicht verfügbar. Bitte erneut versuchen.",
+  "hintPossibleAnswerLabel": "Mögliche Antwort",
+  "hintPossibleAnswerNote": "Hinweise beschreiben eine mögliche Antwort — andere korrekte Spieler zählen weiterhin.",
   "searchCompetitiveEmpty": "Spielername eingeben. Hilfe über den Hinweis-Button oben.",
   "practiceLimitReached": "Tägliches Trainingslimit erreicht. Morgen wieder oder Premium upgraden.",
   "practiceAdRequiredTitle": "Nächstes Training",

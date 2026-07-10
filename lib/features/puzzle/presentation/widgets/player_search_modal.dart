@@ -256,23 +256,50 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                   ),
                   if (hints.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final chipMaxWidth = constraints.maxWidth;
-                          return Wrap(
-                            spacing: AppSpacing.sm,
-                            runSpacing: AppSpacing.sm,
-                            children: hints
-                                .map(
-                                  (hint) => HintRevealChip(
-                                    hint: hint,
-                                    maxWidth: chipMaxWidth,
-                                  ),
-                                )
-                                .toList(),
-                          );
-                        },
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.lg,
+                        AppSpacing.sm,
+                        AppSpacing.lg,
+                        0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            l10n.hintPossibleAnswerLabel,
+                            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: colors.textSecondary,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: 0.4,
+                                ),
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            l10n.hintPossibleAnswerNote,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: colors.textSecondary,
+                                  height: 1.35,
+                                ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final chipMaxWidth = constraints.maxWidth;
+                              return Wrap(
+                                spacing: AppSpacing.sm,
+                                runSpacing: AppSpacing.sm,
+                                children: hints
+                                    .map(
+                                      (hint) => HintRevealChip(
+                                        hint: hint,
+                                        maxWidth: chipMaxWidth,
+                                      ),
+                                    )
+                                    .toList(),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   if (_hintErrorKey != null)

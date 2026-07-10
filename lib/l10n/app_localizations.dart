@@ -856,6 +856,18 @@ abstract class AppLocalizations {
   /// **'Hint unavailable right now. Please try again.'**
   String get hintUnavailable;
 
+  /// No description provided for @hintPossibleAnswerLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible answer'**
+  String get hintPossibleAnswerLabel;
+
+  /// No description provided for @hintPossibleAnswerNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Hints describe one possible answer — other correct players still count.'**
+  String get hintPossibleAnswerNote;
+
   /// No description provided for @searchCompetitiveEmpty.
   ///
   /// In en, this message translates to:

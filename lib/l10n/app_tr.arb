@@ -160,6 +160,8 @@
   "hintStatusRetired": "Emekli",
   "hintLimitReached": "Bu hücre için tüm ipuçları açıldı.",
   "hintUnavailable": "İpucu şu an kullanılamıyor. Lütfen tekrar dene.",
+  "hintPossibleAnswerLabel": "Olası cevap",
+  "hintPossibleAnswerNote": "İpuçları olası bir cevabı tarif eder — başka doğru oyuncular da geçerli.",
   "searchCompetitiveEmpty": "Oyuncu adını yazarak ara. İpuçları için yukarıdaki butonu kullan.",
   "practiceLimitReached": "Bugünkü antrenman hakkın bitti. Yarın tekrar dene veya Premium'a yükselt.",
   "practiceAdRequiredTitle": "Sonraki antrenman",

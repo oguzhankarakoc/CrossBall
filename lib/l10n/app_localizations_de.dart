@@ -419,6 +419,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Hinweis gerade nicht verfügbar. Bitte erneut versuchen.';
 
   @override
+  String get hintPossibleAnswerLabel => 'Mögliche Antwort';
+
+  @override
+  String get hintPossibleAnswerNote =>
+      'Hinweise beschreiben eine mögliche Antwort — andere korrekte Spieler zählen weiterhin.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Spielername eingeben. Hilfe über den Hinweis-Button oben.';
 

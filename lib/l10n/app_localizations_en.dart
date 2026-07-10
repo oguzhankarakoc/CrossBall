@@ -417,6 +417,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hintUnavailable => 'Hint unavailable right now. Please try again.';
 
   @override
+  String get hintPossibleAnswerLabel => 'Possible answer';
+
+  @override
+  String get hintPossibleAnswerNote =>
+      'Hints describe one possible answer — other correct players still count.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Type a player name to search. Use the hint button above for help.';
 

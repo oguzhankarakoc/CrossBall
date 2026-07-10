@@ -418,6 +418,13 @@ class AppLocalizationsTr extends AppLocalizations {
       'İpucu şu an kullanılamıyor. Lütfen tekrar dene.';
 
   @override
+  String get hintPossibleAnswerLabel => 'Olası cevap';
+
+  @override
+  String get hintPossibleAnswerNote =>
+      'İpuçları olası bir cevabı tarif eder — başka doğru oyuncular da geçerli.';
+
+  @override
   String get searchCompetitiveEmpty =>
       'Oyuncu adını yazarak ara. İpuçları için yukarıdaki butonu kullan.';
 
