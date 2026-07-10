@@ -16,7 +16,7 @@ permissions:
 jobs:
   enrich:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 150
     env:
       CAREER_ENRICH_LOAD: '1'
       PATCH_LOAD_LIGHT: '0'
@@ -50,11 +50,15 @@ jobs:
           test -n "$API_FOOTBALL_KEY" || (echo "Missing API_FOOTBALL_KEY secret" && exit 1)
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
+      - name: UTC week for API cache key
+        id: cache-week
+        run: echo "week=$(date -u +%G-W%V)" >> "$GITHUB_OUTPUT"
+
       - name: Restore API-Football response cache
         uses: actions/cache/restore@v4
         with:
           path: data_pipeline/data/cache/api_football
-          key: api-football-cache-${{ github.run_id }}
+          key: api-football-cache-${{ steps.cache-week.outputs.week }}
           restore-keys: |
             api-football-cache-
 
@@ -63,7 +67,7 @@ jobs:
         run: python -m pipeline api-football-status
 
       - name: Reconcile careers and write enriched CSV
-        timeout-minutes: 90
+        timeout-minutes: 75
         env:
           API_FOOTBALL_MIN_REMAINING: '54'
         run: |
@@ -72,13 +76,14 @@ jobs:
 
       - name: Save API-Football response cache
         if: always()
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: data_pipeline/data/cache/api_football
-          key: api-football-cache-${{ github.run_id }}
+          key: api-football-cache-${{ steps.cache-week.outputs.week }}
 
       - name: Apply enriched patches to database
-        timeout-minutes: 90
+        timeout-minutes: 75
         run: ./scripts/run_career_enrichment.sh load-only
 
       - name: Upload gap report artifact

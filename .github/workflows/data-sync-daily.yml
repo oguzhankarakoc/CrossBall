@@ -18,7 +18,8 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    # Light load + fast daily path should finish well under this; keep headroom for API lag.
+    timeout-minutes: 90
     env:
       PATCH_LOAD_LIGHT: '1'
       ENSURE_DAILY_TIER: hard
@@ -66,6 +67,7 @@ jobs:
 
       - name: Apply pending database migrations
         if: steps.gate.outputs.proceed == 'true'
+        timeout-minutes: 15
         run: chmod +x scripts/run_migrations.sh && ./scripts/run_migrations.sh
 
       - name: Begin daily puzzle rollout
@@ -73,12 +75,18 @@ jobs:
         timeout-minutes: 5
         run: ./scripts/run_scheduled_sync.sh rollout-begin
 
+      - name: UTC date for API cache key
+        if: steps.gate.outputs.proceed == 'true'
+        id: cache-date
+        run: echo "date=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Restore API-Football response cache
         if: steps.gate.outputs.proceed == 'true'
         uses: actions/cache/restore@v4
         with:
           path: data_pipeline/data/cache/api_football
-          key: api-football-cache-${{ github.run_id }}
+          # One key per UTC day so same-day retries reuse; restore-keys fall back to prior days.
+          key: api-football-cache-${{ steps.cache-date.outputs.date }}
           restore-keys: |
             api-football-cache-
 
@@ -89,26 +97,28 @@ jobs:
 
       - name: Fetch API-Football transfers
         if: steps.gate.outputs.proceed == 'true'
-        timeout-minutes: 40
+        timeout-minutes: 35
         env:
           API_FOOTBALL_MIN_REMAINING: '30'
         run: ./scripts/run_scheduled_sync.sh sync-fetch
 
       - name: Save API-Football response cache
         if: always() && steps.gate.outputs.proceed == 'true'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: data_pipeline/data/cache/api_football
-          key: api-football-cache-${{ github.run_id }}
+          key: api-football-cache-${{ steps.cache-date.outputs.date }}
 
       - name: Apply career patches (light load)
         if: steps.gate.outputs.proceed == 'true'
-        timeout-minutes: 50
+        timeout-minutes: 35
         run: ./scripts/run_scheduled_sync.sh sync-load
 
       - name: Ensure today's daily puzzle
         if: steps.gate.outputs.proceed == 'true'
-        timeout-minutes: 45
+        # Fast path first in ensure_daily_puzzle; quality fallback only if needed.
+        timeout-minutes: 25
         run: ./scripts/run_scheduled_sync.sh ensure-daily
 
       - name: Recover rollout on failure

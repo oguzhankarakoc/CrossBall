@@ -17,12 +17,17 @@ jobs:
   etl:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      USE_SYSTEM_PYTHON: '1'
+      DB_STATEMENT_TIMEOUT: 60min
     steps:
       - uses: actions/checkout@v5
 
       - uses: actions/setup-python@v6
         with:
           python-version: '3.11'
+          cache: pip
+          cache-dependency-path: data_pipeline/requirements.txt
 
       - name: Install pipeline dependencies
         working-directory: data_pipeline
@@ -43,6 +48,7 @@ jobs:
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
       - name: Run weekly ETL
+        timeout-minutes: 75
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}

@@ -228,8 +228,14 @@ def cmd_apply_patches(
         upsert_players(conn, players)
         if light:
             refresh_intersections(conn)
-            refresh_club_relationships(conn)
-            print('  Skipped dedupe; refreshed intersections + club graph for daily puzzles.')
+            # Avoid nightly TRUNCATE+rebuild of club_relationships when graph is healthy.
+            with conn.cursor() as cur:
+                cur.execute('SELECT public.ensure_club_relationship_graph(100)')
+                pairs = cur.fetchone()[0]
+            print(
+                f'  Skipped dedupe; refreshed intersections; '
+                f'club graph ensure → {pairs} pairs (no full rebuild if healthy).'
+            )
         else:
             merged = dedupe_players(conn)
             if merged:
@@ -413,11 +419,17 @@ def cmd_ensure_daily() -> None:
                     ('pipeline',),
                 )
 
-            print('  Refreshing club graph for puzzle generation...')
-            refresh_intersections(conn)
-            refresh_club_relationships(conn)
-            cur.execute('SELECT COUNT(*) FROM club_relationships')
-            rel_count = cur.fetchone()[0]
+            print('  Ensuring club graph for puzzle generation...')
+            # Light daily sync already refreshed intersections; avoid a second full
+            # TRUNCATE rebuild of club_relationships (main CI timeout driver).
+            if _patch_load_light():
+                cur.execute('SELECT public.ensure_club_relationship_graph(100)')
+                rel_count = cur.fetchone()[0]
+            else:
+                refresh_intersections(conn)
+                refresh_club_relationships(conn)
+                cur.execute('SELECT COUNT(*) FROM club_relationships')
+                rel_count = cur.fetchone()[0]
             print(f'  club_relationships pairs: {rel_count}')
             if rel_count < 50:
                 raise SystemExit(
