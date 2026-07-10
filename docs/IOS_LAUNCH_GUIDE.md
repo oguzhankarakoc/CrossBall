@@ -167,7 +167,7 @@ Detay: [§3.5–3.6](#35-app-privacy-nutrition-labels)
 | 👤 **Sen** | Project Settings → **Cloud Messaging** → APNs **Authentication Key** (.p8) yükle |
 | 👤 **Sen** | Project Settings → **General** → iOS/Android app config değerlerini kopyala |
 | 👤 **Sen** | `.env` içine Firebase değerlerini yaz · `REMOTE_PUSH_ENABLED=true` |
-| 👤 **Sen** | Supabase secrets: `FCM_SERVER_KEY`, `CRON_SECRET` (§9) |
+| 👤 **Sen** | Supabase secrets: `FCM_SERVICE_ACCOUNT_JSON`, `CRON_SECRET` (§9) |
 | 👤 **Sen** | `send-streak-reminder` edge function için cron kur |
 | ✅ **Kod** | `firebase_core` + `firebase_messaging` paketleri |
 | ✅ **Kod** | `lib/core/notifications/remote_push_service.dart` — FCM token → Supabase |
@@ -210,8 +210,11 @@ Detay: [§7 Push bildirimleri](#7-push-bildirimleri)
 supabase link --project-ref YOUR_PROJECT_REF
 supabase secrets set IAP_PREMIUM_PRODUCT_ID=crossball_premium
 supabase secrets set IAP_SKIP_VERIFY=false
-supabase secrets set FCM_SERVER_KEY=your_fcm_server_key
-supabase secrets set CRON_SECRET=random_long_secret
+# FCM HTTP v1 (Firebase → Service accounts → Generate new private key)
+./scripts/setup_fcm_push_secrets.sh --service-account /path/to/firebase-adminsdk.json
+# veya manuel:
+# supabase secrets set FCM_SERVICE_ACCOUNT_JSON="$(cat firebase-adminsdk.json)"
+# supabase secrets set CRON_SECRET="$(openssl rand -hex 32)"
 supabase functions deploy verify-premium register-push-token send-streak-reminder
 ```
 
@@ -793,19 +796,23 @@ Senin yapman gereken: Firebase console + `.env` değerleri (Adım 8).
 
 #### Adım E — Supabase secrets
 
+1. Firebase Console → **Project settings** → **Service accounts** → **Generate new private key** (JSON)
+2. Google Cloud Console → **Firebase Cloud Messaging API** → Enable
+3. Supabase’e secret kaydet ve deploy et:
+
 ```bash
-supabase secrets set FCM_SERVER_KEY=your_legacy_server_key
-supabase secrets set CRON_SECRET=random_long_secret
+./scripts/setup_fcm_push_secrets.sh --service-account /path/to/firebase-adminsdk.json
 ```
 
 `send-streak-reminder` fonksiyonunu cron ile tetikle (günde 1, UTC 15:00 ≈ TR 18:00):
 
 ```bash
-# Örnek: Supabase Dashboard → Edge Functions → send-streak-reminder → Schedule
+# Supabase Dashboard → Edge Functions → send-streak-reminder → Schedules
+# Cron: 0 15 * * *
 # Header: Authorization: Bearer $CRON_SECRET
 ```
 
-> **Not:** Firebase Legacy Server Key yerine **FCM HTTP v1 API** (service account) kullanımı Google tarafından önerilir — ileride `send-streak-reminder` güncellenmeli.
+> **Not:** `send-streak-reminder` **FCM HTTP v1** kullanır (`FCM_SERVICE_ACCOUNT_JSON`). Legacy `FCM_SERVER_KEY` artık desteklenmez.
 
 #### Adım F — iOS background (opsiyonel)
 
@@ -869,7 +876,7 @@ Supabase Dashboard → **Project Settings** → **Edge Functions** → Secrets:
 | `IAP_PREMIUM_PRODUCT_ID` | `verify-premium` | `crossball_premium` |
 | `IAP_SKIP_VERIFY` | `verify-premium` | Prod: `false` |
 | `IAP_STRICT_VERIFY` | `verify-premium` | Apple API bağlanana kadar `false` |
-| `FCM_SERVER_KEY` | `send-streak-reminder` | Firebase Cloud Messaging |
+| `FCM_SERVICE_ACCOUNT_JSON` | `send-streak-reminder` | Firebase service account JSON (FCM HTTP v1) |
 | `CRON_SECRET` | `send-streak-reminder` | Cron auth header |
 
 Deploy:

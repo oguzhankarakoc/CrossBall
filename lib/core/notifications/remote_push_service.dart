@@ -14,7 +14,10 @@ class RemotePushService {
 
   final PushTokenApi _api;
   StreamSubscription<String>? _tokenRefreshSub;
+  StreamSubscription<RemoteMessage>? _foregroundSub;
+  StreamSubscription<RemoteMessage>? _openedSub;
   bool _firebaseReady = false;
+  bool _listenersAttached = false;
 
   Future<void> start({
     required String userUuid,
@@ -35,6 +38,21 @@ class RemotePushService {
 
     final messaging = FirebaseMessaging.instance;
     await messaging.requestPermission(alert: true, badge: true, sound: true);
+
+    if (Platform.isIOS) {
+      await messaging.setForegroundNotificationPresentationOptions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    }
+
+    _attachMessageListeners(messaging);
+
+    if (kDebugMode && Platform.isIOS) {
+      final apns = await messaging.getAPNSToken();
+      debugPrint('[RemotePush] APNs token: ${apns ?? "null (wait/rebuild)"}');
+    }
 
     await _tokenRefreshSub?.cancel();
     _tokenRefreshSub = null;
@@ -64,6 +82,28 @@ class RemotePushService {
     );
   }
 
+  void _attachMessageListeners(FirebaseMessaging messaging) {
+    if (_listenersAttached) return;
+    _listenersAttached = true;
+
+    _foregroundSub = FirebaseMessaging.onMessage.listen((message) {
+      debugPrint(
+        '[RemotePush] foreground message: '
+        '${message.notification?.title ?? message.data}',
+      );
+    });
+
+    _openedSub = FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      debugPrint('[RemotePush] opened from notification: ${message.data}');
+    });
+
+    messaging.getInitialMessage().then((message) {
+      if (message != null) {
+        debugPrint('[RemotePush] initial message: ${message.data}');
+      }
+    });
+  }
+
   Future<void> updateOptIn({
     required String userUuid,
     required bool pushOptIn,
@@ -81,6 +121,11 @@ class RemotePushService {
   Future<void> dispose() async {
     await _tokenRefreshSub?.cancel();
     _tokenRefreshSub = null;
+    await _foregroundSub?.cancel();
+    _foregroundSub = null;
+    await _openedSub?.cancel();
+    _openedSub = null;
+    _listenersAttached = false;
   }
 
   Future<void> _ensureFirebase() async {
