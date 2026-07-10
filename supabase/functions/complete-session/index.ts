@@ -102,7 +102,9 @@ Deno.serve(async (req) => {
     const serverHints = Number(result.hints_used ?? 0)
     const mistakes = Number(result.mistakes ?? 0)
     const correctCount = Number(result.correct_count ?? 0)
+    const commonCount = Number(result.common_count ?? 0)
     const rareCount = Number(result.rare_count ?? 0)
+    const epicCount = Number(result.epic_count ?? 0)
     const legendaryCount = Number(result.legendary_count ?? 0)
     const mythicCount = Number(result.mythic_count ?? 0)
     const isPerfect = Boolean(result.is_perfect)
@@ -158,10 +160,12 @@ Deno.serve(async (req) => {
         difficulty_tier: puzzleMeta?.difficulty_tier ?? 'medium',
         puzzle_quality_score: puzzleMeta?.quality_score ?? 85,
         is_perfect: isPerfect,
-        rare_count: rareCount,
+        rare_count: rareCount + epicCount,
         legendary_count: legendaryCount,
         mythic_count: mythicCount,
         correct_count: correctCount,
+        common_count: commonCount,
+        epic_count: epicCount,
       }
 
       const { data: puzzleEconomy, error: economyError } = await supabase.rpc(
@@ -199,7 +203,9 @@ Deno.serve(async (req) => {
 
       const { data: stats } = await supabase
         .from('user_stats')
-        .select('games_played, total_score, total_mistakes, hints_used, current_streak, best_streak')
+        .select(
+          'games_played, total_score, total_mistakes, hints_used, current_streak, best_streak, common_count, rare_count, epic_count, legendary_count, mythic_count',
+        )
         .eq('user_id', userRow.id)
         .maybeSingle()
 
@@ -212,6 +218,11 @@ Deno.serve(async (req) => {
           hints_used: (stats?.hints_used ?? 0) + serverHints,
           current_streak: Number(economyResult?.current_streak ?? stats?.current_streak ?? 0),
           best_streak: Number(economyResult?.best_streak ?? stats?.best_streak ?? 0),
+          common_count: Number(stats?.common_count ?? 0) + commonCount,
+          rare_count: Number(stats?.rare_count ?? 0) + rareCount,
+          epic_count: Number(stats?.epic_count ?? 0) + epicCount,
+          legendary_count: Number(stats?.legendary_count ?? 0) + legendaryCount,
+          mythic_count: Number(stats?.mythic_count ?? 0) + mythicCount,
           updated_at: new Date().toISOString(),
         },
         { onConflict: 'user_id' },

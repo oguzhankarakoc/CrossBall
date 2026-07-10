@@ -89,6 +89,57 @@ function playerCompletenessScore(player: EnrichedPlayer): number {
   return score
 }
 
+function clubLabelTokens(value: string): string {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+}
+
+function clubLabelsMatch(a: string, b: string): boolean {
+  const left = clubLabelTokens(a)
+  const right = clubLabelTokens(b)
+  if (!left || !right) return false
+  if (left === right) return true
+  if (left.includes(right) || right.includes(left)) return true
+  if (right.length <= 4) {
+    return left.split(' ').some((part) => part.startsWith(right))
+  }
+  if (left.length <= 4) {
+    return right.split(' ').some((part) => part.startsWith(left))
+  }
+  return false
+}
+
+/** Put puzzle axis clubs first so long careers still show the relevant pair. */
+function prioritizeCellClubs(clubs: string[], preferredLabels: string[]): string[] {
+  if (clubs.length === 0 || preferredLabels.length === 0) return clubs
+  const matched: string[] = []
+  const used = new Set<string>()
+  for (const preferred of preferredLabels) {
+    const hit = clubs.find((club) => !used.has(club) && clubLabelsMatch(club, preferred))
+    if (hit) {
+      matched.push(hit)
+      used.add(hit)
+    }
+  }
+  const rest = clubs.filter((club) => !used.has(club))
+  return [...matched, ...rest]
+}
+
+async function fetchClubPreviewLabels(
+  supabase: ReturnType<typeof createClient>,
+  clubId: string | null | undefined,
+): Promise<string[]> {
+  if (!clubId) return []
+  const { data } = await supabase
+    .from('clubs')
+    .select('short_name, name, short_code')
+    .eq('id', clubId)
+    .maybeSingle()
+  if (!data) return []
+  return [data.short_name, data.short_code, data.name]
+    .map((v) => (typeof v === 'string' ? v.trim() : ''))
+    .filter((v) => v.length > 0)
+}
+
 function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPlayer {
   const primary =
     playerCompletenessScore(a) >= playerCompletenessScore(b) ? a : b
@@ -99,7 +150,7 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
     identity_key: primary.identity_key ?? secondary.identity_key ?? null,
     nationality_code: primary.nationality_code ?? secondary.nationality_code ?? null,
     primary_position: primary.primary_position ?? secondary.primary_position ?? null,
-    clubs_preview: clubs.slice(0, 4),
+    clubs_preview: clubs.slice(0, 8),
     popularity_score: Math.max(primary.popularity_score, secondary.popularity_score),
     obscurity_score: Math.max(primary.obscurity_score ?? 50, secondary.obscurity_score ?? 50),
     is_cell_relevant: primary.is_cell_relevant || secondary.is_cell_relevant,
@@ -270,8 +321,12 @@ async function enrichPlayers(
   players: RawPlayer[],
   rowClubId?: string | null,
   colClubId?: string | null,
+  options?: { markCellRelevant?: boolean; cellClubLabels?: string[] },
 ): Promise<EnrichedPlayer[]> {
   if (players.length === 0) return []
+
+  const markCellRelevant = options?.markCellRelevant === true
+  const cellClubLabels = options?.cellClubLabels ?? []
 
   const ids = players.map((p) => p.id)
   const siblingMap = await resolveIdentitySiblingMap(supabase, ids)
@@ -289,7 +344,7 @@ async function enrichPlayers(
       .from('player_popularity')
       .select('player_id, global_selection_count')
       .in('player_id', expandedIds),
-    rowClubId && colClubId
+    markCellRelevant && rowClubId && colClubId
       ? fetchIntersectionIds(supabase, expandedIds, rowClubId, colClubId)
       : Promise.resolve(new Set<string>()),
   ])
@@ -327,11 +382,12 @@ async function enrichPlayers(
       popularityScore = Math.max(popularityScore, popByPlayer.get(siblingId) ?? 0)
     }
 
-    const isCellRelevant = siblingIds.some((siblingId) => intersectionIds.has(siblingId))
+    const isCellRelevant =
+      markCellRelevant && siblingIds.some((siblingId) => intersectionIds.has(siblingId))
 
     return {
       ...player,
-      clubs_preview: mergedClubs.slice(0, 4),
+      clubs_preview: prioritizeCellClubs(mergedClubs, cellClubLabels).slice(0, 4),
       popularity_score: popularityScore,
       obscurity_score: obscurityScore,
       is_cell_relevant: isCellRelevant,
@@ -457,11 +513,31 @@ Deno.serve(async (req) => {
     const mode = url.searchParams.get('mode')
     const rowClubId = url.searchParams.get('row_club_id')
     const colClubId = url.searchParams.get('col_club_id')
+    const competitive = url.searchParams.get('competitive') === '1'
+    // Competitive search may still send club ids for preview ordering, but must not
+    // mark is_cell_relevant (would spoil answers via ranking / bolt badge).
+    const markCellRelevant = Boolean(rowClubId && colClubId && !competitive)
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     )
+
+    const [rowLabels, colLabels] = await Promise.all([
+      fetchClubPreviewLabels(supabase, rowClubId),
+      fetchClubPreviewLabels(supabase, colClubId),
+    ])
+    const cellClubLabels = [...rowLabels, ...colLabels]
+    const enrichOpts = { markCellRelevant, cellClubLabels }
+
+    const withPrioritizedClubs = (players: EnrichedPlayer[]): EnrichedPlayer[] =>
+      players.map((player) => ({
+        ...player,
+        clubs_preview: prioritizeCellClubs(player.clubs_preview ?? [], cellClubLabels).slice(
+          0,
+          4,
+        ),
+      }))
 
     if (mode === 'suggested' && rowClubId && colClubId) {
       const { data: intersectionRows } = await supabase.rpc('get_intersection_players', {
@@ -471,7 +547,12 @@ Deno.serve(async (req) => {
 
       const raw = ((intersectionRows ?? []) as RawPlayer[]).slice(0, limit)
       const filled = await fillMissingPlayerMetadata(supabase, raw)
-      const suggested = await enrichPlayers(supabase, filled, rowClubId, colClubId)
+      const suggested = withPrioritizedClubs(
+        await enrichPlayers(supabase, filled, rowClubId, colClubId, {
+          markCellRelevant: true,
+          cellClubLabels,
+        }),
+      )
 
       return new Response(
         JSON.stringify({
@@ -492,8 +573,17 @@ Deno.serve(async (req) => {
 
       const raw = (popular ?? []).map((p: { players: RawPlayer }) => p.players)
       const filledPopular = await fillMissingPlayerMetadata(supabase, raw)
-      const enrichedPopular = await enrichPlayers(supabase, filledPopular, rowClubId, colClubId)
-      const results = dedupePlayersByIdentity(enrichedPopular).slice(0, limit)
+      const enrichedPopular = await enrichPlayers(
+        supabase,
+        filledPopular,
+        rowClubId,
+        colClubId,
+        enrichOpts,
+      )
+      const results = withPrioritizedClubs(dedupePlayersByIdentity(enrichedPopular)).slice(
+        0,
+        limit,
+      )
 
       let suggested: EnrichedPlayer[] = []
       if (rowClubId && colClubId) {
@@ -503,11 +593,11 @@ Deno.serve(async (req) => {
         })
         const intersectionRaw = ((intersectionRows ?? []) as RawPlayer[]).slice(0, Math.min(limit, 12))
         const filledIntersection = await fillMissingPlayerMetadata(supabase, intersectionRaw)
-        suggested = await enrichPlayers(
-          supabase,
-          filledIntersection,
-          rowClubId,
-          colClubId,
+        suggested = withPrioritizedClubs(
+          await enrichPlayers(supabase, filledIntersection, rowClubId, colClubId, {
+            markCellRelevant: true,
+            cellClubLabels,
+          }),
         )
       }
 
@@ -538,8 +628,9 @@ Deno.serve(async (req) => {
       filledResults,
       rowClubId,
       colClubId,
+      enrichOpts,
     )
-    const deduped = dedupePlayersByIdentity(enriched)
+    const deduped = withPrioritizedClubs(dedupePlayersByIdentity(enriched))
     const ranked = deduped
       .sort((a, b) => scorePlayer(b, normalized) - scorePlayer(a, normalized))
       .slice(0, limit)

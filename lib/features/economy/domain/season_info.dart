@@ -30,11 +30,19 @@ class SeasonInfo extends Equatable {
           : null,
       endsAt:
           json['ends_at'] != null ? DateTime.tryParse(json['ends_at'] as String) : null,
-      seasonPoints: json['season_points'] as int? ?? 0,
+      seasonPoints: _seasonInt(json['season_points']),
       rewardTiers: tiersList
-          .map((e) => SeasonRewardTier.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => SeasonRewardTier.fromJson(Map<String, dynamic>.from(e)))
           .toList(),
     );
+  }
+
+  static int _seasonInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 
   @override
@@ -48,7 +56,7 @@ class SeasonRewardTier extends Equatable {
   final String reward;
 
   factory SeasonRewardTier.fromJson(Map<String, dynamic> json) => SeasonRewardTier(
-        points: json['points'] as int? ?? 0,
+        points: SeasonInfo._seasonInt(json['points']),
         reward: json['reward'] as String? ?? '',
       );
 

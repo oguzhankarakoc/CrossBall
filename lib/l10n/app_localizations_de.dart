@@ -210,6 +210,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get rarityBreakdown => 'Seltenheitsverteilung';
 
   @override
+  String get rarityBreakdownEmpty =>
+      'Deine Seltenheitsverteilung erscheint nach kompetitiven Rätseln (Daily & Challenges).';
+
+  @override
+  String get rarityBreakdownHint =>
+      'Obskure Tipps heben seltene Stufen — so steigst du auf.';
+
+  @override
+  String get statsCareerTitle => 'Karriere';
+
+  @override
+  String get statsActivityTitle => 'Aktivität';
+
+  @override
+  String get statsProgressUnavailable =>
+      'Level konnte nicht geladen werden. Zum Aktualisieren ziehen.';
+
+  @override
   String get createChallenge => 'Herausforderung erstellen';
 
   @override

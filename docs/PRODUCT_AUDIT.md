@@ -579,7 +579,7 @@ Prioritized by **engagement × feasibility**:
 | Friend activity feed | Medium | XL | P4 |
 | Country/League mastery tracks | Medium | L | P4 |
 
-Full prioritized mode backlog (12 modes) and **Club × Nationality** implementation spec: [GAME_MODES_BACKLOG.md](./GAME_MODES_BACKLOG.md).
+Full prioritized mode backlog, **market analysis**, Club × Nationality (World XI) spec, and LiveOps “coming soon” panel plan: [GAME_MODES_BACKLOG.md](./GAME_MODES_BACKLOG.md) (v1.1).
 
 ---
 

@@ -1,10 +1,10 @@
-# CrossBall — Game Modes Backlog & Club × Nationality Spec
+# CrossBall — Game Modes Backlog & Market Plan
 
-**Document type:** Product design + technical pre-spec  
-**Audience:** Product, Engineering, LiveOps  
-**Version:** 1.0.0  
+**Document type:** Product design · market analysis · technical pre-spec  
+**Audience:** Product, Marketing, Engineering, LiveOps  
+**Version:** 1.1.0  
 **Date:** July 2026  
-**Status:** Planning (not implemented)
+**Status:** Planning (modes beyond Classic / Practice / Challenge / Timeline not shipped)
 
 Related: [ARCHITECTURE.md](./ARCHITECTURE.md) §4 Game Modes, [PRODUCT_AUDIT.md](./PRODUCT_AUDIT.md) §13 Innovation Backlog.
 
@@ -12,370 +12,424 @@ Related: [ARCHITECTURE.md](./ARCHITECTURE.md) §4 Game Modes, [PRODUCT_AUDIT.md]
 
 ## Executive summary
 
-CrossBall’s long-term moat is the **intersection grid** — not separate mini-games. New modes should extend **axis types** (club, nationality, league, era, trophy) or **session modifiers** (speed, mystery, themed week) while reusing the existing grid UI, validation pipeline, and scoring engine.
+CrossBall’s moat is the **intersection grid** — not a pile of disconnected mini-quizzes. New modes should extend **axis types** (club, nationality, league, era, trophy) or **session modifiers** (speed, mystery, themed week) while reusing grid UI, validation, search, scoring, and LiveOps.
 
-This document defines:
+**Product thesis (2026):** Immaculate Grid proved club×club daily grids. Competitors now flood the market with *Career Path*, *Connections*, and *Transfer Guess*. CrossBall wins by staying **grid-native**, adding **heterogeneous axes** (club × country first), and using LiveOps to tease “coming soon” modes without shipping half-baked side games.
 
-1. A **12-mode prioritized backlog** scored by engagement, data cost, and premium fit.
-2. A **full product spec** for the first recommended new axis: **Club × Nationality**.
+This document covers:
+
+1. **Market & competitor analysis** (Product Director / Growth lens)
+2. **Prioritized mode backlog** scored for engagement, data cost, architecture fit
+3. **Full Club × Nationality (“World XI”) spec**
+4. **In-app panel / LiveOps teaser plan** for upcoming modes
+5. **Generic axis architecture** for future modes
 
 ---
 
-## Scoring methodology
+## Part 0 — Market analysis (July 2026)
+
+### 0.1 Category map
+
+| Cluster | Examples | Core loop | Threat to CrossBall |
+|---------|----------|-----------|---------------------|
+| **Grid intersection** | Immaculate Footy / Grid Footy, Sports Reference grids | Fill 3×3 with players matching row×col criteria; rarity score | **Direct** — same fantasy; web-first, data-rich (FBref) |
+| **Group / Connections** | Athletic Connections Soccer, Football IQ Connections | Sort 16 tiles into 4 hidden groups | Adjacent — different skill; high shareability |
+| **Career / transfer guess** | Football IQ Career Path, Transfer Guess, PlayFutbol | Reveal clubs/clues → name the player | Adjacent — we already have career data + timeline |
+| **Clue chase / H2H** | Player Pursuit | Clues + streak + realtime | Different retention model; not grid |
+
+### 0.2 What the market rewards right now
+
+1. **Daily ritual** — one shared puzzle, streak, share card (Wordle DNA).
+2. **Rarity / IQ flex** — obscure picks beat “everyone picks Messi”.
+3. **World Cup / calendar hooks** — Athletic timed Connections Soccer to WC 2026; LiveOps calendar is our equivalent.
+4. **Mode catalogs** — Football IQ markets “11 free daily games”; catalog drives ASO but **fragments brand learning**.
+5. **Progressive clues** — Transfer Guess / Career Path monetize “one more hint” — we already have hint economy.
+
+### 0.3 CrossBall positioning
+
+| Strength we own | How to lean in |
+|-----------------|----------------|
+| Mobile-native grid + badges + search | Don’t become a web quiz clone |
+| Obscurity / rarity scoring + GEE levels | Market “prove football IQ”, not “guess the celebrity” |
+| Friend challenge + weekly rating | Social proof beyond solitary Wordle |
+| LiveOps + feature flags | Soft-launch axes without App Store drama |
+| Career history already in DB | Club×country / league / era are **cheap** vs trophy APIs |
+
+| Weakness vs Immaculate Footy | Mitigation |
+|------------------------------|------------|
+| Smaller public brand | Niche leagues + TR/DE localization + share cards |
+| Nationality coverage historically sparse | Backfill ongoing (~75%+ with ISO codes); gate World XI on coverage |
+| No FBref-depth stats | Skip “50+ PL goals” until paid ingest; win on career graph |
+
+### 0.4 Product Director recommendation
+
+**Do next (P1):** Club × Nationality (**World XI**) + Themed Week LiveOps + home “Coming modes” teaser.  
+**Do not next:** Connections clone, Transfer Guess clone, or a 5th bottom-nav tab — they dilute the grid brand and burn engineering on loops we don’t own.
+
+**Marketing narrative:**
+
+> *CrossBall isn’t another “guess the player” quiz. It’s the football intersection board — clubs, countries, eras — one grid, infinite axes.*
+
+ASO / store keywords to expand when World XI ships: `football grid`, `soccer puzzle`, `immaculate`, `football IQ`, `club nationality`.
+
+---
+
+## Part 1 — Prioritized mode backlog
+
+### Scoring methodology
 
 | Metric | Scale | Meaning |
 |--------|-------|---------|
-| **Engagement** | 1–10 | Retention, replay, shareability, “one more game” pull |
-| **Data cost** | 1–5 | 1 = existing DB only · 3 = derived/batch · 5 = new paid ingest (trophies, stats) |
-| **Premium fit** | Free · Freemium · Premium | Monetization placement without pay-to-win |
-| **Priority** | P0–P4 | P0 shipped · P1 next quarter · P4 when revenue + data budget allow |
-| **Complexity** | S · M · L · XL | Engineering estimate |
+| **Engagement** | 1–10 | Retention, replay, shareability |
+| **Data cost** | 1–5 | 1 = existing DB · 3 = derived · 5 = new paid ingest |
+| **Arch fit** | High / Med / Low | Reuse of grid + validate-answer + search |
+| **Premium fit** | Free · Freemium · Premium | Placement without pay-to-win |
+| **Priority** | P0–P4 | P0 shipped · P1 next · P4 revenue+data |
 
-**Composite score (for sorting):** `Engagement × 2 − Data cost + Premium bonus`  
-Premium bonus: Free = 0 · Freemium = 1 · Premium = 0.5 (breadth over exclusivity early).
+**Composite (sort):** `Engagement × 2 − Data cost + (Arch High = 2, Med = 1, Low = 0)`
 
----
+### Backlog table
 
-## Part 1 — 12-mode prioritized backlog
+| Rank | Mode | Axis / modifier | Eng | Data | Arch | Premium | Pri | Cx | Notes |
+|------|------|-----------------|-----|------|------|---------|-----|----|-------|
+| 1 | **Daily Classic** | Club × Club | 10 | 1 | High | Free | P0 ✅ | — | Core UTC daily |
+| 2 | **Friend Challenge** | Club × Club | 9 | 1 | High | Free | P0 ✅ | M | Async viral |
+| 3 | **Practice** | Club × Club | 8 | 1 | High | Freemium | P0 ✅ | M | Quota · 4×4 premium |
+| 4 | **Club × Nationality** | Club × Country | 9 | 1 | High | Freemium | **P1** | L | **First new axis** — Part 2 |
+| 5 | **Themed Week** | Club × Club + LiveOps | 8 | 1 | High | Freemium | **P1** | M | PL week, derbi, WC nations |
+| 6 | **Timeline Training** | Club × Club + career | 7 | 1 | High | Premium | P0 ✅ | L | Shipped |
+| 7 | **Blitz** | Any grid + 60s | 8 | 1 | High | Freemium | P2 | M | Session modifier only |
+| 8 | **Club × League** | Club × “played in L” | 8 | 2 | High | Freemium | P2 | L | Career → club → league |
+| 9 | **Mystery Row** | Hidden axis labels | 7 | 1 | High | Freemium | P2 | M | Modifier |
+| 10 | **Nationality × Nationality** | Country × Country | 6 | 1 | Med | Free | P3 | M | “Played for both nations?” needs caps data — **defer** unless we define as dual-citizenship only |
+| 11 | **Club × Era** | Club × decade | 7 | 2 | High | Premium | P3 | L | Career date filter |
+| 12 | **Teammate Bridge** | Player × Player | 7 | 3 | Med | Freemium | P3 | L | Shared club stint overlap; viral but new UX |
+| 13 | **Glory Grid** | Club × Trophy | 9 | 5 | Med | Premium | P4 | XL | Needs `player_honors` |
+| 14 | **Reverse Training** | Player → pick axes | 6 | 1 | Med | Free | P3 | M | Onboarding |
+| 15 | **Career Path Daily** | Guess player from clubs | 8 | 1 | Low | Freemium | P4 | L | Market-hot but **off-grid**; only if DAU plateaus |
 
-| Rank | Mode | Axis / modifier | Engagement | Data cost | Premium fit | Priority | Complexity | Composite | Notes |
-|------|------|-----------------|------------|-----------|-------------|----------|------------|-----------|-------|
-| 1 | **Daily Classic** | Club × Club | 10 | 1 | Free | P0 ✅ | — | 19 | Core loop; global UTC puzzle |
-| 2 | **Friend Challenge** | Club × Club | 9 | 1 | Free | P0 ✅ | M | 17 | Async viral; needs rematch polish |
-| 3 | **Practice** | Club × Club | 8 | 1 | Freemium | P0 ✅ | M | 16 | Quota free · 4×4 premium |
-| 4 | **Themed Week** | Club × Club + LiveOps | 8 | 1 | Freemium | P1 | M | 16 | “Premier League week”, “Derbi günü” — same engine, curated club pool |
-| 5 | **Club × Nationality** | Club × Country | 9 | 1 | Freemium | P1 | L | 17 | **First new axis** — spec below |
-| 6 | **Timeline Training** | Club × Club + career overlay | 7 | 1 | Premium | P0 ✅ | L | 14 | Shipped Phase 4; premium flag |
-| 7 | **Blitz** | Any grid + 60s timer | 8 | 1 | Freemium | P2 | M | 16 | Session modifier; no new validation |
-| 8 | **Club × League** | Club × “played in league X” | 8 | 2 | Freemium | P2 | L | 15 | Derive from career → club → league |
-| 9 | **Mystery Row** | Hidden axis until row solved | 7 | 1 | Freemium | P2 | M | 14 | Modifier on existing puzzles |
-| 10 | **Club × Era** | Club × decade (1990s…) | 7 | 2 | Premium | P3 | L | 13 | Date filter on career stints |
-| 11 | **Glory Grid** | Club × Trophy (UCL, WC…) | 9 | 5 | Premium | P4 | XL | 13 | Requires `player_honors` ingest |
-| 12 | **Reverse Training** | Given player → pick club pair | 6 | 1 | Free | P3 | M | 12 | Tutorial / onboarding mode |
-
-### Recommended build order (post-launch)
+### Recommended build order
 
 ```
-Phase A (retention)     → Themed Week, share card, achievements UI
-Phase B (first axis)    → Club × Nationality (this spec)
-Phase C (modifiers)     → Blitz, Mystery Row
-Phase D (second axis)   → Club × League
-Phase E (revenue+)      → Club × Era, Glory Grid (trophy data)
+Now → Soft-launch panel teasers (LiveOps announcements) — Part 3
+P1  → World XI (Club × Nationality) + Themed Week
+P2  → Blitz + Mystery Row (modifiers, cheap)
+P2  → Club × League (second axis via puzzle_axes)
+P3  → Club × Era · Reverse · Teammate Bridge
+P4  → Glory Grid · optional Career Path satellite
 ```
 
-### Modes intentionally excluded from top 12
+### Intentionally deferred / excluded
 
-| Idea | Why deferred |
-|------|----------------|
-| Manager axis (Guardiola × Mourinho) | No manager-stint data today |
-| Stat axis (50+ PL goals) | Requires stats API |
-| Transfer-path puzzle | Niche; high validation complexity |
-| Co-op realtime | XL social infra; after DAU proof |
-| AI trivia quiz | Off-brand; splits learning curve |
+| Idea | Why |
+|------|-----|
+| Connections-style 16-tile groups | Different product; high content ops cost |
+| Manager axis (Guardiola × …) | No manager-stint table |
+| Stat axis (50+ PL goals) | Paid stats API |
+| Realtime co-op | XL infra; after DAU proof |
+| AI trivia quiz | Off-brand |
 
 ---
 
 ## Part 2 — Club × Nationality product spec
 
-**Codename:** `nationality_grid`  
-**Player-facing name:** **World XI** (EN) · **Dünya 11’i** (TR) · **World XI** (DE)  
+**Codename:** `nationality_grid` / `world_xi`  
+**Player-facing:** **World XI** (EN) · **Dünya 11’i** (TR) · **World XI** (DE)  
 **Tagline:** *Name players who wore the club **and** fly the flag.*
 
 ### 2.1 Positioning
 
 | Dimension | Choice |
 |-----------|--------|
-| Core fantasy | “I know which Brazilians played for Chelsea” |
-| Difficulty vs classic | Slightly easier per cell (nationality narrows search) but broader cultural appeal |
-| Cannibalization | Does **not** replace daily; separate weekly or practice entry |
-| Brand fit | Same grid, same badges; row/column headers mix club badges + flag chips |
+| Core fantasy | “Which Brazilians played for Chelsea?” |
+| vs Classic | Slightly different skill; broader cultural appeal; same grid chrome |
+| Cannibalization | Does **not** replace daily — weekly + practice entry |
+| Brand | Row = club badges · Col = flag chips (`CountryFlags`) |
 
 ### 2.2 Validation rules
 
-A cell at `(row, col)` is **correct** when the submitted player satisfies **both** constraints:
+| Layout (v1) | Row | Column | Rule |
+|-------------|-----|--------|------|
+| **A (recommended)** | Club | Nationality | Senior stint at club **AND** `players.nationality_code = col` |
 
-| Layout option | Row | Column | Rule |
-|---------------|-----|--------|------|
-| **A (recommended v1)** | Club | Nationality | Senior stint at row club **AND** `players.nationality_code = col country` |
-| B (alternate) | Nationality | Club | Same logic, transposed |
+**Senior stint** — same as classic ([ARCHITECTURE.md](./ARCHITECTURE.md) §5): `is_senior`, not youth/reserve; loans count.
 
-**Senior stint definition** — identical to classic mode ([ARCHITECTURE.md](./ARCHITECTURE.md) §5):
+**Nationality (v1):**
 
-- `player_career_history`: `is_senior = true`, `is_youth = false`, `is_reserve = false`
-- Loan spells at senior level **count**
-- Youth / B team **excluded**
+- ISO alpha-2 on `players.nationality_code`
+- Dual nationality / caps: **out of scope** for v1
+- Data gate: prefer nations with ≥ N players in DB; continue nationality backfill from Kaggle/API patches
 
-**Nationality definition (v1):**
-
-- Single field: `players.nationality_code` (ISO 3166-1 alpha-2)
-- Dual nationality: **not supported in v1** — FIFA primary nationality from SoFIFA only
-- Naturalized players: whatever SoFIFA/patch data says (document in FAQ)
-
-**Explicit non-rules (v1):**
-
-- Does **not** require cap for that nation
-- Does **not** require playing during a specific era (use Club × Era mode later)
-- Does **not** accept “played for national team” without club stint
-
-**Pseudo-validation:**
+**Non-rules (v1):** no national-team cap required; no era filter.
 
 ```sql
 player_played_for_clubs(player_id, row_club_ref)
 AND players.nationality_code = col_nationality_code
 ```
 
-### 2.3 Grid layouts
+### 2.3 Grid layouts & access
 
 | Variant | Grid | Access | Schedule |
 |---------|------|--------|----------|
-| **World XI Weekly** | 3×3 | Free | One global puzzle per week (Monday UTC) |
-| **World XI Practice** | 3×3 | Free (quota) | On-demand from practice pool |
-| **World XI Elite** | 4×4 | Premium | Unlimited practice + no ads |
+| World XI Weekly | 3×3 | Free | Monday UTC |
+| World XI Practice | 3×3 | Free quota | On-demand |
+| World XI Elite | 4×4 | Premium | Unlimited |
 
-**Header UI:**
+**Header sketch:**
 
 ```
          🇫🇷 France    🇧🇷 Brazil    🇵🇹 Portugal
-[Chelsea badge]
-[Arsenal badge]
-[Real badge]
+[Chelsea]
+[Arsenal]
+[Real]
 ```
 
-- Club row: existing `ClubHeaderCell` / `PuzzleClubTile`
-- Nationality column: new `NationalityHeaderCell` — flag emoji + localized country name (reuse `CountryFlags` from search)
+### 2.4 Difficulty & generation
 
-### 2.4 Difficulty tiers
+| Tier | Min answers / cell |
+|------|--------------------|
+| Easy | 12+ |
+| Medium | 6+ |
+| Hard | 4+ |
+| Legend | 2–3 |
 
-Minimum **valid answer count per cell** (same philosophy as classic engine):
+Gates: ≥3 nations; max 1 column per nation; ≥2 leagues in club set; quality ≥ 80; avoid repeat club+nation pairs within 14 days.
 
-| Tier | Min answers | Typical feel | Use |
-|------|-------------|--------------|-----|
-| Easy | 12+ | Many obvious names | Onboarding week |
-| Medium | 6+ | Requires real fan knowledge | Default practice |
-| Hard | 4+ | Specialist knowledge | Weekly challenge |
-| Legend | 2–3 | Expert / niche | Premium showcase |
+### 2.5 Hints
 
-**Generation constraints (quality gate):**
+| Hint | World XI |
+|------|----------|
+| first_letter, position, career_league, retired | Yes |
+| nationality | **No** (column already is nationality) |
+| career_club | Yes (premium) |
 
-| Rule | Threshold |
-|------|-----------|
-| Min countries per puzzle | 3 distinct nationality codes |
-| Max same nationality | 1 per column (3×3) |
-| Min leagues represented in clubs | 2 (avoid all-Premier monotony) |
-| Avoid overused pair | Same club+nationality pair not in last 14 days |
-| Quality score | ≥ 80 (slightly relaxed vs club×club 85 — smaller graph) |
-| Human simulation | ≥ 85 |
-
-**Difficulty score formula (relationship table):**
-
-```
-difficulty_score = log(valid_player_count + 1) / log(50)
--- higher count = easier cell
-```
-
-### 2.5 Scoring & hints
-
-Reuse existing scoring engine (rarity tiers, cell score, streak multipliers).
-
-| Hint type | Available in World XI? | Notes |
-|-----------|------------------------|-------|
-| `first_letter` | Yes | Unchanged |
-| `position` | Yes | Unchanged |
-| `nationality` | **No** | Column reveals nationality — redundant |
-| `career_league` | Yes | Still useful |
-| `retired_status` | Yes | Unchanged |
-| `career_club` | Yes (premium) | “Also played for…” — different from row club |
-
-**New hint (v2 optional):** `continent` — “This player is from South America” (when column is hidden in Mystery variant).
-
-### 2.6 User-facing copy
+### 2.6 Copy (l10n keys)
 
 | Key | EN | TR | DE |
 |-----|----|----|-----|
 | `modeWorldXiTitle` | World XI | Dünya 11'i | World XI |
-| `modeWorldXiSubtitle` | Club meets country | Kulüp ve milliyet | Verein trifft Nation |
+| `modeWorldXiSubtitle` | Club meets country | Kulüp × milliyet | Verein trifft Nation |
 | `ruleWorldXi` | Name a player who played for **{club}** and is **{nationality}**. | **{club}**'de oynayan **{nationality}** bir oyuncu yaz. | Nenne einen Spieler, der für **{club}** spielte und **{nationality}** ist. |
-| `worldXiWeeklyBadge` | Weekly | Haftalık | Wöchentlich |
 
-### 2.7 Entry points (UI)
+### 2.7 Entry points
 
-| Location | Component | Action |
-|----------|-----------|--------|
-| Home | New card below Daily | “World XI — This week” |
-| Practice hub | Mode picker chip | “World XI” |
-| LiveOps banner | When `world_xi_week` event active | Deep link to puzzle |
+| Location | Action |
+|----------|--------|
+| Home card | “World XI — This week” |
+| Practice mode chip | World XI |
+| LiveOps banner | When `world_xi_week` active |
+| **Coming soon panel** | Pre-launch teaser (Part 3) |
 
-**Do not** add a 5th bottom-nav tab in v1 — keeps navigation simple.
+No 5th bottom-nav tab in v1.
 
-### 2.8 LiveOps themes (examples)
+### 2.8 LiveOps theme examples
 
-| Week theme | Club pool | Nationality pool |
-|------------|-----------|------------------|
-| Premier League diaspora | Top 6 PL clubs | FR, BR, ES, NG, BE, HR |
-| Latin link | Real, Barça, Atlético, Sevilla | AR, BR, UY, CO, MX |
-| Serie A imports | Inter, Milan, Juve, Roma, Napoli | FR, AR, NL, SN, RS |
-| World Cup hangover | Clubs of WC finalists | WC nations only |
+| Week | Clubs | Nations |
+|------|-------|---------|
+| PL diaspora | Top 6 PL | FR, BR, ES, NG, BE, HR |
+| Latin link | Real, Barça, Atlético | AR, BR, UY, CO |
+| WC hangover | Finalist clubs | WC nations |
 
-Feature flag: `world_xi_mode` in `liveops_feature_flags` (default off until launch).
+Flag: `world_xi_mode` in `liveops_feature_flags` (off until launch).
 
 ### 2.9 Monetization
 
 | Surface | Free | Premium |
 |---------|------|---------|
-| Weekly World XI | 1/week | Same |
-| Practice World XI | 3/day quota | Unlimited |
-| 4×4 grid | Locked | Unlocked |
-| Ads | Interstitial on complete | None |
-| Hints | Ad-gated | `career_club` hint included |
+| Weekly | 1/week | Same |
+| Practice | Quota | Unlimited |
+| 4×4 | Locked | Open |
+| Ads | On complete | None |
 
-No pay-to-win: premium does not reveal answers.
+### 2.10 Technical sketch
 
-### 2.10 Technical implementation sketch
-
-**Database (migration `026_world_xi_mode.sql` — not yet created):**
+**Prefer generic axes early** (Appendix A) so League/Era don’t need another one-off table. v1 may still ship `puzzle_col_nationalities` if faster.
 
 ```sql
--- Extend puzzle_mode enum
 ALTER TYPE puzzle_mode ADD VALUE IF NOT EXISTS 'world_xi';
 
--- Precomputed relationships (batch after ETL)
 CREATE TABLE club_nationality_relationships (
-  club_id           UUID NOT NULL REFERENCES clubs(id),
-  nationality_code  CHAR(2) NOT NULL,
+  club_id UUID REFERENCES clubs(id),
+  nationality_code CHAR(2) NOT NULL,
   valid_player_count INT NOT NULL DEFAULT 0,
-  player_ids        UUID[] NOT NULL DEFAULT '{}',
-  difficulty_score  NUMERIC(4,2),
+  player_ids UUID[] NOT NULL DEFAULT '{}',
+  difficulty_score NUMERIC(4,2),
   PRIMARY KEY (club_id, nationality_code)
 );
-
-CREATE INDEX idx_club_nat_rel_count
-  ON club_nationality_relationships (valid_player_count DESC);
-
--- Refresh function (called from pipeline post-load)
-CREATE OR REPLACE FUNCTION refresh_club_nationality_relationships() ...
 ```
 
-**Validation RPC:**
+| Layer | Work |
+|-------|------|
+| RPC | `validate_player_club_nationality` |
+| Edge | `validate-answer` axis mode; `practice-puzzle` filter; weekly ensure |
+| Flutter | `PuzzleMode.worldXi`, `NationalityHeaderCell`, search highlight for club only |
+| Pipeline | `refresh_club_nationality_relationships()` post-load |
 
-```sql
-CREATE OR REPLACE FUNCTION validate_player_club_nationality(
-  p_player_id UUID,
-  p_club_ref TEXT,
-  p_nationality_code CHAR(2)
-) RETURNS BOOLEAN AS $$
-  SELECT player_played_for_clubs(p_player_id, p_club_ref)
-     AND EXISTS (
-       SELECT 1 FROM players p
-       WHERE p.id = p_player_id
-         AND p.nationality_code = p_nationality_code
-     );
-$$;
-```
+### 2.11 Rollout & metrics
 
-**Puzzle generation:**
+| Stage | Gate |
+|-------|------|
+| Alpha | Relationships populated; 10 hand puzzles |
+| Beta 5% | Validation error &lt; 0.1% |
+| Launch | D7 retention ≥ daily baseline |
+| v1.1 | Themed LiveOps weeks |
 
-- Mirror `pick_valid_puzzle_clubs` → `pick_valid_world_xi_axes(club_ids[], nationality_codes[])`
-- Store columns in new table `puzzle_col_nationalities` OR generic `puzzle_axes(axis_type, axis_index, ref)`
-- v1 shortcut: add `puzzle_col_nationalities(puzzle_id, col_index, nationality_code CHAR(2))`
+| Metric (8 weeks) | Target |
+|------------------|--------|
+| Weekly participation | ≥ 25% DAU |
+| Completion | ≥ 60% starters |
+| Session time | 4–7 min |
+| Share rate | ≥ 8% completions |
 
-**Edge functions:**
-
-| Function | Change |
-|----------|--------|
-| `validate-answer` | Accept `axis_mode: 'world_xi'` + nationality column ref |
-| `practice-puzzle` | Filter `mode = 'world_xi'` |
-| New: `world-xi-weekly` | `ensure_world_xi_puzzle(week_start_date)` |
-
-**Flutter:**
-
-| Area | Change |
-|------|--------|
-| `PuzzleMode` enum | Add `worldXi` |
-| `puzzle_grid.dart` | Render nationality headers on col axis when mode = worldXi |
-| New widget | `NationalityHeaderCell` (flag + name) |
-| `puzzle_repository_impl.dart` | Route to world-xi endpoints |
-| l10n | Keys in §2.6 |
-
-**Pipeline (`data_pipeline/`):**
-
-After `load.py`:
-
-```bash
-psql "$DATABASE_URL" -c "SELECT refresh_club_nationality_relationships();"
-```
-
-No new external API required — uses existing `players.nationality_code` + career history.
-
-### 2.11 Rollout plan
-
-| Stage | Scope | Gate |
-|-------|-------|------|
-| **Alpha** | Internal; 10 hand-picked 3×3 puzzles | Relationships table populated |
-| **Beta** | Feature flag 5% users; practice only | Validation error rate < 0.1% |
-| **Launch** | Weekly World XI + practice; home card | D7 retention on beta ≥ daily baseline |
-| **v1.1** | Themed LiveOps weeks | Event config in `liveops_events` |
-
-### 2.12 Success metrics
-
-| Metric | Target (8 weeks post-launch) |
-|--------|------------------------------|
-| World XI weekly participation | ≥ 25% of DAU |
-| Completion rate | ≥ 60% of starters |
-| Avg session time | 4–7 min (similar to daily) |
-| Premium conversion lift | +5% vs control |
-| Share rate | ≥ 8% of completions |
-
-### 2.13 Risks & mitigations
+### 2.12 Risks
 
 | Risk | Mitigation |
 |------|------------|
-| Wrong nationality in SoFIFA | Manual patches for top 50 disputed players |
-| Too-easy cells (BR + Chelsea) | Legend tier + quality gate min 4 |
-| Too-hard cells (SM + Burnley) | Generator rejects pairs below tier minimum |
-| Confusion with classic rules | Persistent rule banner on first cell tap |
-| Sparse graph | Fall back to medium tier; exclude nations with < 20 players in DB |
-
-### 2.14 QA checklist
-
-- [ ] Player with senior stint validates; youth stint alone fails
-- [ ] Loan spell at club counts
-- [ ] Wrong nationality fails even if correct club
-- [ ] Correct club + nationality at different life periods still passes
-- [ ] Search modal shows flag consistent with validation
-- [ ] Demo/offline mode uses seeded world-xi puzzle
-- [ ] l10n TR/DE rule strings fit without overflow on small phones
-- [ ] Premium 4×4 generates 16 valid cells
+| Bad nationality data | Patches + coverage gate per nation |
+| Too easy (BR×Chelsea) | Legend tier + min answer floors |
+| Confusion with Classic | First-open rule banner |
+| Sparse graph | Exclude thin nations |
 
 ---
 
-## Appendix A — Generic axis architecture (future)
+## Part 3 — In-app panel: “Yakında / Coming modes”
 
-When adding League, Era, or Trophy axes, prefer one abstraction:
+### 3.1 Why
+
+Marketing wants **anticipation** without shipping unfinished modes. LiveOps already supports `liveops_announcements` + home `LiveOpsAnnouncementBanner` (title, body, CTA, deep link). Use that — no new nav surface.
+
+### 3.2 Placement
+
+| Surface | Content |
+|---------|---------|
+| Home announcement (priority high) | One rotating “Coming mode” card |
+| Community / LiveOps hub (if present) | Static “Roadmap” section listing 2–3 upcoming modes |
+| Practice hub empty state | Soft line: “World XI arrives soon” |
+
+**Do not** deep-link to a broken route. CTA = `null` or opens a **read-only info sheet** (`/coming-modes`) until flag on.
+
+### 3.3 Suggested announcement payloads (i18n)
+
+**EN**
+
+| Field | Copy |
+|-------|------|
+| title | Coming soon: World XI |
+| body | Same grid. New axes. Name players who fit the **club and the country**. Weekly free puzzle — stay sharp. |
+| button | Learn more |
+
+**TR**
+
+| Field | Copy |
+|-------|------|
+| title | Yakında: Dünya 11'i |
+| body | Aynı ızgara, yeni eksenler. Hem **kulüp** hem **milliyet** uyan oyuncuyu bul. Haftalık ücretsiz bulmaca yolda. |
+| button | Daha fazla |
+
+**DE**
+
+| Field | Copy |
+|-------|------|
+| title | Demnächst: World XI |
+| body | Dasselbe Raster, neue Achsen. Spieler, die zu **Verein und Nation** passen. Wöchentliches Rätsel kommt bald. |
+| button | Mehr erfahren |
+
+Secondary teaser (rotate after World XI ships): **Themed Week** / **Blitz**.
+
+### 3.4 Ops checklist
+
+- [ ] Insert rows in `liveops_announcements` + `liveops_announcement_i18n` (EN/TR/DE)
+- [ ] `starts_at` / `ends_at` window; `priority` above soft-launch noise
+- [ ] Feature flag `world_xi_mode` remains **false** until Alpha
+- [ ] Analytics: `announcement_impression`, `announcement_cta_tap` via existing LiveOps track
+- [ ] When mode ships: swap announcement → “Play World XI” deep link
+
+### 3.5 Optional Flutter sheet (`ComingModesSheet`)
+
+Read-only list driven by remote config JSON (not hardcoded forever):
+
+```json
+{
+  "modes": [
+    {
+      "slug": "world_xi",
+      "status": "coming_soon",
+      "title_key": "modeWorldXiTitle",
+      "blurb_key": "modeWorldXiSubtitle",
+      "eta": "2026-Q3"
+    },
+    {
+      "slug": "themed_week",
+      "status": "coming_soon",
+      "eta": "2026-Q3"
+    },
+    {
+      "slug": "blitz",
+      "status": "planned",
+      "eta": "2026-Q4"
+    }
+  ]
+}
+```
+
+Fits LiveOps content rotation / remote config patterns already in ARCHITECTURE.
+
+---
+
+## Part 4 — Planning calendar (indicative)
+
+| Window | Product | Marketing |
+|--------|---------|-----------|
+| **Now** | Nationality coverage QA; axis design spike | Home “Yakında: Dünya 11’i” announcement |
+| **Q3 2026** | World XI Alpha → Beta → Weekly launch | Store screenshot with flags; TR/DE press note |
+| **Q3–Q4** | Themed Week (WC / league calendars) | Calendar-tied push + LiveOps events |
+| **Q4** | Blitz + Mystery Row | “Hardcore week” campaign |
+| **2027 H1** | Club × League; evaluate Glory Grid data budget | Premium story: “more axes” |
+
+---
+
+## Appendix A — Generic axis architecture
 
 ```
 puzzle_axes (
   puzzle_id UUID,
-  axis_index SMALLINT,      -- 0..n row, 100..100+n col
-  axis_kind TEXT,           -- 'club' | 'nationality' | 'league' | 'era' | 'trophy'
-  ref_id TEXT,              -- club slug, ISO code, league id, decade, trophy id
+  axis_index SMALLINT,   -- 0..n row, 100..100+n col
+  axis_kind TEXT,        -- club | nationality | league | era | trophy
+  ref_id TEXT,           -- club id/slug, ISO, league id, decade, trophy id
   PRIMARY KEY (puzzle_id, axis_index)
 )
 ```
 
-World XI v1 may use `puzzle_col_nationalities` for speed; refactor when axis #3 ships.
+World XI v1 may use `puzzle_col_nationalities` for speed; migrate to `puzzle_axes` when axis #3 ships.
+
+**Search UX rule (all heterogeneous grids):** prioritize axis-matching clubs/labels in `clubs_preview` (already done for club×club cell context).
 
 ---
 
-## Appendix B — Cross-reference to shipped modes
+## Appendix B — Shipped vs planned modes
 
-| `puzzle_mode` enum | Status | Doc |
-|--------------------|--------|-----|
+| `puzzle_mode` | Status | Doc |
+|---------------|--------|-----|
 | `daily` | Shipped | ARCHITECTURE §4 |
-| `practice` | Shipped | ARCHITECTURE §15 Step 9 |
+| `practice` | Shipped | ARCHITECTURE §15 |
 | `challenge` | Shipped | ARCHITECTURE §14 |
-| `timeline` | Shipped Phase 4 | migration 024 |
-| `world_xi` | **Planned** | This document |
+| `timeline` | Shipped | migration 024 |
+| `world_xi` | **Planned P1** | Part 2 |
+| themed / blitz / mystery | Modifiers | Part 1 |
+| `club_league` / era / glory | Planned P2–P4 | Part 1 |
 
 ---
 
-*Next implementation step: migration 026 + `refresh_club_nationality_relationships()` + Flutter `NationalityHeaderCell`. Switch to Agent mode and reference this doc to build.*
+## Appendix C — Competitor quick reference
+
+| Product | Loop | Takeaway for us |
+|---------|------|-----------------|
+| Immaculate Footy | Club/stat grid + rarity | Stay grid-first; rarity is table stakes |
+| Athletic Connections Soccer | 16 → 4 groups | Don’t clone; steal **calendar marketing** only |
+| Football IQ | 11+ daily mini-modes | Catalog ASO works; brand dilution risk — we stay focused |
+| Transfer Guess / Career Path | Clue → name player | Optional satellite later; not core |
+| Player Pursuit | Clues + H2H | Social H2H after DAU; not before axes |
+
+---
+
+*Next engineering step: `puzzle_axes` or `puzzle_col_nationalities` + `refresh_club_nationality_relationships()` + `NationalityHeaderCell` + LiveOps “coming soon” announcement rows. Reference this doc in Agent mode to implement.*

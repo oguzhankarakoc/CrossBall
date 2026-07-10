@@ -25,12 +25,12 @@ class LeaderboardEntry extends Equatable {
       );
 
   factory LeaderboardEntry.fromJson(Map<String, dynamic> json) => LeaderboardEntry(
-        rank: json['rank'] as int? ?? 0,
+        rank: (json['rank'] as num?)?.toInt() ?? 0,
         userUuid: json['user_uuid'] as String? ?? '',
         displayName: json['display_name'] as String? ?? 'Player',
         competitiveRating: (json['competitive_rating'] as num?)?.toDouble() ?? 0,
         currentLeague: json['current_league'] as String? ?? 'bronze',
-        currentLevel: json['current_level'] as int? ?? 1,
+        currentLevel: (json['current_level'] as num?)?.toInt() ?? 1,
       );
 
   @override

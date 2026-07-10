@@ -39,6 +39,22 @@ Deno.serve(async (req) => {
       })
     }
 
+    const profileMap =
+      profile && typeof profile === 'object'
+        ? (profile as Record<string, unknown>)
+        : null
+
+    if (!profileMap || profileMap.ok !== true) {
+      return new Response(
+        JSON.stringify({ ok: false, reason: 'profile_unavailable' }),
+        {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        },
+      )
+    }
+
+    // Optional enrichments — never fail the core progression payload.
     const { data: missionsPayload } = await supabase.rpc('gee_get_missions', {
       p_user_uuid: userUuid,
     })
@@ -62,7 +78,8 @@ Deno.serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        ...(profile as Record<string, unknown>),
+        ok: true,
+        ...profileMap,
         missions: (missionsPayload as { missions?: unknown })?.missions ?? [],
         leagues: leagues ?? [],
         level_curve: levelInfo ?? [],

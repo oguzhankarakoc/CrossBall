@@ -19,13 +19,31 @@ class EconomyRepositoryImpl implements EconomyRepository {
   @override
   Future<PlayerProgression> getProgression(String userUuid) async {
     final payload = await _fetchProfile(userUuid);
-    if (payload != null && payload['ok'] == true) {
-      return PlayerProgression.fromJson(payload);
-    }
+    final fromApi = _tryParseProgression(payload);
+    if (fromApi != null) return fromApi;
 
     final cached = await _cache.getProgression();
-    if (cached != null) return PlayerProgression.fromJson(cached);
+    final fromCache = _tryParseProgression(cached, requireOk: false);
+    if (fromCache != null) return fromCache;
     return const PlayerProgression();
+  }
+
+  /// Parses progression from economy-profile or a partial complete-session cache.
+  PlayerProgression? _tryParseProgression(
+    Map<String, dynamic>? json, {
+    bool requireOk = true,
+  }) {
+    if (json == null || json.isEmpty) return null;
+    if (requireOk && json['ok'] != true) return null;
+    if (!requireOk && json['ok'] == false) return null;
+    if (!json.containsKey('current_level') && !json.containsKey('experience_points')) {
+      return null;
+    }
+    try {
+      return PlayerProgression.fromJson(json);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override

@@ -19,11 +19,16 @@ class SearchApiService {
         'q': query,
         'limit': limit.toString(),
       };
-      if (!competitive && context?.rowClubId != null) {
+      // Always send cell clubs so clubs_preview can prioritize the puzzle pair.
+      // competitive=1 keeps is_cell_relevant off (no ranking / badge spoilers).
+      if (context?.rowClubId != null) {
         params['row_club_id'] = context!.rowClubId!;
       }
-      if (!competitive && context?.colClubId != null) {
+      if (context?.colClubId != null) {
         params['col_club_id'] = context!.colClubId!;
+      }
+      if (competitive) {
+        params['competitive'] = '1';
       }
 
       final json = await _http.getJson(

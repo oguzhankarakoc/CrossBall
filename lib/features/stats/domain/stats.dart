@@ -45,8 +45,9 @@ class UserStats extends Equatable {
         bestStreak: json['best_streak'] as int? ?? 0,
         totalScore: (json['total_score'] as num?)?.toDouble() ?? 0,
         rarityBreakdown:
-            (json['rarity_breakdown'] as Map<String, dynamic>? ?? {})
-                .map((k, v) => MapEntry(k, v as int)),
+            (json['rarity_breakdown'] as Map<String, dynamic>? ?? {}).map(
+          (k, v) => MapEntry(k, (v as num?)?.toInt() ?? 0),
+        ),
         weeklyDailyScores: (json['weekly_daily_scores'] as List<dynamic>? ?? [])
             .map((e) => DailyScoreEntry.fromJson(e as Map<String, dynamic>))
             .toList(),

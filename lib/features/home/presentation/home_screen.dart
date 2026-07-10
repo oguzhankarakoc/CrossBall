@@ -167,6 +167,8 @@ class HomeScreen extends ConsumerWidget {
                         ref.invalidate(dailyPuzzleRolloutProvider);
                         ref.invalidate(userStatsProvider);
                         ref.invalidate(dailyCompletedTodayProvider);
+                        ref.invalidate(playerProgressionProvider);
+                        ref.invalidate(seasonInfoProvider);
                         final completed =
                             await ref.read(dailyCompletedTodayProvider.future);
                         cbDebug('Daily', 'home → open daily puzzle', {

@@ -46,5 +46,35 @@ void main() {
       expect(progression.competitiveRating, 1000);
       expect(progression.currentLeague, 'bronze');
     });
+
+    test('fromJson accepts numeric doubles from JSON/Postgres NUMERIC', () {
+      final progression = PlayerProgression.fromJson({
+        'experience_points': 2720.0,
+        'current_level': 7.0,
+        'xp_to_next_level': 380.0,
+        'competitive_rating': 1040.96,
+        'current_league': 'bronze',
+        'games_played': 25.0,
+        'season_points': 246.0,
+        'achievement_points': 45.0,
+        'highest_score': 890.5,
+        'average_score': 620.5,
+        'achievements': [
+          {
+            'slug': 'first_puzzle',
+            'title': null,
+            'description': 'Complete your first puzzle',
+            'unlocked_at': '2026-07-01T10:00:00Z',
+          },
+        ],
+      });
+
+      expect(progression.experiencePoints, 2720);
+      expect(progression.currentLevel, 7);
+      expect(progression.seasonPoints, 246);
+      expect(progression.competitiveRating, closeTo(1040.96, 0.001));
+      expect(progression.achievements, hasLength(1));
+      expect(progression.achievements.first.title, '');
+    });
   });
 }

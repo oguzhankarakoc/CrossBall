@@ -17,15 +17,34 @@ class PlayerAchievement extends Equatable {
   final String description;
   final DateTime unlockedAt;
 
-  factory PlayerAchievement.fromJson(Map<String, dynamic> json) => PlayerAchievement(
-        slug: json['slug'] as String,
-        title: json['title'] as String,
-        description: json['description'] as String,
-        unlockedAt: DateTime.parse(json['unlocked_at'] as String),
-      );
+  factory PlayerAchievement.fromJson(Map<String, dynamic> json) {
+    final unlockedRaw = json['unlocked_at'];
+    final unlockedAt = unlockedRaw is String
+        ? DateTime.tryParse(unlockedRaw)
+        : null;
+    return PlayerAchievement(
+      slug: json['slug']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      description: json['description']?.toString() ?? '',
+      unlockedAt: unlockedAt ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+    );
+  }
 
   @override
   List<Object?> get props => [slug, unlockedAt];
+}
+
+int _jsonInt(dynamic value, [int fallback = 0]) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  if (value is String) return int.tryParse(value) ?? fallback;
+  return fallback;
+}
+
+double _jsonDouble(dynamic value, [double fallback = 0]) {
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value) ?? fallback;
+  return fallback;
 }
 
 class PlayerProgression extends Equatable {
@@ -71,27 +90,35 @@ class PlayerProgression extends Equatable {
 
   factory PlayerProgression.fromJson(Map<String, dynamic> json) {
     final achievementsRaw = json['achievements'] as List<dynamic>? ?? [];
+    final achievements = <PlayerAchievement>[];
+    for (final entry in achievementsRaw) {
+      if (entry is! Map<String, dynamic>) continue;
+      try {
+        final achievement = PlayerAchievement.fromJson(entry);
+        if (achievement.slug.isNotEmpty) achievements.add(achievement);
+      } catch (_) {
+        // Skip malformed achievement rows from older caches / partial payloads.
+      }
+    }
     return PlayerProgression(
-      experiencePoints: json['experience_points'] as int? ?? 0,
-      currentLevel: json['current_level'] as int? ?? 1,
-      xpToNextLevel: json['xp_to_next_level'] as int? ?? 0,
-      competitiveRating: (json['competitive_rating'] as num?)?.toDouble() ?? 1000,
+      experiencePoints: _jsonInt(json['experience_points']),
+      currentLevel: _jsonInt(json['current_level'], 1).clamp(1, 9999),
+      xpToNextLevel: _jsonInt(json['xp_to_next_level']),
+      competitiveRating: _jsonDouble(json['competitive_rating'], 1000),
       currentLeague: json['current_league'] as String? ?? 'bronze',
-      gamesPlayed: json['games_played'] as int? ?? 0,
-      gamesCompleted: json['games_completed'] as int? ?? 0,
-      gamesWon: json['games_won'] as int? ?? 0,
-      currentStreak: json['current_streak'] as int? ?? 0,
-      bestStreak: json['best_streak'] as int? ?? 0,
-      highestScore: (json['highest_score'] as num?)?.toDouble() ?? 0,
-      averageScore: (json['average_score'] as num?)?.toDouble() ?? 0,
-      rareAnswersFound: json['rare_answers_found'] as int? ?? 0,
-      legendaryAnswersFound: json['legendary_answers_found'] as int? ?? 0,
-      perfectGames: json['perfect_games'] as int? ?? 0,
-      seasonPoints: json['season_points'] as int? ?? 0,
-      achievementPoints: json['achievement_points'] as int? ?? 0,
-      achievements: achievementsRaw
-          .map((e) => PlayerAchievement.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      gamesPlayed: _jsonInt(json['games_played']),
+      gamesCompleted: _jsonInt(json['games_completed']),
+      gamesWon: _jsonInt(json['games_won']),
+      currentStreak: _jsonInt(json['current_streak']),
+      bestStreak: _jsonInt(json['best_streak']),
+      highestScore: _jsonDouble(json['highest_score']),
+      averageScore: _jsonDouble(json['average_score']),
+      rareAnswersFound: _jsonInt(json['rare_answers_found']),
+      legendaryAnswersFound: _jsonInt(json['legendary_answers_found']),
+      perfectGames: _jsonInt(json['perfect_games']),
+      seasonPoints: _jsonInt(json['season_points']),
+      achievementPoints: _jsonInt(json['achievement_points']),
+      achievements: achievements,
     );
   }
 

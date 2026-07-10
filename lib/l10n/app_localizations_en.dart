@@ -209,6 +209,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rarityBreakdown => 'Rarity Breakdown';
 
   @override
+  String get rarityBreakdownEmpty =>
+      'Your rarity mix appears after competitive puzzles (Daily & Challenges).';
+
+  @override
+  String get rarityBreakdownHint =>
+      'Obscure picks push rare tiers up — that\'s how you climb.';
+
+  @override
+  String get statsCareerTitle => 'Career';
+
+  @override
+  String get statsActivityTitle => 'Activity';
+
+  @override
+  String get statsProgressUnavailable =>
+      'Couldn\'t load your level. Pull to refresh.';
+
+  @override
   String get createChallenge => 'Create Challenge';
 
   @override

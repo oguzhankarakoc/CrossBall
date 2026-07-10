@@ -210,6 +210,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get rarityBreakdown => 'Nadirlik Dağılımı';
 
   @override
+  String get rarityBreakdownEmpty =>
+      'Nadirlik karışımın rekabetçi bulmacalardan (Günlük ve Mücadele) sonra görünür.';
+
+  @override
+  String get rarityBreakdownHint =>
+      'Az bilinen seçimler nadir kademeleri yükseltir — böyle tırmanırsın.';
+
+  @override
+  String get statsCareerTitle => 'Kariyer';
+
+  @override
+  String get statsActivityTitle => 'Aktivite';
+
+  @override
+  String get statsProgressUnavailable =>
+      'Seviyen yüklenemedi. Yenilemek için aşağı çek.';
+
+  @override
   String get createChallenge => 'Mücadele Oluştur';
 
   @override

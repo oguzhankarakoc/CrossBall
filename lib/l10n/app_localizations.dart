@@ -460,6 +460,36 @@ abstract class AppLocalizations {
   /// **'Rarity Breakdown'**
   String get rarityBreakdown;
 
+  /// No description provided for @rarityBreakdownEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your rarity mix appears after competitive puzzles (Daily & Challenges).'**
+  String get rarityBreakdownEmpty;
+
+  /// No description provided for @rarityBreakdownHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Obscure picks push rare tiers up — that\'s how you climb.'**
+  String get rarityBreakdownHint;
+
+  /// No description provided for @statsCareerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Career'**
+  String get statsCareerTitle;
+
+  /// No description provided for @statsActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity'**
+  String get statsActivityTitle;
+
+  /// No description provided for @statsProgressUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load your level. Pull to refresh.'**
+  String get statsProgressUnavailable;
+
   /// No description provided for @createChallenge.
   ///
   /// In en, this message translates to:

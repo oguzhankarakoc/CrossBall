@@ -50,7 +50,11 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
     final hasNationality = CountryFlags.hasKnownNationality(player.nationalityCode);
     final hasPosition =
         player.primaryPosition != null && player.primaryPosition!.trim().isNotEmpty;
-    final careerPreview = player.clubsPreview.take(4).join(', ');
+    final orderedClubs = prioritizeClubsForCell(
+      player.clubsPreview,
+      widget.highlightClubs,
+    );
+    final careerPreview = orderedClubs.take(4).join(', ');
 
     return AnimatedOpacity(
       opacity: _visible ? 1 : 0,
@@ -143,19 +147,16 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                if (player.clubsPreview.length > 1) ...[
+                                if (orderedClubs.isNotEmpty) ...[
                                   const SizedBox(height: AppSpacing.xs),
                                   Wrap(
                                     spacing: AppSpacing.xs,
                                     runSpacing: AppSpacing.xs,
-                                    children: player.clubsPreview.take(3).map((club) {
-                                      final normalized = club.toLowerCase();
-                                      final highlight = player.isCellRelevant &&
-                                          widget.highlightClubs.any(
-                                            (h) =>
-                                                normalized.contains(h.toLowerCase()) ||
-                                                h.toLowerCase().contains(normalized),
-                                          );
+                                    children: orderedClubs.take(4).map((club) {
+                                      final highlight = _clubMatchesCell(
+                                        club,
+                                        widget.highlightClubs,
+                                      );
                                       return ClubChip(label: club, highlighted: highlight);
                                     }).toList(),
                                   ),
@@ -177,3 +178,42 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
     );
   }
 }
+
+bool _clubMatchesCell(String club, Set<String> highlightClubs) {
+  final normalized = _normalizeClubToken(club);
+  if (normalized.isEmpty || highlightClubs.isEmpty) return false;
+  for (final raw in highlightClubs) {
+    final target = _normalizeClubToken(raw);
+    if (target.isEmpty) continue;
+    if (normalized == target) return true;
+    if (normalized.contains(target) || target.contains(normalized)) return true;
+    // Short codes like ARS / SCP vs full names.
+    if (target.length <= 4 &&
+        normalized.split(RegExp(r'[^a-z0-9]+')).any((p) => p.startsWith(target))) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Puzzle axis clubs first, then the rest of the career preview.
+List<String> prioritizeClubsForCell(List<String> clubs, Set<String> highlightClubs) {
+  if (clubs.isEmpty || highlightClubs.isEmpty) return clubs;
+  final matched = <String>[];
+  final used = <String>{};
+  for (final preferred in highlightClubs) {
+    for (final club in clubs) {
+      if (used.contains(club)) continue;
+      if (_clubMatchesCell(club, {preferred})) {
+        matched.add(club);
+        used.add(club);
+        break;
+      }
+    }
+  }
+  final rest = clubs.where((club) => !used.contains(club));
+  return [...matched, ...rest];
+}
+
+String _normalizeClubToken(String value) =>
+    value.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), ' ').trim();
