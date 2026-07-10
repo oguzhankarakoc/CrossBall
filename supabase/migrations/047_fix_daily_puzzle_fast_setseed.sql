@@ -1,64 +1,4 @@
--- Daily puzzle integrity: immutable published grids + diverse fast generation.
-
--- ---------------------------------------------------------------------------
--- 1. Prevent mutating published daily puzzle clubs/cells (no mid-day re-seed)
--- ---------------------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION public.guard_published_daily_puzzle_mutation()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-DECLARE
-  v_puzzle_id UUID;
-BEGIN
-  IF TG_TABLE_NAME = 'puzzles' THEN
-    v_puzzle_id := COALESCE(OLD.id, NEW.id);
-  ELSE
-    v_puzzle_id := COALESCE(OLD.puzzle_id, NEW.puzzle_id);
-  END IF;
-
-  IF TG_OP = 'DELETE' AND EXISTS (
-    SELECT 1
-    FROM public.puzzles p
-    WHERE p.id = v_puzzle_id
-      AND p.mode = 'daily'
-      AND p.is_published = TRUE
-  ) THEN
-    RAISE EXCEPTION 'published_daily_puzzle_immutable';
-  END IF;
-
-  IF TG_OP IN ('UPDATE', 'DELETE') AND EXISTS (
-    SELECT 1
-    FROM public.puzzles p
-    WHERE p.id = v_puzzle_id
-      AND p.mode = 'daily'
-      AND p.is_published = TRUE
-  ) THEN
-    RAISE EXCEPTION 'published_daily_puzzle_immutable';
-  END IF;
-
-  RETURN COALESCE(NEW, OLD);
-END;
-$$;
-
-DROP TRIGGER IF EXISTS guard_puzzle_row_clubs_daily ON public.puzzle_row_clubs;
-CREATE TRIGGER guard_puzzle_row_clubs_daily
-  BEFORE UPDATE OR DELETE ON public.puzzle_row_clubs
-  FOR EACH ROW EXECUTE FUNCTION public.guard_published_daily_puzzle_mutation();
-
-DROP TRIGGER IF EXISTS guard_puzzle_col_clubs_daily ON public.puzzle_col_clubs;
-CREATE TRIGGER guard_puzzle_col_clubs_daily
-  BEFORE UPDATE OR DELETE ON public.puzzle_col_clubs
-  FOR EACH ROW EXECUTE FUNCTION public.guard_published_daily_puzzle_mutation();
-
-DROP TRIGGER IF EXISTS guard_puzzle_cells_daily ON public.puzzle_cells;
-CREATE TRIGGER guard_puzzle_cells_daily
-  BEFORE UPDATE OR DELETE ON public.puzzle_cells
-  FOR EACH ROW EXECUTE FUNCTION public.guard_published_daily_puzzle_mutation();
-
--- ---------------------------------------------------------------------------
--- 2. Fast daily generator: avoid repeating recent layouts / club sets
--- ---------------------------------------------------------------------------
+-- Fix generate_daily_puzzle_fast: setseed() expects double precision, not text.
 
 CREATE OR REPLACE FUNCTION public.generate_daily_puzzle_fast(
   p_puzzle_date DATE DEFAULT CURRENT_DATE,
@@ -85,7 +25,7 @@ DECLARE
   v_cells INT := 0;
   v_recent_hashes TEXT[];
   v_recent_club_ids UUID[];
-  v_seed NUMERIC;
+  v_seed DOUBLE PRECISION;
 BEGIN
   IF p_grid_size NOT IN (3, 4) THEN
     RAISE EXCEPTION 'grid_size must be 3 or 4';
@@ -127,11 +67,10 @@ BEGIN
       AND p.created_at > NOW() - INTERVAL '14 days'
   ) recent;
 
-  -- Deterministic per-date jitter so fallback is stable for the day but varies by day.
   v_seed := (
-    ('x' || substr(md5(p_puzzle_date::TEXT || ':daily_fast'), 1, 8))::bit(32)::bigint::numeric
+    ('x' || substr(md5(p_puzzle_date::TEXT || ':daily_fast'), 1, 8))::bit(32)::bigint::double precision
   ) / 4294967295.0;
-  PERFORM setseed(v_seed::double precision);
+  PERFORM setseed(v_seed);
 
   WHILE v_attempt < p_max_attempts LOOP
     v_attempt := v_attempt + 1;
@@ -228,61 +167,5 @@ BEGIN
 
   RAISE EXCEPTION 'generate_daily_puzzle_fast failed after % attempts (min_answers=%)',
     p_max_attempts, p_min_answers;
-END;
-$$;
-
--- ---------------------------------------------------------------------------
--- 3. Rollout timeout aligned with GitHub Action (up to 3h after UTC midnight)
--- ---------------------------------------------------------------------------
-
-CREATE OR REPLACE FUNCTION public.expire_stale_daily_rollout(
-  p_date DATE DEFAULT CURRENT_DATE,
-  p_max_generating_minutes INT DEFAULT 180
-)
-RETURNS public.daily_puzzle_rollout
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  v_row public.daily_puzzle_rollout;
-  v_puzzle_id UUID;
-BEGIN
-  SELECT * INTO v_row
-  FROM public.daily_puzzle_rollout
-  WHERE puzzle_date = p_date;
-
-  IF v_row IS NULL THEN
-    RETURN NULL;
-  END IF;
-
-  IF v_row.status = 'generating'
-     AND v_row.started_at < NOW() - (p_max_generating_minutes || ' minutes')::INTERVAL THEN
-    UPDATE public.daily_puzzle_rollout
-    SET status = 'failed',
-        error_message = COALESCE(
-          v_row.error_message,
-          'Generation timed out after ' || p_max_generating_minutes || ' minutes'
-        ),
-        updated_at = NOW()
-    WHERE puzzle_date = p_date
-    RETURNING * INTO v_row;
-  END IF;
-
-  IF v_row.status IN ('generating', 'failed') THEN
-    SELECT id INTO v_puzzle_id
-    FROM public.puzzles
-    WHERE puzzle_date = p_date
-      AND mode = 'daily'
-      AND grid_size = 3
-      AND is_published = TRUE
-    LIMIT 1;
-
-    IF v_puzzle_id IS NOT NULL THEN
-      RETURN public.complete_daily_puzzle_rollout(p_date, v_puzzle_id);
-    END IF;
-  END IF;
-
-  RETURN v_row;
 END;
 $$;
