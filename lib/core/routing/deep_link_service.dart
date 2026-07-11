@@ -22,12 +22,30 @@ abstract final class DeepLinkService {
   static String? _fromCustomScheme(Uri uri) {
     final host = uri.host.toLowerCase();
     final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
+    final mode = uri.queryParameters['mode'];
 
-    if (host == 'challenge') {
-      final id = _challengeIdFromUri(uri, segments);
-      if (id != null && id.isNotEmpty) {
-        return '${AppRoutes.puzzle}?mode=challenge&id=$id';
-      }
+    // Marketing / App Store screenshot deep links (crossball://home, etc.)
+    switch (host) {
+      case 'home':
+        return AppRoutes.home;
+      case 'leaderboard':
+        return AppRoutes.leaderboard;
+      case 'community':
+        return AppRoutes.community;
+      case 'stats':
+        return AppRoutes.stats;
+      case 'premium':
+        return AppRoutes.premium;
+      case 'practice':
+        return AppRoutes.practiceHub;
+      case 'puzzle':
+        final puzzleMode = mode ?? 'daily';
+        return '${AppRoutes.puzzle}?mode=$puzzleMode';
+      case 'challenge':
+        final id = _challengeIdFromUri(uri, segments);
+        if (id != null && id.isNotEmpty) {
+          return '${AppRoutes.puzzle}?mode=challenge&id=$id';
+        }
     }
 
     if (segments.isNotEmpty && segments.first.toLowerCase() == 'challenge') {
