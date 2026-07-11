@@ -79,6 +79,25 @@ abstract final class ScoringEngine {
     return paced.clamp(0, double.infinity);
   }
 
+  /// Light scoring for Quick Grid — speed + accuracy, no rarity/pace grind.
+  static double quickGridCellScore({
+    required int remainingSessionMs,
+  }) {
+    final frac = (remainingSessionMs / (GameConstants.quickGridDurationSec * 1000))
+        .clamp(0.0, 1.0);
+    return GameConstants.quickGridBaseCellScore +
+        GameConstants.quickGridMaxSpeedBonus * frac;
+  }
+
+  static double quickGridSessionScore({
+    required List<double> cellScores,
+    required int mistakes,
+  }) {
+    final base = cellScores.fold<double>(0, (a, b) => a + b);
+    return (base - mistakes * GameConstants.quickGridMistakePenalty)
+        .clamp(0, double.infinity);
+  }
+
   static int completionBonusForMode(String mode, {required bool fullGrid}) {
     if (!fullGrid) return 0;
     return switch (mode) {

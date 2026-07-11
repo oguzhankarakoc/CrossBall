@@ -993,7 +993,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       return _api.startSession(
         userUuid: userUuid,
         puzzleId: puzzleId,
-        mode: mode.name,
+        mode: mode.serverName,
         gridSize: gridSize,
         forceNew: forceNew,
       );
@@ -1001,7 +1001,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     final localId = _uuid.v4();
     cbDebug('Session', 'using local session UUID (offline/demo)', {
       'sessionId': localId,
-      'mode': mode.name,
+      'mode': mode.serverName,
       'supabaseConfigured': AppConfig.isSupabaseConfigured,
       'hasUserUuid': userUuid != null,
     });

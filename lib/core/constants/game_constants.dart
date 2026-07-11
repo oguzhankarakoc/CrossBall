@@ -34,4 +34,19 @@ abstract final class GameConstants {
   static const int searchDebounceMs = 200;
   static const int searchDefaultLimit = 20;
   static const int maxRecentPicks = 10;
+
+  /// Quick Grid: session countdown (seconds).
+  static const int quickGridDurationSec = 90;
+
+  /// Quick Grid: choices shown per cell (1 correct + N-1 distractors).
+  static const int quickGridChoiceCount = 5;
+
+  /// Quick Grid: flat points per correct cell before speed bonus.
+  static const int quickGridBaseCellScore = 100;
+
+  /// Quick Grid: max speed bonus from remaining session time.
+  static const int quickGridMaxSpeedBonus = 50;
+
+  /// Quick Grid: penalty per wrong choice.
+  static const int quickGridMistakePenalty = 25;
 }

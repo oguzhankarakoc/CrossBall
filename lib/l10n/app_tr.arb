@@ -315,6 +315,12 @@
   "premiumGridRequired": "4×4 ızgaralar Premium özelliğidir.",
   "timelineMode": "Zaman Çizelgesi Antrenmanı",
   "timelineModeDesc": "Her doğru cevaptan sonra kariyer yıllarını gör.",
+  "quickGridMode": "Hızlı Grid",
+  "quickGridModeDesc": "Aynı CrossBall ızgarası — 5 oyuncudan seç. 90 saniye. Yazma yok.",
+  "quickGridPickTitle": "Oyuncuyu seç",
+  "quickGridChoicesError": "Şıklar yüklenemedi. Tekrar dene.",
+  "quickGridEliminateAd": "Reklam izle — 1 yanlışı kaldır",
+  "quickGridEliminateFree": "1 yanlış cevabı kaldır",
   "timelineSheetTitle": "{name} — kariyer zaman çizelgesi",
   "@timelineSheetTitle": {
     "placeholders": {

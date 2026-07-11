@@ -47,6 +47,13 @@ class PracticeTabScreen extends ConsumerWidget {
                   onTap: () => context.push('${AppRoutes.puzzle}?mode=timeline'),
                 ),
               ],
+              const SizedBox(height: AppSpacing.md),
+              CrossBallCard(
+                icon: Icons.flash_on_rounded,
+                title: l10n.quickGridMode,
+                subtitle: l10n.quickGridModeDesc,
+                onTap: () => context.push('${AppRoutes.puzzle}?mode=quickGrid'),
+              ),
               const SizedBox(height: AppSpacing.lg),
               CrossBallGlassPanel(
                 padding: const EdgeInsets.all(AppSpacing.lg),

@@ -153,10 +153,13 @@ class _PlayerSearchCardState extends State<PlayerSearchCard> {
                                     spacing: AppSpacing.xs,
                                     runSpacing: AppSpacing.xs,
                                     children: orderedClubs.take(4).map((club) {
-                                      final highlight = _clubMatchesCell(
-                                        club,
-                                        widget.highlightClubs,
-                                      );
+                                      // Only tick clubs when server confirmed cell relevance —
+                                      // fuzzy label match alone caused "green then Wrong".
+                                      final highlight = widget.showRelevanceBadge &&
+                                          _clubMatchesCell(
+                                            club,
+                                            widget.highlightClubs,
+                                          );
                                       return ClubChip(label: club, highlighted: highlight);
                                     }).toList(),
                                   ),

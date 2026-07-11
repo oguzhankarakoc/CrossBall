@@ -19,6 +19,8 @@ type EnrichedPlayer = RawPlayer & {
   popularity_score: number
   obscurity_score: number
   is_cell_relevant: boolean
+  /** Internal: identity sibling validates for current cell (even in competitive). */
+  validates_cell?: boolean
 }
 
 function normalizeQuery(query: string): string {
@@ -140,10 +142,30 @@ async function fetchClubPreviewLabels(
     .filter((v) => v.length > 0)
 }
 
-function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPlayer {
-  const primary =
-    playerCompletenessScore(a) >= playerCompletenessScore(b) ? a : b
-  const secondary = primary === a ? b : a
+function mergeEnrichedPlayers(
+  a: EnrichedPlayer,
+  b: EnrichedPlayer,
+  intersectionIds?: Set<string>,
+): EnrichedPlayer {
+  const scoreA = playerCompletenessScore(a)
+  const scoreB = playerCompletenessScore(b)
+  const aValid = a.validates_cell === true || intersectionIds?.has(a.id) === true
+  const bValid = b.validates_cell === true || intersectionIds?.has(b.id) === true
+
+  // Prefer an id that validate_player_intersection would accept for this cell.
+  let primary: EnrichedPlayer
+  let secondary: EnrichedPlayer
+  if (aValid !== bValid) {
+    primary = aValid ? a : b
+    secondary = aValid ? b : a
+  } else if (scoreA !== scoreB) {
+    primary = scoreA >= scoreB ? a : b
+    secondary = primary === a ? b : a
+  } else {
+    primary = a
+    secondary = b
+  }
+
   const clubs = [...new Set([...(primary.clubs_preview ?? []), ...(secondary.clubs_preview ?? [])])]
   return {
     ...primary,
@@ -154,10 +176,14 @@ function mergeEnrichedPlayers(a: EnrichedPlayer, b: EnrichedPlayer): EnrichedPla
     popularity_score: Math.max(primary.popularity_score, secondary.popularity_score),
     obscurity_score: Math.max(primary.obscurity_score ?? 50, secondary.obscurity_score ?? 50),
     is_cell_relevant: primary.is_cell_relevant || secondary.is_cell_relevant,
+    validates_cell: aValid || bValid || primary.validates_cell === true || secondary.validates_cell === true,
   }
 }
 
-function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
+function dedupePlayersByIdentity(
+  players: EnrichedPlayer[],
+  intersectionIds?: Set<string>,
+): EnrichedPlayer[] {
   if (players.length <= 1) return players
 
   const parent = players.map((_, i) => i)
@@ -196,7 +222,12 @@ function dedupePlayersByIdentity(players: EnrichedPlayer[]): EnrichedPlayer[] {
 
   return [...groups.values()].map((group) => {
     group.sort((a, b) => playerCompletenessScore(b) - playerCompletenessScore(a))
-    return group.slice(1).reduce(mergeEnrichedPlayers, group[0])
+    return group
+      .slice(1)
+      .reduce(
+        (acc, cur) => mergeEnrichedPlayers(acc, cur, intersectionIds),
+        group[0],
+      )
   })
 }
 
@@ -332,6 +363,10 @@ async function enrichPlayers(
   const siblingMap = await resolveIdentitySiblingMap(supabase, ids)
   const expandedIds = [...new Set([...siblingMap.values()].flat())]
 
+  // Always resolve intersection when cell clubs are known so dedupe can
+  // prefer a player_id that validate_player_intersection accepts (fixes
+  // "green ticks but Wrong" when name-deduped duplicates lack identity_key).
+  // is_cell_relevant badge still only set when markCellRelevant (non-competitive).
   const [{ data: careers }, { data: popularity }, intersectionIds] = await Promise.all([
     supabase
       .from('player_career_history')
@@ -344,7 +379,7 @@ async function enrichPlayers(
       .from('player_popularity')
       .select('player_id, global_selection_count')
       .in('player_id', expandedIds),
-    markCellRelevant && rowClubId && colClubId
+    rowClubId && colClubId
       ? fetchIntersectionIds(supabase, expandedIds, rowClubId, colClubId)
       : Promise.resolve(new Set<string>()),
   ])
@@ -382,15 +417,20 @@ async function enrichPlayers(
       popularityScore = Math.max(popularityScore, popByPlayer.get(siblingId) ?? 0)
     }
 
-    const isCellRelevant =
-      markCellRelevant && siblingIds.some((siblingId) => intersectionIds.has(siblingId))
+    // Prefer submitting an identity sibling that actually validates for the cell.
+    const validatesCell = siblingIds.some((siblingId) => intersectionIds.has(siblingId))
+    const validatingSibling =
+      siblingIds.find((siblingId) => intersectionIds.has(siblingId)) ?? player.id
+    const isCellRelevant = markCellRelevant && validatesCell
 
     return {
       ...player,
+      id: validatingSibling,
       clubs_preview: prioritizeCellClubs(mergedClubs, cellClubLabels).slice(0, 4),
       popularity_score: popularityScore,
       obscurity_score: obscurityScore,
       is_cell_relevant: isCellRelevant,
+      validates_cell: validatesCell,
     }
   })
 }
@@ -580,10 +620,9 @@ Deno.serve(async (req) => {
         colClubId,
         enrichOpts,
       )
-      const results = withPrioritizedClubs(dedupePlayersByIdentity(enrichedPopular)).slice(
-        0,
-        limit,
-      )
+      const results = withPrioritizedClubs(
+        dedupePlayersByIdentity(enrichedPopular),
+      ).slice(0, limit)
 
       let suggested: EnrichedPlayer[] = []
       if (rowClubId && colClubId) {
@@ -634,6 +673,7 @@ Deno.serve(async (req) => {
     const ranked = deduped
       .sort((a, b) => scorePlayer(b, normalized) - scorePlayer(a, normalized))
       .slice(0, limit)
+      .map(({ validates_cell: _v, ...rest }) => rest)
 
     return new Response(
       JSON.stringify({

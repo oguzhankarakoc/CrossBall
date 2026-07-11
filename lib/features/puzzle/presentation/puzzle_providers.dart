@@ -623,8 +623,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     );
   }
 
-  bool get _isTrainingMode =>
-      params.mode == PuzzleMode.practice || params.mode == PuzzleMode.timeline;
+  bool get _isTrainingMode => params.mode.isTraining;
 
   Future<void> loadPuzzle({
     int? gridSize,
@@ -909,9 +908,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       );
 
       final startedAt = session.startedAt;
-      final isComplete = _isTrainingMode
-          ? false
-          : cells.values.where((c) => c.isSolved).length == puzzle.totalCells;
+      // Full grid → complete for all modes (incl. practice/timeline/quick grid).
+      // Previously training forced isComplete=false so 9/9 stayed live until
+      // manual "Finish" — bad UX and felt like a stuck session.
+      final isComplete =
+          cells.values.where((c) => c.isSolved).length == puzzle.totalCells;
 
       _antiCheat = AntiCheatTracker(
         gridSize: puzzle.gridSize,
@@ -1011,8 +1012,25 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         PuzzleMode.daily => 'Daily',
         PuzzleMode.practice => 'Practice',
         PuzzleMode.timeline => 'Practice',
+        PuzzleMode.quickGrid => 'QuickGrid',
         PuzzleMode.challenge => 'Challenge',
       };
+
+  int _quickGridRemainingMs() {
+    final started = state.startedAt;
+    if (started == null) return GameConstants.quickGridDurationSec * 1000;
+    final elapsed = DateTime.now().difference(started).inMilliseconds;
+    final total = GameConstants.quickGridDurationSec * 1000;
+    return (total - elapsed).clamp(0, total);
+  }
+
+  /// Called when Quick Grid countdown hits zero.
+  Future<void> onQuickGridTimeUp() async {
+    if (params.mode != PuzzleMode.quickGrid) return;
+    if (state.isComplete || _sessionFinalized) return;
+    state = state.copyWith(isComplete: true, finishedEarly: true);
+    await _completeSession();
+  }
 
   Future<void> startNewPracticeSession() async {
     _sessionFinalized = false;
@@ -1142,11 +1160,16 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
 
     if (answer.correct) {
-      final cellScore = ScoringEngine.calculateCellScore(
-        usagePercentage: answer.usagePercentage,
-        responseTimeMs: responseMs,
-        mistakesOnCell: 0,
-      );
+      final remainingMs = params.mode == PuzzleMode.quickGrid
+          ? _quickGridRemainingMs()
+          : 0;
+      final cellScore = params.mode == PuzzleMode.quickGrid
+          ? ScoringEngine.quickGridCellScore(remainingSessionMs: remainingMs)
+          : ScoringEngine.calculateCellScore(
+              usagePercentage: answer.usagePercentage,
+              responseTimeMs: responseMs,
+              mistakesOnCell: 0,
+            );
 
       final updatedCell = activeCell.copyWith(
         solvedPlayerId: player.id,
@@ -1167,16 +1190,22 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
       final allSolved =
           newCells.values.where((c) => c.isSolved).length == puzzle.totalCells;
-      final isComplete = allSolved && !_isTrainingMode;
+      final isComplete = allSolved;
 
-      final sessionScore = ScoringEngine.calculateSessionScore(
-        cellScores: allScores,
-        hintsUsed: state.hintsUsed,
-        completionBonus: ScoringEngine.completionBonusForMode(
-          params.mode.name,
-          fullGrid: allSolved,
-        ),
-      );
+      final sessionScore = params.mode == PuzzleMode.quickGrid
+          ? ScoringEngine.quickGridSessionScore(
+              cellScores: allScores,
+              mistakes: state.mistakes,
+            )
+          : ScoringEngine.calculateSessionScore(
+              cellScores: allScores,
+              hintsUsed: state.hintsUsed,
+              mistakes: state.mistakes,
+              completionBonus: ScoringEngine.completionBonusForMode(
+                params.mode.name,
+                fullGrid: allSolved,
+              ),
+            );
 
       state = state.copyWith(
         cells: newCells,
@@ -1198,13 +1227,21 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       }
     } else {
       final nextMistakes = state.mistakes + 1;
-      final previewScore = _scoreFromCells(
-        state.cells,
-        state.hintsUsed,
-        mistakes: nextMistakes,
-        totalCells: puzzle.totalCells,
-        applyCompletionBonus: true,
-      );
+      final previewScore = params.mode == PuzzleMode.quickGrid
+          ? ScoringEngine.quickGridSessionScore(
+              cellScores: state.cells.values
+                  .where((c) => c.cellScore != null)
+                  .map((c) => c.cellScore!)
+                  .toList(),
+              mistakes: nextMistakes,
+            )
+          : _scoreFromCells(
+              state.cells,
+              state.hintsUsed,
+              mistakes: nextMistakes,
+              totalCells: puzzle.totalCells,
+              applyCompletionBonus: true,
+            );
       state = state.copyWith(
         mistakes: nextMistakes,
         totalScore: previewScore,
@@ -1393,7 +1430,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       antiCheatMetadata: {
         ...metadata,
         'user_uuid': profile.userUuid,
-        'mode': params.mode.name,
+        'mode': params.mode.serverName,
         'finished_early': state.finishedEarly,
         if (params.mode == PuzzleMode.challenge && challengeResult != null)
           'challenge_won': challengeResult.youWon,
@@ -1405,7 +1442,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       flushResult = await _repo.flushSessionCompletion(
         sessionId: state.sessionId!,
         userUuid: profile.userUuid,
-        mode: params.mode.name,
+        mode: params.mode.serverName,
         finishedEarly: state.finishedEarly,
         challengeWon: challengeResult?.youWon,
       );

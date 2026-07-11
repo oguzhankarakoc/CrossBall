@@ -315,6 +315,12 @@
   "premiumGridRequired": "4×4-Gitter sind eine Premium-Funktion.",
   "timelineMode": "Timeline-Training",
   "timelineModeDesc": "Sieh Karrierejahre nach jeder richtigen Antwort.",
+  "quickGridMode": "Quick Grid",
+  "quickGridModeDesc": "Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 90 Sekunden. Kein Tippen.",
+  "quickGridPickTitle": "Spieler wählen",
+  "quickGridChoicesError": "Auswahl konnte nicht geladen werden. Erneut versuchen.",
+  "quickGridEliminateAd": "Werbung ansehen — 1 Falsche entfernen",
+  "quickGridEliminateFree": "1 falsche Antwort entfernen",
   "timelineSheetTitle": "{name} — Karriere-Timeline",
   "@timelineSheetTitle": {
     "placeholders": {

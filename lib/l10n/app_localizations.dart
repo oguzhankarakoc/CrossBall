@@ -1462,6 +1462,42 @@ abstract class AppLocalizations {
   /// **'See career years after each correct answer.'**
   String get timelineModeDesc;
 
+  /// No description provided for @quickGridMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Grid'**
+  String get quickGridMode;
+
+  /// No description provided for @quickGridModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Same CrossBall grid — pick from 5 players. 90 seconds. No typing.'**
+  String get quickGridModeDesc;
+
+  /// No description provided for @quickGridPickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the player'**
+  String get quickGridPickTitle;
+
+  /// No description provided for @quickGridChoicesError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load choices. Try again.'**
+  String get quickGridChoicesError;
+
+  /// No description provided for @quickGridEliminateAd.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad — remove 1 wrong'**
+  String get quickGridEliminateAd;
+
+  /// No description provided for @quickGridEliminateFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove 1 wrong answer'**
+  String get quickGridEliminateFree;
+
   /// No description provided for @timelineSheetTitle.
   ///
   /// In en, this message translates to:

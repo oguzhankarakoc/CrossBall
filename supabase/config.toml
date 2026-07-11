@@ -87,6 +87,9 @@ verify_jwt = false
 [functions.career-timeline]
 verify_jwt = false
 
+[functions.quick-grid-choices]
+verify_jwt = false
+
 [functions.season]
 verify_jwt = false
 

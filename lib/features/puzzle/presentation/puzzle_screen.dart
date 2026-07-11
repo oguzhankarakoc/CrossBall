@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../../core/routing/app_routes.dart';
+import '../../../core/constants/game_constants.dart';
 import '../../../core/debug/crossball_debug_log.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/utils/daily_puzzle_schedule.dart';
@@ -28,6 +29,7 @@ import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/session_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
+import '../../../features/search/domain/search.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
 import 'puzzle_providers.dart';
@@ -35,9 +37,11 @@ import 'daily_puzzle_rollout_provider.dart';
 import 'widgets/daily_puzzle_completed_panel.dart';
 import 'widgets/daily_puzzle_refresh_panel.dart';
 import 'widgets/player_search_modal.dart';
+import 'widgets/puzzle_countdown_timer.dart';
 import 'widgets/puzzle_grid.dart';
 import 'widgets/puzzle_result_screen.dart';
 import 'widgets/puzzle_timer.dart';
+import 'widgets/quick_grid_choice_sheet.dart';
 
 class PuzzleScreen extends ConsumerStatefulWidget {
   const PuzzleScreen({
@@ -54,9 +58,7 @@ class PuzzleScreen extends ConsumerStatefulWidget {
 class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   Timer? _dailyRefreshPollTimer;
 
-  bool get _isTrainingMode =>
-      widget.params.mode == PuzzleMode.practice ||
-      widget.params.mode == PuzzleMode.timeline;
+  bool get _isTrainingMode => widget.params.mode.isTraining;
 
   @override
   void initState() {
@@ -333,7 +335,20 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                       compact: true,
                                     ),
                                   ),
-                                PuzzleTimer(startedAt: game.startedAt ?? DateTime.now()),
+                                if (widget.params.mode == PuzzleMode.quickGrid)
+                                  PuzzleCountdownTimer(
+                                    startedAt: game.startedAt ?? DateTime.now(),
+                                    duration: const Duration(
+                                      seconds: GameConstants.quickGridDurationSec,
+                                    ),
+                                    onExpired: () {
+                                      ref
+                                          .read(puzzleGameProvider(widget.params).notifier)
+                                          .onQuickGridTimeUp();
+                                    },
+                                  )
+                                else
+                                  PuzzleTimer(startedAt: game.startedAt ?? DateTime.now()),
                                 Expanded(
                                   child: Center(
                                     child: Padding(
@@ -385,6 +400,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         PuzzleMode.daily => l10n.dailyChallenge,
         PuzzleMode.practice => l10n.practice,
         PuzzleMode.timeline => l10n.timelineMode,
+        PuzzleMode.quickGrid => l10n.quickGridMode,
         PuzzleMode.challenge => l10n.friendChallenge,
       };
 
@@ -555,21 +571,35 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     if (puzzle == null) return;
 
     final cellKey = '${row}_$col';
-    final player = await showModalBottomSheet<dynamic>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      barrierColor: Colors.black.withValues(alpha: 0.55),
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) => PlayerSearchModal(
-        params: widget.params,
+    if (!mounted) {
+      notifier.clearSelection();
+      return;
+    }
+    final Player? player;
+    if (widget.params.mode == PuzzleMode.quickGrid) {
+      player = await showQuickGridChoiceSheet(
+        context,
         rowClub: puzzle.rowClubAt(row),
         colClub: puzzle.colClubAt(col),
-        cellKey: cellKey,
-        revealedHints: game.hintsRevealed[cellKey] ?? const [],
         isPremium: ref.read(isPremiumProvider),
-      ),
-    );
+      );
+    } else {
+      player = await showModalBottomSheet<Player>(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        barrierColor: Colors.black.withValues(alpha: 0.55),
+        backgroundColor: Colors.transparent,
+        builder: (sheetContext) => PlayerSearchModal(
+          params: widget.params,
+          rowClub: puzzle.rowClubAt(row),
+          colClub: puzzle.colClubAt(col),
+          cellKey: cellKey,
+          revealedHints: game.hintsRevealed[cellKey] ?? const [],
+          isPremium: ref.read(isPremiumProvider),
+        ),
+      );
+    }
 
     if (player == null || !mounted) {
       notifier.clearSelection();
@@ -581,6 +611,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       final result = await notifier.submitAnswer(player);
       if (result != null && mounted) {
         if (result.correct &&
+            widget.params.mode != PuzzleMode.quickGrid &&
             (result.rarityTier == 'mythic' ||
                 RarityTier.fromUsagePercentage(result.usagePercentage) == RarityTier.mythic)) {
           await showMythicCelebration(context);

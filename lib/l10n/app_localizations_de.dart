@@ -771,6 +771,26 @@ class AppLocalizationsDe extends AppLocalizations {
       'Sieh Karrierejahre nach jeder richtigen Antwort.';
 
   @override
+  String get quickGridMode => 'Quick Grid';
+
+  @override
+  String get quickGridModeDesc =>
+      'Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 90 Sekunden. Kein Tippen.';
+
+  @override
+  String get quickGridPickTitle => 'Spieler wählen';
+
+  @override
+  String get quickGridChoicesError =>
+      'Auswahl konnte nicht geladen werden. Erneut versuchen.';
+
+  @override
+  String get quickGridEliminateAd => 'Werbung ansehen — 1 Falsche entfernen';
+
+  @override
+  String get quickGridEliminateFree => '1 falsche Antwort entfernen';
+
+  @override
   String timelineSheetTitle(String name) {
     return '$name — Karriere-Timeline';
   }

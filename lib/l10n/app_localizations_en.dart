@@ -759,6 +759,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get timelineModeDesc => 'See career years after each correct answer.';
 
   @override
+  String get quickGridMode => 'Quick Grid';
+
+  @override
+  String get quickGridModeDesc =>
+      'Same CrossBall grid — pick from 5 players. 90 seconds. No typing.';
+
+  @override
+  String get quickGridPickTitle => 'Pick the player';
+
+  @override
+  String get quickGridChoicesError => 'Couldn\'t load choices. Try again.';
+
+  @override
+  String get quickGridEliminateAd => 'Watch ad — remove 1 wrong';
+
+  @override
+  String get quickGridEliminateFree => 'Remove 1 wrong answer';
+
+  @override
   String timelineSheetTitle(String name) {
     return '$name — career timeline';
   }

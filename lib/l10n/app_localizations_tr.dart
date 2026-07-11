@@ -762,6 +762,25 @@ class AppLocalizationsTr extends AppLocalizations {
       'Her doğru cevaptan sonra kariyer yıllarını gör.';
 
   @override
+  String get quickGridMode => 'Hızlı Grid';
+
+  @override
+  String get quickGridModeDesc =>
+      'Aynı CrossBall ızgarası — 5 oyuncudan seç. 90 saniye. Yazma yok.';
+
+  @override
+  String get quickGridPickTitle => 'Oyuncuyu seç';
+
+  @override
+  String get quickGridChoicesError => 'Şıklar yüklenemedi. Tekrar dene.';
+
+  @override
+  String get quickGridEliminateAd => 'Reklam izle — 1 yanlışı kaldır';
+
+  @override
+  String get quickGridEliminateFree => '1 yanlış cevabı kaldır';
+
+  @override
   String timelineSheetTitle(String name) {
     return '$name — kariyer zaman çizelgesi';
   }

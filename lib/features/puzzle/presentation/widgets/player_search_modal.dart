@@ -101,11 +101,14 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
 
     setState(() => _loading = true);
     final start = DateTime.now();
-    final response = await ref.read(searchRepositoryProvider).search(
-          query,
-          context: _searchContext,
-          competitive: true,
-        );
+      final response = await ref.read(searchRepositoryProvider).search(
+            query,
+            context: _searchContext,
+            // Daily/challenge: no cell-relevance spoilers.
+            // Training modes: allow relevance so ticks match validate-answer.
+            competitive: widget.params.mode == PuzzleMode.daily ||
+                widget.params.mode == PuzzleMode.challenge,
+          );
     final latency = DateTime.now().difference(start).inMilliseconds;
     if (mounted) {
       ref.read(analyticsProvider).track('search_query', properties: {
