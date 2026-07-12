@@ -50,7 +50,8 @@ Keep `data_pipeline/.env` on your Mac with direct connection (`db.*:5432`) — t
 | **Schedule** | Sunday 05:00 UTC (08:00 Istanbul) |
 | **Manual** | Actions → Data ETL (Weekly) → Run workflow |
 | **Script** | `./scripts/run_scheduled_etl.sh` |
-| **Steps** | Kaggle fetch (if secrets set) or transform committed CSV → full load → patches |
+| **Steps** | Kaggle `run-all` (if secrets set) **or** light patches (manual + API-Football) → `ensure-daily` |
+| **Note** | Full enriched upsert is **not** redone here — that runs in Career Enrichment (Saturday). Light mode avoids the 75m pooler timeout on 6k+ players. |
 
 ### Career Enrichment (Weekly) — `career-enrichment-weekly.yml`
 

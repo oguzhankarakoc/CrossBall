@@ -16,10 +16,14 @@ permissions:
 jobs:
   etl:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # Light patch path finishes well under 30m; keep headroom for optional Kaggle run-all.
+    timeout-minutes: 120
     env:
       USE_SYSTEM_PYTHON: '1'
       DB_STATEMENT_TIMEOUT: 60min
+      # Enriched careers are loaded by career-enrichment-weekly (Saturday).
+      # Weekly ETL must not re-upsert the full enriched set or it times out.
+      PATCH_LOAD_LIGHT: '1'
     steps:
       - uses: actions/checkout@v5
 
@@ -48,7 +52,7 @@ jobs:
           printf 'DATABASE_URL=%s\nAPI_FOOTBALL_KEY=%s\n' "$DATABASE_URL" "$API_FOOTBALL_KEY" > .env
 
       - name: Run weekly ETL
-        timeout-minutes: 75
+        timeout-minutes: 100
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}

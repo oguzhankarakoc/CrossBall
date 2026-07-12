@@ -253,7 +253,11 @@ def _update_player_record(cur, player_id: str, existing: dict, incoming: dict) -
         incoming.get('external_id'),
     )
 
-    if merged_external:
+    # Skip expensive conflict SELECT when external_id is unchanged (common path).
+    # Through Supabase pooler this SELECT was ~majority of weekly ETL wall time.
+    incoming_ext = incoming.get('external_id') or None
+    existing_ext = existing.get('external_id') or None
+    if merged_external and incoming_ext and incoming_ext != existing_ext:
         cur.execute(
             """
             SELECT id FROM players
@@ -344,7 +348,7 @@ def _insert_careers(cur, player_id: str, careers: list[dict]) -> None:
             'source': career.get('source') or 'kaggle_sofifa',
         })
     if rows:
-        execute_batch(cur, _CAREER_UPSERT_SQL, rows, page_size=100)
+        execute_batch(cur, _CAREER_UPSERT_SQL, rows, page_size=500)
 
 
 def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
@@ -384,7 +388,6 @@ def upsert_players(conn, players: list[dict], *, batch_size: int = 250) -> int:
                     incoming,
                 )
                 player_id = str(cur.fetchone()[0])
-
             merged = {
                 'id': player_id,
                 'external_id': incoming.get('external_id'),
