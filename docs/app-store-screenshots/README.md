@@ -17,7 +17,11 @@ Marketing screenshots for **App Store Connect** (iPhone + iPad).
 4. `04_daily_challenge.png` — Retention: daily + streak
 5. `05_weekly_leaderboard.png` — Social: weekly board
 
-**Note:** Apple uses the **first 3** screenshots on the App Store installation sheet.
+**Guideline 4.1(a):** Screenshots use **fictional** club codes and player names only (no real clubs, leagues, or footballers). Do not upload older assets that showed BAR/RMA/LIV/Modrić-style labels.
+
+**IAP review screenshot:** `iap_review/crossball_premium_review.png` — upload under the In-App Purchase’s App Review Information (required to submit `crossball_premium`).
+
+See also: [APP_STORE_RESUBMIT_FIX.md](../APP_STORE_RESUBMIT_FIX.md).
 
 ## Regenerate
 

@@ -2,6 +2,9 @@
 
 Kod **`in_app_purchase`** (native StoreKit) kullanır. **RevenueCat şart değil** — soft launch için bu yol yeterli.
 
+> **App Review (2.1b):** Premium UI varken IAP’yi sürüme **bağlayıp** review’a göndermeden binary gönderme.  
+> Adım adım: [APP_STORE_RESUBMIT_FIX.md](./APP_STORE_RESUBMIT_FIX.md)
+
 ## App Store Connect — `crossball_premium` (Missing Metadata)
 
 Ekran görüntünde ürün **Draft / Missing Metadata**. Şunları doldur:

@@ -147,9 +147,9 @@ def slide_connect(img: Image.Image, inner, is_ipad: bool):
     draw = ImageDraw.Draw(img)
     ix0, iy0, ix1, iy1 = inner
     pad = 40
-    # Row clubs
-    clubs_row = [("BAR", (164, 0, 68)), ("RMA", (220, 180, 40)), ("BAY", (200, 16, 46))]
-    clubs_col = [("MCI", (108, 174, 214)), ("LIV", (200, 16, 46)), ("PSG", (0, 65, 140))]
+    # Fictional abstract clubs only — App Store metadata must not imply real teams/leagues (4.1a).
+    clubs_row = [("NX", (46, 125, 80)), ("OR", (210, 140, 40)), ("VL", (90, 70, 160))]
+    clubs_col = [("AQ", (50, 140, 170)), ("CR", (180, 60, 70)), ("SK", (40, 90, 120))]
     badge_r = 36 if not is_ipad else 44
     y_badges = iy0 + pad + 20
     grid_top = y_badges + badge_r * 2 + 80
@@ -167,7 +167,7 @@ def slide_connect(img: Image.Image, inner, is_ipad: bool):
     _draw_grid_mock(
         draw,
         (grid_left, grid_top, grid_right, grid_bottom),
-        ["Modrić", "Kroos", None, None, "Alaba", None, None, None, None],
+        ["A. Rivera", "J. Lee", None, None, "S. Park", None, None, None, None],
     )
 
 
@@ -195,7 +195,7 @@ def slide_find_link(img: Image.Image, inner, is_ipad: bool):
         fill=MUTED,
     )
 
-    chips = [("Nationality", "HR"), ("Position", "MF"), ("First letter", "L _ _ _")]
+    chips = [("Nationality", "—"), ("Position", "MF"), ("First letter", "A _ _ _")]
     cx = modal[0] + 32
     cy = modal[1] + 220
     chip_font = _font(22 if not is_ipad else 26)
@@ -211,9 +211,10 @@ def slide_find_link(img: Image.Image, inner, is_ipad: bool):
 
     search_box = (modal[0] + 32, modal[1] + 380, modal[2] - 32, modal[1] + 460)
     _rounded(draw, search_box, 22, (22, 52, 36), outline=LIME, width=2)
-    draw.text((search_box[0] + 24, search_box[1] + 22), "luka", font=_font(36), fill=TEXT)
+    draw.text((search_box[0] + 24, search_box[1] + 22), "alex", font=_font(36), fill=TEXT)
 
-    results = ["Luka Modrić", "Luka Jović", "Luka Sucic"]
+    # Fictional names only — do not show real footballers in store metadata.
+    results = ["Alex Rivera", "Alex Morgan-Lee", "Alex Quinn"]
     ry = search_box[3] + 24
     for name in results:
         _rounded(draw, (modal[0] + 32, ry, modal[2] - 32, ry + 64), 16, CARD, outline=CARD_BORDER)
@@ -312,11 +313,55 @@ def slide_leaderboard(img: Image.Image, inner, is_ipad: bool):
 
 SLIDES = [
     ("01_connect_clubs", "Connect the Clubs", "Daily football intersection puzzle", slide_connect),
-    ("02_find_the_link", "Find the Link", "Name a player who played for both clubs", slide_find_link),
+    ("02_find_the_link", "Find the Link", "Name a player who fits both clubs", slide_find_link),
     ("03_prove_football_iq", "Prove Your Football IQ", "Rare picks score higher than obvious names", slide_prove_iq),
     ("04_daily_challenge", "One Puzzle. Every Day.", "Build your streak · compete weekly", slide_daily),
     ("05_weekly_leaderboard", "Climb the Weekly Board", "Daily scores add up across the week", slide_leaderboard),
 ]
+
+
+def render_iap_review_screenshot() -> Path:
+    """Required App Review screenshot for submitting crossball_premium IAP."""
+    size = IPHONE_SIZE
+    img = _gradient(size)
+    draw = ImageDraw.Draw(img)
+    pad = int(size[0] * 0.1)
+    y = int(size[1] * 0.12)
+
+    title = _font(int(size[0] * 0.09), bold=True)
+    draw.text((pad, y), "CrossBall Premium", font=title, fill=LIME)
+    y += int(title.size * 1.4)
+    draw.text((pad, y), "One-time unlock", font=_font(36), fill=MUTED)
+    y += 90
+
+    card = (pad, y, size[0] - pad, y + 980)
+    _rounded(draw, card, 36, CARD, outline=GOLD, width=3)
+    features = [
+        "10 ad-free training sessions / day",
+        "Advanced stats",
+        "Exclusive themes",
+        "No ads",
+    ]
+    fy = card[1] + 60
+    for feat in features:
+        _rounded(draw, (card[0] + 40, fy, card[2] - 40, fy + 110), 22, (22, 52, 36), outline=CARD_BORDER)
+        draw.text((card[0] + 70, fy + 34), feat, font=_font(34, bold=True), fill=TEXT)
+        fy += 140
+
+    btn = (pad, card[3] + 80, size[0] - pad, card[3] + 200)
+    _rounded(draw, btn, 28, LIME)
+    btn_font = _font(40, bold=True)
+    label = "Upgrade to Premium"
+    tw = btn_font.getlength(label)
+    draw.text(((size[0] - tw) / 2, btn[1] + 40), label, font=btn_font, fill=(11, 31, 20))
+
+    draw.text((pad, size[1] - 140), "Product ID: crossball_premium", font=_font(28), fill=MUTED)
+    draw.text((pad, size[1] - 90), "Non-Consumable · App Review", font=_font(28), fill=MUTED)
+
+    out = OUT / "iap_review" / "crossball_premium_review.png"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    img.save(out, "PNG", optimize=True)
+    return out
 
 
 def render_slide(
@@ -356,6 +401,8 @@ def main():
     for key, title, sub, painter in SLIDES:
         paths.append(render_slide(IPHONE_SIZE, key, title, sub, painter, False))
         paths.append(render_slide(IPAD_SIZE, key, title, sub, painter, True))
+    iap = render_iap_review_screenshot()
+    paths.append(iap)
     print(f"Done — {len(paths)} files in {OUT}")
     for p in paths:
         print(f"  {p.relative_to(ROOT)}")
