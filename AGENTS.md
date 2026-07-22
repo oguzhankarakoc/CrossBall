@@ -107,7 +107,14 @@ Consume tokens — never hardcode:
 
 - Boot: `_BootScreen` + `AppLoading` until onboarding profile resolves.
 - Feature loads: prefer `AppListSkeleton` / `AppStatsSkeleton` for lists and stats; `AppLoading` for full-page.
+- Puzzle load: prefer `AppPuzzleSkeleton` over a lone full-screen spinner.
 - Home entry only after `onboardingCompleteProvider` succeeds.
+
+## Career data
+
+- Prefer structured sources + reconcile — never scrape Google SERPs.
+- Soft-launch / transfer-window fix: `python3 -m pipeline career-truth-pass` (+ `--load`).
+- See `docs/CAREER_TRUTH_PASS.md` and `data_pipeline/README.md`.
 
 ## Premium
 

@@ -114,8 +114,9 @@ pipeline:
 ## Manual QA checklist
 
 - [ ] First launch shows onboarding (3 screens, skippable)
-- [ ] Daily puzzle loads 3×3 grid with 6 club badges
+- [ ] Daily puzzle loads 3×3 grid with 6 club badges (loading shows `AppPuzzleSkeleton`, not only a spinner)
 - [ ] Player search: fuzzy, accent-insensitive, rich cards with club chips
+- [ ] High-visibility careers (e.g. Kerem Aktürkoğlu) show current club after truth-pass load
 - [ ] Correct answer (e.g. Lewandowski for Barcelona × Bayern) shows rarity tier
 - [ ] Wrong answer shows "Yanlış" feedback modal
 - [ ] Timer runs during background
@@ -134,4 +135,5 @@ flutter test test/features/
 flutter analyze
 
 cd data_pipeline && pytest tests/ -q
+cd data_pipeline && pytest tests/test_career_truth_pass.py -q
 ```

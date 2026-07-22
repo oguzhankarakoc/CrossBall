@@ -73,3 +73,25 @@ cd data_pipeline && python3 -m pipeline career-truth-pass --load
 - Kerem (and patched peers) validate against current clubs in search + timeline
 - Gap report count for `missing_transfer_clubs` drops after weekly enrich
 - Puzzle open: skeleton ≤1 full-screen spinner event
+
+## Ops status (Jul 2026 soft launch)
+
+| Step | Status |
+|------|--------|
+| Curated Kerem patch (GS → Benfica → Fenerbahçe) | Done |
+| `career-truth-pass` CLI + unit test | Done |
+| `AppPuzzleSkeleton` on puzzle load | Done |
+| DB `--load` (enriched deltas → Supabase) | Done (`Patch load complete`) |
+| Kerem DB verify (open club = Fenerbahce) | Done |
+
+Re-run after transfer windows:
+
+```bash
+cd data_pipeline && python3 -m pipeline career-truth-pass --load
+```
+
+If load fails mid-upsert with SSL / “Can't assign requested address”, retry:
+
+```bash
+cd data_pipeline && python3 -m pipeline apply-patches --enriched-only
+```

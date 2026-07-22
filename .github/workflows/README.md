@@ -76,6 +76,14 @@ Apply to Supabase after enrichment:
 CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh
 ```
 
+One-shot soft-launch / transfer-window pass (no live API scrape):
+
+```bash
+cd data_pipeline && python3 -m pipeline career-truth-pass --load
+```
+
+See [docs/CAREER_TRUTH_PASS.md](../docs/CAREER_TRUTH_PASS.md).
+
 ### CI — `ci.yml`
 
 Runs on push/PR to `main` and `feature/**`: Flutter analyze/test + pipeline pytest. **Does not** run data sync.

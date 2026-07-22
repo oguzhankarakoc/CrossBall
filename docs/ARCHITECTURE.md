@@ -609,7 +609,9 @@ Python batch job (`data_pipeline/`):
 | Bulk history | Kaggle SoFIFA (FIFA 23 + EA FC 24) | `run-all` / `fetch-kaggle` |
 | Recent transfers | API-Football `/transfers` (100 req/day free) | `sync-api-football` |
 | Manual gaps | `data/raw/patches/career_patches.csv` | `apply-patches` |
-| Automation | GitHub Actions cron | `data-sync-daily.yml`, `data-etl-weekly.yml` |
+| Soft-launch truth pass | Base + curated + API patches → enriched deltas | `career-truth-pass` ([docs](CAREER_TRUTH_PASS.md)) |
+| Weekly enrich | API sync all teams + reconcile | `career-enrich` / Actions Saturday |
+| Automation | GitHub Actions cron | `data-sync-daily.yml`, `data-etl-weekly.yml`, `career-enrichment-weekly.yml` |
 
 Flow after load:
 
@@ -659,7 +661,7 @@ See `docs/TESTING.md`.
 | Pipeline (daily) | GitHub Actions `data-sync-daily.yml` — migrations + API-Football + light patches + daily puzzle |
 | Pipeline (weekly ETL) | GitHub Actions `data-etl-weekly.yml` — Kaggle bulk refresh + full graph |
 | Pipeline (weekly careers) | GitHub Actions `career-enrichment-weekly.yml` — reconcile stale stints + enriched patches |
-| Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh`, `./scripts/run_career_enrichment.sh` |
+| Pipeline (manual) | `./scripts/sync_api_football.sh`, `./scripts/run_etl.sh`, `./scripts/run_career_enrichment.sh`, `python3 -m pipeline career-truth-pass` |
 | Analytics | PostHog cloud |
 
 ---
