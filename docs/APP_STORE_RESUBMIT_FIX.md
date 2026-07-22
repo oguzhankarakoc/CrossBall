@@ -1,7 +1,24 @@
-# App Store Rejection Fix — CrossBall 1.0.0 (build 19 → 20)
+# App Store Rejection Fix — CrossBall 1.0.0
 
-**Submission:** `74edcd5b-16b9-4240-b9d4-e0f244497865`  
-**Rejected:** July 14, 2026 — Guidelines **2.1(b)** + **4.1(a)**
+**Submission:** `74edcd5b-16b9-4240-b9d4-e0f244497865`
+
+| Date | Build | Result |
+|------|-------|--------|
+| Jul 14, 2026 | 19 | Rejected — **2.1(b)** + **4.1(a)** |
+| Jul 16, 2026 | 20 | Rejected — **2.1(b) only** (4.1a cleared) |
+| Next | **21** | Must include IAP in the **same submission** |
+
+---
+
+## Root cause (build 20)
+
+IAP product was **Ready to Submit** on Monetization, but the **version submission** only listed the app binary — not `crossball_premium`.
+
+Proof check before Submit: App Review → submission → **Items** must show **2 rows**:
+1. `iOS App 1.0.0 (21)`
+2. `CrossBall Premium` / `crossball_premium` (In-App Purchase)
+
+If Items = **1** (only the app), Apple will reject 2.1(b) again.
 
 ---
 
@@ -9,8 +26,8 @@
 
 | Guideline | Problem | Fix owner |
 |-----------|---------|-----------|
-| **2.1(b)** | App shows Premium / IAP, but `crossball_premium` was **not submitted for review** | You in App Store Connect + new binary |
-| **4.1(a)** | Store **metadata** looked like real clubs/players without license | Replace App Store screenshots (+ check description) |
+| **2.1(b)** | App shows Premium / IAP, but IAP was **not in the review submission** | You in App Store Connect + new binary |
+| **4.1(a)** | Cleared on Jul 16 review | Keep clean screenshots |
 
 Code already implements Premium via native StoreKit (`crossball_premium`). The binary alone cannot fix a missing IAP submission.
 
@@ -47,14 +64,23 @@ Version **1.0.0** → **In-App Purchases and Subscriptions** → add **`crossbal
 Status must become **Ready to Submit**, then it goes with the app.
 
 ### 5. New binary
-This repo is bumped to **`1.0.0+20`** (Apple reviewed build **19**).
+This repo is bumped to **`1.0.0+21`** (Apple last reviewed build **20**).
 
 ```bash
 flutter clean && flutter pub get
 flutter build ipa --release
 ```
 
-Archive → upload → select build **20** on the version page.
+Archive / Transporter → upload → select build **21** on the version page.
+
+### 6. Critical — attach IAP **before** Submit
+1. Version **1.0.0** → scroll to **In-App Purchases and Subscriptions**
+2. Click **+** / **Select** → choose **CrossBall Premium** (`crossball_premium`)
+3. **Save**
+4. Confirm the IAP row is visible on the version page (not only under Monetization)
+5. If Apple shows a pink banner blocking IAP+version submit, wait until it clears
+6. **Submit / Resubmit to App Review**
+7. Open the new submission → verify **Items** includes the IAP
 
 ---
 
@@ -96,19 +122,17 @@ Upload all 5 iPhone (+ iPad if you use iPad listing). **Do not** re-upload old s
 ## Checklist before “Submit for Review”
 
 - [ ] Paid Apps agreement Active  
-- [ ] `crossball_premium` Ready to Submit + screenshot uploaded  
-- [ ] IAP attached to version 1.0.0  
-- [ ] New screenshots uploaded (no real clubs/players)  
-- [ ] Description/keywords scrubbed  
-- [ ] Build **20** selected  
+- [ ] `crossball_premium` Ready to Submit + screenshot uploaded (1284×2778 OK)  
+- [ ] IAP **visible on version 1.0.0** page (not only Monetization list)  
+- [ ] Build **21** selected  
+- [ ] After Submit: submission **Items** shows app **and** IAP (2 items)  
 - [ ] Review notes pasted  
-- [ ] Demo account / notes if needed (anonymous OK — say “no login required”)
+- [ ] Demo: no login required  
 
 ---
 
-## What we changed in the repo
+## App Review reply (paste in ASC)
 
-- Regenerated store screenshots without real IP-looking labels  
-- Added IAP review screenshot asset  
-- Bumped version to `1.0.0+20`  
-- This guide
+> Thank you for the follow-up.  
+> **2.1(b):** The previous submission included only the app binary. We have now attached the non-consumable IAP `crossball_premium` (CrossBall Premium) to this version, confirmed it appears in the submission items with binary **1.0.0 (21)**, and resubmitted for review. The IAP App Review screenshot and metadata remain complete.  
+> Please proceed with review of the app and the IAP together.

@@ -2,7 +2,7 @@ name: crossball
 description: "CrossBall — Connect clubs. Prove your football IQ. Football intersection puzzle app."
 publish_to: 'none'
 
-version: 1.0.0+20
+version: 1.0.0+21
 
 environment:
   sdk: ^3.10.8
