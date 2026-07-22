@@ -58,6 +58,7 @@ data_pipeline/.venv/
 data_pipeline/data/raw/kaggle/
 data_pipeline/data/cache/
 reports/career_gaps.csv
+reports/career_truth_pass.csv
 
 # Symbolication related
 app.*.symbols

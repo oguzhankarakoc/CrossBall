@@ -13,6 +13,7 @@ import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/utils/share_helper.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/components/app_skeleton.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../../shared/widgets/mythic_celebration_overlay.dart';
@@ -211,9 +212,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
           children: [
             Expanded(
               child: game.isLoading
-            ? Center(
-                child: CircularProgressIndicator(color: colors.lime),
-              )
+            ? const AppPuzzleSkeleton()
             : game.error == 'practice_limit_reached'
                 ? Center(
                     child: Padding(
