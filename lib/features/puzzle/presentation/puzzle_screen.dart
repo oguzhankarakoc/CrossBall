@@ -13,6 +13,7 @@ import '../../../core/utils/daily_puzzle_schedule.dart';
 import '../../../core/utils/share_helper.dart';
 import '../../../core/utils/rarity.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/components/app_skeleton.dart';
 import '../../../shared/widgets/crossball_error_panel.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../../shared/widgets/mythic_celebration_overlay.dart';
@@ -36,6 +37,7 @@ import 'puzzle_providers.dart';
 import 'daily_puzzle_rollout_provider.dart';
 import 'widgets/daily_puzzle_completed_panel.dart';
 import 'widgets/daily_puzzle_refresh_panel.dart';
+import 'widgets/first_puzzle_coach_sheet.dart';
 import 'widgets/player_search_modal.dart';
 import 'widgets/puzzle_countdown_timer.dart';
 import 'widgets/puzzle_grid.dart';
@@ -57,6 +59,7 @@ class PuzzleScreen extends ConsumerStatefulWidget {
 
 class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   Timer? _dailyRefreshPollTimer;
+  bool _firstPuzzleCoachScheduled = false;
 
   bool get _isTrainingMode => widget.params.mode.isTraining;
 
@@ -81,6 +84,42 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       },
       fireImmediately: true,
     );
+    ref.listenManual(
+      puzzleGameProvider(widget.params).select(
+        (s) => (s.isLoading, s.puzzle?.id, s.error, s.isComplete),
+      ),
+      (previous, next) {
+        final (isLoading, puzzleId, error, isComplete) = next;
+        if (!isLoading &&
+            puzzleId != null &&
+            error == null &&
+            !isComplete) {
+          _maybeShowFirstPuzzleCoach();
+        }
+      },
+      fireImmediately: true,
+    );
+  }
+
+  Future<void> _maybeShowFirstPuzzleCoach() async {
+    if (_firstPuzzleCoachScheduled) return;
+    if (widget.params.mode != PuzzleMode.daily) return;
+    _firstPuzzleCoachScheduled = true;
+
+    final store = ref.read(firstPuzzleCoachStoreProvider);
+    if (await store.hasSeen()) return;
+    if (!mounted) return;
+
+    // Let the grid paint once before presenting the tip.
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+    if (!mounted) return;
+
+    ref.read(analyticsProvider).track('first_puzzle_coach_shown');
+    if (!mounted) return;
+    await showFirstPuzzleCoachSheet(context);
+    if (!mounted) return;
+    await store.markSeen();
+    ref.read(analyticsProvider).track('first_puzzle_coach_dismissed');
   }
 
   @override
@@ -211,9 +250,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
           children: [
             Expanded(
               child: game.isLoading
-            ? Center(
-                child: CircularProgressIndicator(color: colors.lime),
-              )
+            ? const AppPuzzleSkeleton()
             : game.error == 'practice_limit_reached'
                 ? Center(
                     child: Padding(
@@ -520,8 +557,15 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   }
 
   Future<void> _watchAdAndStartPractice() async {
+    final l10n = AppLocalizations.of(context)!;
     final rewarded = await ref.read(adsServiceProvider).showRewarded();
-    if (!rewarded || !mounted) return;
+    if (!mounted) return;
+    if (!rewarded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.adUnavailable)),
+      );
+      return;
+    }
 
     ref.read(analyticsProvider).track('ad_impression', properties: {
       'placement': 'rewarded_practice_unlock',

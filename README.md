@@ -4,6 +4,8 @@
 
 Production-grade football intersection puzzle app for iOS and Android. Name players who played for **both** clubs at each grid intersection.
 
+**Status (soft launch):** iOS `1.0.0` (build **22** — ads fix + first-puzzle coach tip; upload after merge to `main`). AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
+
 ## Stack
 
 | Layer | Tech |
@@ -63,7 +65,8 @@ supabase functions deploy activity-feed player-fact tournament career-timeline
 
 See [Supabase Setup](supabase/README.md), [Security model](supabase/SECURITY.md), and [Data Pipeline](data_pipeline/README.md) for details.
 
-**iOS App Store launch:** [IOS_LAUNCH_GUIDE.md](docs/IOS_LAUNCH_GUIDE.md) — App Store Connect, RevenueCat, AdMob, Push.
+**iOS App Store:** [IOS_LAUNCH_GUIDE.md](docs/IOS_LAUNCH_GUIDE.md) · [App Store resubmit / IAP](docs/APP_STORE_RESUBMIT_FIX.md) · [IAP setup](docs/IAP_SETUP.md) · [AdMob live checklist](docs/ADMOB_LIVE_CHECKLIST.md)  
+**Careers:** [Career truth pass](docs/CAREER_TRUTH_PASS.md) — one-shot reconcile (no scrape) + puzzle loading skeleton.
 
 ## Project structure
 
@@ -124,7 +127,20 @@ All themes use brightness-aware typography (headline/title styles adapt for cont
 - [Phase 0 Security](docs/PHASE0_SECURITY.md) — migration 021 hardening checklist
 - [Supabase Security](supabase/SECURITY.md) — RLS lockdown (036), open-source model
 - [Supabase Setup](supabase/README.md) — migrations, edge functions, deploy
-- [Data Pipeline](data_pipeline/README.md) — Kaggle ETL, API-Football sync, career enrichment
+- [Data Pipeline](data_pipeline/README.md) — Kaggle ETL, API-Football sync, career enrichment / truth pass
+- [Career Truth Pass](docs/CAREER_TRUTH_PASS.md) — soft-launch career reconcile + loading UX
+- [iOS Launch Guide](docs/IOS_LAUNCH_GUIDE.md) — App Store Connect, AdMob, ATT, push
+- [App Store Resubmit](docs/APP_STORE_RESUBMIT_FIX.md) — IAP in submission (2.1b) notes
+
+### Developer website / AdMob
+
+| URL | Purpose |
+|-----|---------|
+| https://oguzhankarakoc.github.io/CrossBall/ | Landing, privacy, support (GitHub Pages `/docs`) |
+| https://oguzhankarakoc.github.io/app-ads.txt | AdMob `app-ads.txt` (hostname root — required for verify) |
+| `docs/app-ads.txt` | Same file kept in-repo for the project Pages path after merge to `main` |
+
+App Store **Marketing URL** may be `https://oguzhankarakoc.github.io/CrossBall/`; AdMob crawls the **domain root** `app-ads.txt`.
 
 ## Development scripts
 
@@ -136,6 +152,8 @@ All themes use brightness-aware typography (headline/title styles adapt for cont
 ./scripts/sync_api_football.sh           # API-Football transfers → DB (manual, ~30 teams)
 ./scripts/run_career_enrichment.sh       # reconcile stale careers + gap report (no DB load)
 CAREER_ENRICH_LOAD=1 ./scripts/run_career_enrichment.sh  # same + apply patches to Supabase
+# One-shot soft-launch truth pass (curated+API patches → enriched → optional DB):
+cd data_pipeline && python3 -m pipeline career-truth-pass --load
 ./scripts/run_scheduled_sync.sh          # daily sync (used by GitHub Actions)
 ./scripts/apply_career_patches.sh        # manual patches only
 ./scripts/run_ios_simulator.sh           # build & run on iOS simulator

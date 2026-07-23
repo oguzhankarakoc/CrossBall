@@ -37,6 +37,9 @@ class AdsServiceImpl implements AdsService {
   InterstitialAd? _interstitial;
   RewardedAd? _rewarded;
   bool _isPremium = false;
+  bool _sdkReady = false;
+  Future<RewardedAd?>? _rewardedLoading;
+  Future<InterstitialAd?>? _interstitialLoading;
 
   @override
   bool get isPremium => _isPremium;
@@ -47,9 +50,12 @@ class AdsServiceImpl implements AdsService {
   @override
   Future<void> initialize() async {
     if (!AppConfig.isAdMobEnabled || _isPremium) return;
-    await MobileAds.instance.initialize();
-    _loadInterstitial();
-    _loadRewarded();
+    if (!_sdkReady) {
+      await MobileAds.instance.initialize();
+      _sdkReady = true;
+    }
+    unawaited(_ensureInterstitialLoaded());
+    unawaited(_ensureRewardedLoaded());
   }
 
   String _bannerUnitId() {
@@ -88,9 +94,13 @@ class AdsServiceImpl implements AdsService {
     if (!AppConfig.isAdMobEnabled || _isPremium || !_supportsBanner(placement)) {
       return null;
     }
+    if (!_sdkReady) {
+      await initialize();
+    }
 
     final safeWidth = width.clamp(320, 728);
-    final adaptiveSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+    final adaptiveSize =
+        await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
       safeWidth,
     );
     final size = adaptiveSize ?? AdSize.banner;
@@ -107,6 +117,9 @@ class AdsServiceImpl implements AdsService {
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
+          if (kDebugMode) {
+            debugPrint('Banner failed to load ($placement): $error');
+          }
           if (!completer.isCompleted) completer.complete(null);
         },
       ),
@@ -116,45 +129,103 @@ class AdsServiceImpl implements AdsService {
     return completer.future;
   }
 
-  void _loadInterstitial() {
+  Future<InterstitialAd?> _ensureInterstitialLoaded() {
+    if (!AppConfig.isAdMobEnabled || _isPremium) {
+      return Future.value(null);
+    }
+    if (_interstitial != null) return Future.value(_interstitial);
+    if (_interstitialLoading != null) return _interstitialLoading!;
+
+    final completer = Completer<InterstitialAd?>();
+    _interstitialLoading = completer.future;
     InterstitialAd.load(
       adUnitId: _interstitialUnitId(),
       request: const AdRequest(),
       adLoadCallback: InterstitialAdLoadCallback(
-        onAdLoaded: (ad) => _interstitial = ad,
-        onAdFailedToLoad: (_) => _interstitial = null,
+        onAdLoaded: (ad) {
+          _interstitial = ad;
+          _interstitialLoading = null;
+          if (!completer.isCompleted) completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          _interstitial = null;
+          _interstitialLoading = null;
+          if (kDebugMode) {
+            debugPrint('Interstitial failed to load: $error');
+          }
+          if (!completer.isCompleted) completer.complete(null);
+        },
       ),
+    );
+    return completer.future.timeout(
+      const Duration(seconds: 20),
+      onTimeout: () {
+        _interstitialLoading = null;
+        return null;
+      },
     );
   }
 
-  void _loadRewarded() {
+  Future<RewardedAd?> _ensureRewardedLoaded() {
+    if (!AppConfig.isAdMobEnabled || _isPremium) {
+      return Future.value(null);
+    }
+    if (_rewarded != null) return Future.value(_rewarded);
+    if (_rewardedLoading != null) return _rewardedLoading!;
+
+    final completer = Completer<RewardedAd?>();
+    _rewardedLoading = completer.future;
     RewardedAd.load(
       adUnitId: _rewardedUnitId(),
       request: const AdRequest(),
       rewardedAdLoadCallback: RewardedAdLoadCallback(
-        onAdLoaded: (ad) => _rewarded = ad,
-        onAdFailedToLoad: (_) => _rewarded = null,
+        onAdLoaded: (ad) {
+          _rewarded = ad;
+          _rewardedLoading = null;
+          if (!completer.isCompleted) completer.complete(ad);
+        },
+        onAdFailedToLoad: (error) {
+          _rewarded = null;
+          _rewardedLoading = null;
+          if (kDebugMode) {
+            debugPrint('Rewarded failed to load: $error');
+          }
+          if (!completer.isCompleted) completer.complete(null);
+        },
       ),
+    );
+    return completer.future.timeout(
+      const Duration(seconds: 20),
+      onTimeout: () {
+        _rewardedLoading = null;
+        return null;
+      },
     );
   }
 
   @override
   Future<bool> showInterstitial() async {
     if (!AppConfig.isAdMobEnabled || _isPremium) return false;
-    final ad = _interstitial;
+    if (!_sdkReady) await initialize();
+
+    var ad = _interstitial ?? await _ensureInterstitialLoaded();
     if (ad == null) return false;
+    _interstitial = null;
 
     final completer = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _loadInterstitial();
-        completer.complete(true);
+        unawaited(_ensureInterstitialLoaded());
+        if (!completer.isCompleted) completer.complete(true);
       },
-      onAdFailedToShowFullScreenContent: (ad, _) {
+      onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        _loadInterstitial();
-        completer.complete(false);
+        if (kDebugMode) {
+          debugPrint('Interstitial failed to show: $error');
+        }
+        unawaited(_ensureInterstitialLoaded());
+        if (!completer.isCompleted) completer.complete(false);
       },
     );
     await ad.show();
@@ -164,22 +235,33 @@ class AdsServiceImpl implements AdsService {
   @override
   Future<bool> showRewarded() async {
     if (!AppConfig.isAdMobEnabled || _isPremium) return true;
-    final ad = _rewarded;
+    if (!_sdkReady) await initialize();
+
+    var ad = _rewarded ?? await _ensureRewardedLoaded();
     if (ad == null) return false;
+    _rewarded = null;
 
     final completer = Completer<bool>();
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        _loadRewarded();
+        unawaited(_ensureRewardedLoaded());
+        if (!completer.isCompleted) completer.complete(false);
       },
-      onAdFailedToShowFullScreenContent: (ad, _) {
+      onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        _loadRewarded();
-        completer.complete(false);
+        if (kDebugMode) {
+          debugPrint('Rewarded failed to show: $error');
+        }
+        unawaited(_ensureRewardedLoaded());
+        if (!completer.isCompleted) completer.complete(false);
       },
     );
-    ad.show(onUserEarnedReward: (ad, reward) => completer.complete(true));
+    ad.show(
+      onUserEarnedReward: (ad, reward) {
+        if (!completer.isCompleted) completer.complete(true);
+      },
+    );
     return completer.future;
   }
 }

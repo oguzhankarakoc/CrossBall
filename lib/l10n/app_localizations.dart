@@ -349,7 +349,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding1Body.
   ///
   /// In en, this message translates to:
-  /// **'Tap any cell to start solving.'**
+  /// **'Tap any empty cell on the 3×3 grid to open player search.'**
   String get onboarding1Body;
 
   /// No description provided for @onboarding2Title.
@@ -361,7 +361,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding2Body.
   ///
   /// In en, this message translates to:
-  /// **'Find a footballer who played for both clubs.'**
+  /// **'The answer must have played for the row club and the column club.'**
   String get onboarding2Body;
 
   /// No description provided for @onboarding3Title.
@@ -373,8 +373,62 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding3Body.
   ///
   /// In en, this message translates to:
-  /// **'Less common players give more points.'**
+  /// **'Obscure players beat obvious names — build your streak every day.'**
   String get onboarding3Body;
+
+  /// No description provided for @firstPuzzleCoachTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick tip'**
+  String get firstPuzzleCoachTitle;
+
+  /// No description provided for @firstPuzzleCoachSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You’re on today’s grid. Here’s how a cell works.'**
+  String get firstPuzzleCoachSubtitle;
+
+  /// No description provided for @firstPuzzleCoachStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a cell'**
+  String get firstPuzzleCoachStep1Title;
+
+  /// No description provided for @firstPuzzleCoachStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Each square sits between one row club and one column club.'**
+  String get firstPuzzleCoachStep1Body;
+
+  /// No description provided for @firstPuzzleCoachStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Name the link'**
+  String get firstPuzzleCoachStep2Title;
+
+  /// No description provided for @firstPuzzleCoachStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a player who appeared for both clubs.'**
+  String get firstPuzzleCoachStep2Body;
+
+  /// No description provided for @firstPuzzleCoachStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Chase rarity'**
+  String get firstPuzzleCoachStep3Title;
+
+  /// No description provided for @firstPuzzleCoachStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Less common answers score more. Finish the grid for your streak.'**
+  String get firstPuzzleCoachStep3Body;
+
+  /// No description provided for @firstPuzzleCoachCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it — let’s play'**
+  String get firstPuzzleCoachCta;
 
   /// No description provided for @comingSoon.
   ///
@@ -957,6 +1011,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'On the free plan, watch a short ad before each new training session.'**
   String get practiceAdGateHint;
+
+  /// No description provided for @adUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad isn’t available right now. Try again in a moment.'**
+  String get adUnavailable;
 
   /// No description provided for @practicePremiumSkipAds.
   ///

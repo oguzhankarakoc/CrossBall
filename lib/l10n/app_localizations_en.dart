@@ -150,19 +150,53 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboarding1Title => 'Pick a grid cell';
 
   @override
-  String get onboarding1Body => 'Tap any cell to start solving.';
+  String get onboarding1Body =>
+      'Tap any empty cell on the 3×3 grid to open player search.';
 
   @override
   String get onboarding2Title => 'Connect both clubs';
 
   @override
-  String get onboarding2Body => 'Find a footballer who played for both clubs.';
+  String get onboarding2Body =>
+      'The answer must have played for the row club and the column club.';
 
   @override
   String get onboarding3Title => 'Rare picks score higher';
 
   @override
-  String get onboarding3Body => 'Less common players give more points.';
+  String get onboarding3Body =>
+      'Obscure players beat obvious names — build your streak every day.';
+
+  @override
+  String get firstPuzzleCoachTitle => 'Quick tip';
+
+  @override
+  String get firstPuzzleCoachSubtitle =>
+      'You’re on today’s grid. Here’s how a cell works.';
+
+  @override
+  String get firstPuzzleCoachStep1Title => 'Tap a cell';
+
+  @override
+  String get firstPuzzleCoachStep1Body =>
+      'Each square sits between one row club and one column club.';
+
+  @override
+  String get firstPuzzleCoachStep2Title => 'Name the link';
+
+  @override
+  String get firstPuzzleCoachStep2Body =>
+      'Search a player who appeared for both clubs.';
+
+  @override
+  String get firstPuzzleCoachStep3Title => 'Chase rarity';
+
+  @override
+  String get firstPuzzleCoachStep3Body =>
+      'Less common answers score more. Finish the grid for your streak.';
+
+  @override
+  String get firstPuzzleCoachCta => 'Got it — let’s play';
 
   @override
   String get comingSoon => 'Loading...';
@@ -477,6 +511,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get practiceAdGateHint =>
       'On the free plan, watch a short ad before each new training session.';
+
+  @override
+  String get adUnavailable =>
+      'Ad isn’t available right now. Try again in a moment.';
 
   @override
   String get practicePremiumSkipAds =>

@@ -150,20 +150,53 @@ class AppLocalizationsTr extends AppLocalizations {
   String get onboarding1Title => 'Bir hücre seç';
 
   @override
-  String get onboarding1Body => 'Çözmeye başlamak için bir hücreye dokun.';
+  String get onboarding1Body =>
+      '3×3 ızgarada boş bir hücreye dokunup oyuncu aramasını aç.';
 
   @override
   String get onboarding2Title => 'İki kulübü bağla';
 
   @override
-  String get onboarding2Body => 'Her iki kulüpte de oynamış bir futbolcu bul.';
+  String get onboarding2Body =>
+      'Cevap hem satır hem sütun kulübünde oynamış olmalı.';
 
   @override
   String get onboarding3Title => 'Nadir seçimler daha çok puan';
 
   @override
   String get onboarding3Body =>
-      'Daha az bilinen oyuncular daha fazla puan verir.';
+      'Az bilinen isimler daha çok puan getirir — her gün serini koru.';
+
+  @override
+  String get firstPuzzleCoachTitle => 'Hızlı ipucu';
+
+  @override
+  String get firstPuzzleCoachSubtitle =>
+      'Bugünün ızgarasındasın. Bir hücre şöyle çözülür.';
+
+  @override
+  String get firstPuzzleCoachStep1Title => 'Hücreye dokun';
+
+  @override
+  String get firstPuzzleCoachStep1Body =>
+      'Her kare, bir satır kulübü ile bir sütun kulübünün kesişimi.';
+
+  @override
+  String get firstPuzzleCoachStep2Title => 'Bağlantıyı bul';
+
+  @override
+  String get firstPuzzleCoachStep2Body =>
+      'İki kulüpte de forma giymiş bir oyuncuyu ara.';
+
+  @override
+  String get firstPuzzleCoachStep3Title => 'Nadiri yakala';
+
+  @override
+  String get firstPuzzleCoachStep3Body =>
+      'Daha az bilinen cevaplar daha çok puan. Izgarayı bitir, serini koru.';
+
+  @override
+  String get firstPuzzleCoachCta => 'Anladım — başla';
 
   @override
   String get comingSoon => 'Yükleniyor...';
@@ -479,6 +512,10 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get practiceAdGateHint =>
       'Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.';
+
+  @override
+  String get adUnavailable =>
+      'Reklam şu an yüklenemedi. Biraz sonra tekrar dene.';
 
   @override
   String get practicePremiumSkipAds =>

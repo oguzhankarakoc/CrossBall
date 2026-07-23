@@ -217,6 +217,7 @@ SELECT public.refresh_player_club_intersections();
 | `apply-patches` | Load curated career patches only (fast incremental update) |
 | `sync-api-football` | Fetch transfers from API-Football → patch CSV (+ optional `--load`) |
 | `career-gap-report` | Detect stale/missing career stints → `reports/career_gaps.csv` |
+| `career-truth-pass` | One-shot: curated+API patches → reconcile → `enriched_careers.csv` + truth report (no scrape; optional `--load`). Soft-launch runbook: [CAREER_TRUTH_PASS.md](../docs/CAREER_TRUTH_PASS.md) |
 | `career-enrich` | API sync (all teams) + reconcile + write `enriched_careers.csv` (+ optional `--load`) |
 | `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
 | `apply-patches --light` | Daily sync: manual + API-Football, refresh club graph, skip dedupe/enriched |

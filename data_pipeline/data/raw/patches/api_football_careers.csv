@@ -1,6 +1,6 @@
 id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
-200888,Douglas Pereira,FC Barcelona,,,2017-07-01,2018-07-23,false,1,api_football_team_529
-200888,Douglas Pereira,Benfica,,,2017-08-31,,true,1,api_football_team_211
+239881,Douglas Pereira,FC Barcelona,,,2017-07-01,2018-07-23,false,1,api_football_team_529
+239881,Douglas Pereira,Benfica,,,2017-08-31,,true,1,api_football_team_211
 170369,Giovani dos Santos Ramírez,Tottenham Hotspur,,,2008-07-01,2012-08-31,false,1,api_football_team_47
 20775,Ricardo Andrade Quaresma Bernardo,FC Barcelona,,,2003-08-01,,false,1,api_football_team_228
 20775,Ricardo Andrade Quaresma Bernardo,FC Porto,,,2004-08-01,,false,1,api_football_team_529
@@ -13,8 +13,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 157304,Thomas Vermaelen,AS Roma,,,2016-08-08,2017-07-01,true,1,api_football_team_497
 41236,Z. Ibrahimović,FC Barcelona,,,2009-07-28,,false,1,api_football_team_505
 41236,Z. Ibrahimović,AC Milan,,,2011-07-01,,false,1,api_football_team_529
-230258,Robert Gonçalves Santos,FC Barcelona,,,2016-01-01,2016-07-01,true,1,api_football_team_529
 53405,Maxwell Scherrer Cabelino Andrade,Paris Saint-Germain,,,2012-01-12,,false,1,api_football_team_85
+146530,Dani Alves,FC Barcelona,,,2021-12-13,2022-07-26,false,1,api_football_team_529
+146530,Diego Alves,Juventus,,,2016-07-01,,false,1,api_football_team_496
 49370,Thiago Motta,Atletico Madrid,,,2007-08-01,2008-08-01,false,1,api_football_team_530
 157503,Alexandre Dimitri Song-Billong,FC Barcelona,,,2012-08-20,,false,1,api_football_team_42
 157503,Alexandre Dimitri Song-Billong,West Ham United,,,2015-09-01,,true,1,api_football_team_48
@@ -35,6 +36,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 180206,M. Pjanić,Besiktas,,,2021-09-02,2022-07-01,true,1,api_football_team_549
 225105,Charlie Pérez,AS Roma,,,2020-09-01,2023-07-01,false,1,api_football_team_497
 230800,R. Manaj,FC Barcelona,,,2022-07-01,2022-07-12,false,1,api_football_team_529
+257315,Gustavo Maia,FC Barcelona,,,2020-08-06,2021-08-27,false,1,api_football_team_529
+190871,Neymar,FC Barcelona,,,2013-07-01,2017-08-03,false,1,api_football_team_529
+190871,Neymar,Paris Saint-Germain,,,2017-08-03,2023-08-15,false,1,api_football_team_85
 202556,M. Depay,FC Barcelona,,,2021-07-01,,false,1,api_football_team_80
 202556,M. Depay,Atletico Madrid,,,2023-01-20,2024-09-09,false,1,api_football_team_530
 270857,Matheus Fernandes,FC Barcelona,,,2020-08-04,2021-07-09,false,1,api_football_team_529
@@ -65,7 +69,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 241486,J. Koundé,FC Barcelona,,,2022-07-28,,false,1,api_football_team_536
 213661,A. Christensen,FC Barcelona,,,2022-07-04,,false,1,api_football_team_49
 192448,M. ter Stegen,FC Barcelona,,,2014-07-01,,false,1,api_football_team_163
-144622,R. Araújo,FC Barcelona,,,2018-08-30,,false,1,api_football_team_529
+253163,R. Araújo,FC Barcelona,,,2018-08-30,,false,1,api_football_team_529
 247411,Denis Suárez,FC Barcelona,,,2016-07-04,2019-07-01,false,1,api_football_team_529
 247411,Denis Suárez,Sevilla FC,,,2014-07-02,,true,1,api_football_team_536
 247411,Denis Suárez,Arsenal FC,,,2019-01-31,,true,1,api_football_team_42
@@ -92,6 +96,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 178566,Joan García,FC Barcelona,,,2025-07-01,,false,1,api_football_team_529
 231677,M. Rashford,FC Barcelona,,,2025-07-23,,true,1,api_football_team_33
 229631,Jaime Romero,Real Madrid,,,2013-07-27,2014-07-01,true,1,api_football_team_541
+201505,Diego López,Real Madrid,,,2013-01-25,,false,1,api_football_team_536
+201505,Diego López,AC Milan,,,2014-08-13,2017-07-01,false,1,api_football_team_489
 263578,Antonio Martínez,Real Madrid,,,2013-06-30,2013-08-29,false,1,api_football_team_541
 192671,Miguel Palanca Fernández,Real Madrid,,,2008-07-01,2009-08-25,false,1,api_football_team_541
 53050,Emmanuel Adebayor,Real Madrid,,,2011-01-25,,true,1,api_football_team_50
@@ -138,6 +144,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 201535,R. Varane,Real Madrid,,,2011-07-01,2021-08-14,false,1,api_football_team_541
 201535,R. Varane,Manchester United,,,2021-08-14,2024-07-28,false,1,api_football_team_33
 221892,Mario Rodríguez,Real Madrid,,,2015-08-19,2016-07-01,true,1,api_football_team_541
+268411,Vinícius Tobias,Real Madrid,,,2022-07-19,2024-07-01,true,1,api_football_team_550
+268411,Vinícius Tobias,Shakhtar Donetsk,,,2024-07-01,,false,1,api_football_team_550
+200752,Jesús,Real Madrid,,,2010-07-01,2014-08-04,false,1,api_football_team_541
 206225,D. Cheryshev,Sevilla FC,,,2013-09-02,,true,1,api_football_team_536
 206225,D. Cheryshev,Valencia CF,,,2016-02-01,,true,1,api_football_team_541
 241569,Héctor Martínez,Real Madrid,,,2017-07-01,2017-07-08,false,1,api_football_team_541
@@ -149,9 +158,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 232656,T. Hernández,AC Milan,,,2019-07-06,2025-07-09,false,1,api_football_team_489
 227153,Cristian Hidalgo González,Real Madrid,,,2017-07-25,,false,1,api_football_team_541
 221511,E. Markkanen,Real Madrid,,,2014-07-23,2015-09-02,false,1,api_football_team_541
-235688,Leandro Castán da Silva,Real Madrid,,,2016-06-01,,false,1,api_football_team_81
-235688,Leandro Castán da Silva,Marseille,,,2015-08-27,2016-06-01,true,1,api_football_team_81
 206031,Jaime Sánchez,Real Madrid,,,2014-07-01,2016-07-31,false,1,api_football_team_541
+171018,Mata,Valencia CF,,,2007-07-01,2011-08-22,false,1,api_football_team_532
 248009,Javier Velayos Rodríguez,Real Madrid,,,2019-07-01,,false,1,api_football_team_157
 248009,Javier Velayos Rodríguez,Bayern Munich,,,2017-07-12,2019-07-01,true,1,api_football_team_157
 248009,Javier Velayos Rodríguez,Everton FC,,,2020-09-07,2021-09-23,false,1,api_football_team_45
@@ -165,7 +173,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 235813,Rafa Marín,Napoli,,,2024-07-10,2025-07-03,false,1,api_football_team_492
 252371,J. Bellingham,Real Madrid,,,2023-07-01,,false,1,api_football_team_165
 248243,E. Camavinga,Real Madrid,,,2021-08-31,,false,1,api_football_team_541
-238794,Vinícius Júnior,Real Madrid,,,2018-07-12,,false,1,api_football_team_541
 241637,A. Tchouaméni,Real Madrid,,,2022-07-01,,false,1,api_football_team_91
 231410,Brahim Díaz,Real Madrid,,,2023-07-01,,false,1,api_football_team_489
 231410,Brahim Díaz,AC Milan,,,2020-09-04,2023-07-01,true,1,api_football_team_489
@@ -222,6 +229,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 185431,N. Kalinić,Atletico Madrid,,,2018-08-09,,false,1,api_football_team_489
 185431,N. Kalinić,AS Roma,,,2019-09-02,,true,1,api_football_team_497
 235520,Raúl García,Atletico Madrid,,,2012-07-01,2015-08-31,false,1,api_football_team_530
+229927,Gerson,Atletico Madrid,,,2011-07-20,,true,1,api_football_team_530
 173306,C. Ansaldi,Atletico Madrid,,,2014-08-01,2015-07-01,true,1,api_football_team_530
 176600,K. Gameiro,Atletico Madrid,,,2016-07-31,,false,1,api_football_team_536
 176600,K. Gameiro,Valencia CF,,,2018-08-12,2021-07-18,false,1,api_football_team_532
@@ -292,6 +300,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 161999,Abdoulay Konko,Sevilla FC,,,2008-07-01,2011-01-21,false,1,api_football_team_536
 172835,M. Andreolli,Sevilla FC,,,2015-08-31,2016-07-01,true,1,api_football_team_505
 172835,M. Andreolli,Inter Milan,,,2016-07-01,,false,1,api_football_team_505
+201505,Diego López,Sevilla FC,,,2012-07-01,2013-01-25,false,1,api_football_team_536
 239301,Luis García Martínez,Sevilla FC,,,2017-07-20,,false,1,api_football_team_536
 193165,Juan José Expósito Ruíz,Sevilla FC,,,2007-07-01,,true,1,api_football_team_536
 135742,Alexis Ruano Delgado,Sevilla FC,,,2010-08-24,,false,1,api_football_team_532
@@ -306,6 +315,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 53014,Fernando Navarro i Corbacho,Sevilla FC,,,2008-07-01,2015-07-01,false,1,api_football_team_536
 171318,Diego Ángel Capel Trinidad,Sporting CP,,,2011-07-19,2015-08-18,false,1,api_football_team_228
 179546,Marko Marin,Sevilla FC,,,2013-07-01,,true,1,api_football_team_49
+146530,Dani Alves,Sevilla FC,,,2002-07-01,2008-07-01,false,1,api_football_team_536
+146530,Dani Alves,FC Barcelona,,,2008-07-01,,false,1,api_football_team_536
 231361,J. Gnagnon,Sevilla FC,,,2020-07-01,2022-01-21,false,1,api_football_team_536
 183280,A. Rami,Sevilla FC,,,2015-07-01,,false,1,api_football_team_489
 183280,A. Rami,Marseille,,,2017-07-11,2019-08-27,false,1,api_football_team_81
@@ -377,8 +388,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 236311,M. Rog,Sevilla FC,,,2019-01-29,,true,1,api_football_team_492
 192387,C. Immobile,Sevilla FC,,,2016-07-01,2016-07-27,false,1,api_football_team_536
 192387,C. Immobile,Lazio,,,2016-07-27,2024-07-13,false,1,api_football_team_487
-270086,Antônio da Silva,Sevilla FC,,,2018-08-11,2019-07-01,true,1,api_football_team_489
-270086,Antônio da Silva,AC Milan,,,2019-07-01,2020-09-10,false,1,api_football_team_489
+199626,André Silva,Sevilla FC,,,2018-08-11,2019-07-01,true,1,api_football_team_489
+199626,André Silva,AC Milan,,,2019-07-01,2020-09-10,false,1,api_football_team_489
 231838,M. Wöber,Sevilla FC,,,2019-07-01,,false,1,api_football_team_194
 231838,M. Wöber,Salzburg,,,2019-08-13,2023-01-03,false,1,api_football_team_571
 227290,M. Dmitrović,Sevilla FC,,,2021-07-04,2024-08-12,false,1,api_football_team_536
@@ -404,6 +415,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 211382,I. Amadou,Sevilla FC,,,2021-07-01,2022-01-13,false,1,api_football_team_536
 235410,Y. En-Nesyri,Sevilla FC,,,2020-01-16,2024-07-25,false,1,api_football_team_536
 235410,Y. En-Nesyri,Fenerbahce,,,2024-07-25,2026-02-02,false,1,api_football_team_611
+219693,Diego Carlos,Sevilla FC,,,2019-07-01,2022-06-10,false,1,api_football_team_536
+219693,Diego Carlos,Aston Villa,,,2022-06-10,2025-01-22,false,1,api_football_team_66
 201041,L. Carole,Sevilla FC,,,2017-08-31,2018-07-01,true,1,api_football_team_645
 201041,L. Carole,Galatasaray,,,2018-07-01,2018-08-17,false,1,api_football_team_645
 209981,Y. Bounou,Sevilla FC,,,2020-09-04,2023-08-17,false,1,api_football_team_536
@@ -424,12 +437,12 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 270857,Matheus Fernandes,Everton FC,,,2008-01-01,2008-07-01,true,1,api_football_team_45
 270857,Matheus Fernandes,Besiktas,,,2011-07-04,2014-07-01,false,1,api_football_team_549
 230355,Ricardo Costa,Valencia CF,,,2010-07-01,,false,1,api_football_team_79
-206407,Jhonatan Da Silva  Pereira,Valencia CF,,,2012-07-01,,false,1,api_football_team_228
+206407,Jorge Manuel Pereira Santos,Valencia CF,,,2012-07-01,,false,1,api_football_team_228
 188042,Mario Suárez,Valencia CF,,,2016-08-17,,true,1,api_football_team_532
-239881,David Silva,Manchester City,,,2010-07-01,2020-08-17,false,1,api_football_team_50
 49966,P. Senderos,Valencia CF,,,2014-01-31,2014-07-01,false,1,api_football_team_532
 49966,P. Senderos,Aston Villa,,,2014-07-01,2016-01-29,false,1,api_football_team_66
 170481,E. Garay,Valencia CF,,,2016-08-31,,false,1,api_football_team_532
+146530,Diego Alves,Valencia CF,,,2011-07-01,2017-07-17,false,1,api_football_team_532
 206207,W. Zahibo,Valencia CF,,,2014-01-23,2016-07-08,false,1,api_football_team_532
 176769,Jonas Gonçalves Oliveira,Valencia CF,,,2011-01-24,2014-09-12,false,1,api_football_team_532
 176769,Jonas Gonçalves Oliveira,Benfica,,,2014-09-12,,false,1,api_football_team_211
@@ -456,12 +469,14 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 190531,E. Mangala,Manchester City,,,2017-07-01,2018-01-31,false,1,api_football_team_50
 172522,D. Wass,Valencia CF,,,2018-07-10,2022-01-27,false,1,api_football_team_532
 199005,M. Ryan,Valencia CF,,,2015-07-21,,false,1,api_football_team_569
+223517,Danilo Barbosa,Valencia CF,,,2015-07-15,,true,1,api_football_team_532
 232117,Jaume Costa,Valencia CF,,,2019-08-13,2020-08-04,true,1,api_football_team_532
 244253,U. Račić,Valencia CF,,,2023-07-01,2023-08-16,false,1,api_football_team_532
 239433,N. Maksimović,Valencia CF,,,2017-07-01,2018-07-16,false,1,api_football_team_532
 240702,R. Yaremchuk,Valencia CF,,,2023-09-01,2024-07-01,true,1,api_football_team_569
 240702,R. Yaremchuk,Club Brugge,,,2024-07-01,2024-07-30,false,1,api_football_team_569
 215399,Rúben Vezo,Valencia CF,,,2017-07-01,2019-07-01,false,1,api_football_team_532
+171018,Mata,Chelsea FC,,,2011-08-22,2014-01-25,false,1,api_football_team_49
 183966,F. Roncaglia,Valencia CF,,,2019-01-31,,true,1,api_football_team_532
 196432,E. Pérez,Valencia CF,,,2015-01-01,,false,1,api_football_team_211
 203864,B. Zuculini,Valencia CF,,,2014-08-19,,true,1,api_football_team_50
@@ -492,7 +507,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 210514,João Cancelo,Valencia CF,,,2015-07-01,,false,1,api_football_team_211
 210514,João Cancelo,Inter Milan,,,2017-08-22,,true,1,api_football_team_505
 210514,João Cancelo,Juventus,,,2018-07-01,2019-08-07,false,1,api_football_team_496
-255475,Álex dos Santos,Valencia CF,,,2015-08-27,2019-01-24,false,1,api_football_team_532
 192366,N. Otamendi,Valencia CF,,,2014-07-01,2015-08-20,false,1,api_football_team_532
 192366,N. Otamendi,Manchester City,,,2015-08-20,2020-09-29,false,1,api_football_team_50
 227565,Carles Gil,Aston Villa,,,2015-01-13,2018-07-02,false,1,api_football_team_66
@@ -509,7 +523,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 121944,B. Schweinsteiger,Manchester United,,,2015-07-13,,false,1,api_football_team_157
 41236,Z. Ibrahimović,Manchester United,,,2016-07-01,,false,1,api_football_team_85
 206407,José Kléberson Pereira,Manchester United,,,2003-08-12,2005-08-08,false,1,api_football_team_33
-206407,Jhonatan Da Silva  Pereira,Besiktas,,,2005-08-08,2007-08-01,false,1,api_football_team_549
+206407,Jorge Manuel Pereira Santos,Besiktas,,,2005-08-08,2007-08-01,false,1,api_football_team_549
 162409,G. Rossi,Newcastle United,,,2006-08-31,,true,1,api_football_team_34
 189725,T. Cleverley,Aston Villa,,,2014-09-01,,true,1,api_football_team_66
 189725,T. Cleverley,Everton FC,,,2015-07-01,,false,1,api_football_team_33
@@ -529,6 +543,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 232270,T. Fosu-Mensah,Manchester United,,,2019-07-01,,false,1,api_football_team_33
 177358,M. Schneiderlin,Manchester United,,,2015-07-13,2017-01-12,false,1,api_football_team_33
 177358,M. Schneiderlin,Everton FC,,,2017-01-12,2020-07-01,false,1,api_football_team_45
+207676,Rafael,Lyon,,,2015-08-03,,false,1,api_football_team_33
 178033,G. Obertan,Manchester United,,,2009-07-08,2011-08-09,false,1,api_football_team_33
 178033,G. Obertan,Newcastle United,,,2011-08-09,2016-08-24,false,1,api_football_team_34
 206094,M. Vermijl,Manchester United,,,2014-07-01,2015-02-02,false,1,api_football_team_33
@@ -569,6 +584,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 225557,R. Poole,Manchester United,,,2015-09-01,2017-07-07,false,1,api_football_team_33
 246159,E. Laird,Manchester United,,,2022-07-01,2023-07-01,false,1,api_football_team_33
 260910,S. Shoretire,Manchester United,,,2023-07-01,2024-07-31,false,1,api_football_team_33
+171018,Mata,Manchester United,,,2014-01-25,,false,1,api_football_team_49
+171018,Mata,Galatasaray,,,2022-09-08,2023-09-01,false,1,api_football_team_645
 262260,S. Romero,Manchester United,,,2015-07-27,2021-10-12,false,1,api_football_team_33
 223689,W. Weghorst,Manchester United,,,2023-01-13,2023-07-01,true,1,api_football_team_33
 238041,T. Malacia,Manchester United,,,2025-07-01,,true,1,api_football_team_197
@@ -615,6 +632,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 233049,J. Sancho,Borussia Dortmund,,,2024-01-11,2024-07-01,true,1,api_football_team_165
 233049,J. Sancho,Chelsea FC,,,2024-08-30,2025-07-01,true,1,api_football_team_49
 233049,J. Sancho,Aston Villa,,,2025-09-01,2026-05-30,true,1,api_football_team_66
+253306,M. Ugarte,Manchester United,,,2024-08-30,,false,1,api_football_team_85
 231281,T. Alexander-Arnold,Manchester United,,,2023-07-05,,false,1,api_football_team_49
 212198,Bruno Fernandes,Manchester United,,,2020-01-30,,false,1,api_football_team_228
 239301,Luis García Martínez,Manchester United,,,2022-07-17,,false,1,api_football_team_194
@@ -711,6 +729,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 245235,Abdulay Bah,Manchester City,,,2025-07-01,,false,1,api_football_team_50
 180930,E. Džeko,Manchester City,,,2011-01-07,2016-07-01,false,1,api_football_team_50
 180930,E. Džeko,AS Roma,,,2016-07-01,2021-08-13,false,1,api_football_team_497
+199304,Douglas Luiz,Manchester City,,,2018-07-01,2019-07-25,false,1,api_football_team_50
+199304,Douglas Luiz,Aston Villa,,,2019-07-25,,false,1,api_football_team_50
 192985,K. De Bruyne,Manchester City,,,2015-08-30,2025-07-01,false,1,api_football_team_50
 192985,K. De Bruyne,Napoli,,,2025-07-01,,false,1,api_football_team_492
 252794,Álvaro García,Manchester City,,,2019-07-01,,false,1,api_football_team_50
@@ -726,7 +746,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 239085,E. Haaland,Manchester City,,,2022-07-01,,false,1,api_football_team_165
 207410,M. Kovačić,Manchester City,,,2023-06-27,,false,1,api_football_team_49
 264349,J. McAtee,Manchester City,,,2024-06-01,2025-08-16,false,1,api_football_team_50
-218667,Bruno Leone Camacho da Silva,Manchester City,,,2017-07-01,,false,1,api_football_team_91
 186942,İ. Gündoğan,Galatasaray,,,2025-09-02,,false,1,api_football_team_645
 253124,Matheus Nunes,Manchester City,,,2023-09-01,,false,1,api_football_team_50
 206517,J. Grealish,Manchester City,,,2021-08-05,,false,1,api_football_team_66
@@ -870,6 +889,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 243057,N. Williams,Liverpool FC,,,2022-07-01,2022-07-10,false,1,api_football_team_40
 190456,N. Clyne,Liverpool FC,,,2019-07-01,2020-10-14,false,1,api_football_team_40
 225539,D. Solanke,Liverpool FC,,,2017-07-01,,false,1,api_football_team_49
+253072,D. Núñez,Liverpool FC,,,2022-06-14,,false,1,api_football_team_211
+253072,D. Núñez,Al Hilal,,,2025-08-08,,false,1,api_football_team_2932
 176580,L. Díaz,Liverpool FC,,,2022-01-30,,false,1,api_football_team_212
 176580,L. Díaz,Bayern Munich,,,2025-07-30,,false,1,api_football_team_157
 235805,F. Chiesa,Liverpool FC,,,2024-08-29,,false,1,api_football_team_496
@@ -912,6 +933,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 45674,Michael Essien,Chelsea FC,,,2005-08-01,,false,1,api_football_team_80
 45674,Michael Essien,AC Milan,,,2014-01-27,2015-07-01,false,1,api_football_team_489
 9014,A. Robben,Chelsea FC,,,2004-08-01,,false,1,api_football_team_197
+213874,Tiago Cardoso Mendes,Chelsea FC,,,2004-07-01,,false,1,api_football_team_211
+213874,Tiago Cardoso Mendes,Lyon,,,2005-07-01,2007-07-01,false,1,api_football_team_80
 20775,Ricardo Andrade Quaresma Bernardo,Chelsea FC,,,2009-02-02,,true,1,api_football_team_505
 178372,B. Ivanović,Chelsea FC,,,2008-01-15,2017-02-01,false,1,api_football_team_49
 193130,A. Schürrle,Chelsea FC,,,2013-07-01,,false,1,api_football_team_168
@@ -919,7 +942,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 179546,Marko Marin,Fiorentina,,,2014-08-18,,true,1,api_football_team_502
 179546,Marko Marin,Trabzonspor,,,2015-08-25,,true,1,api_football_team_998
 204254,Wallace Oliveira dos Santos,Chelsea FC,,,2017-07-01,2019-01-24,false,1,api_football_team_49
-204254,Wendel Santana Pereira Santos,Inter Milan,,,2013-08-13,,true,1,api_football_team_505
+204254,Wallace Oliveira dos Santos,Inter Milan,,,2013-08-13,,true,1,api_football_team_505
 162131,Fernando Torres,AC Milan,,,2015-01-05,2016-07-04,false,1,api_football_team_489
 167664,G. Higuaín,Chelsea FC,,,2019-01-23,2019-07-01,true,1,api_football_team_496
 167664,G. Higuaín,Juventus,,,2019-07-01,2020-09-18,false,1,api_football_team_496
@@ -945,6 +968,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 163711,L. Diarra,Chelsea FC,,,2005-07-01,2007-08-31,false,1,api_football_team_49
 163711,L. Diarra,Arsenal FC,,,2007-08-31,2008-01-17,false,1,api_football_team_42
 223938,K. Hazard,Chelsea FC,,,2017-08-29,2019-07-01,false,1,api_football_team_49
+204233,C. Musonda,Celtic FC,,,2018-01-29,2018-07-01,true,1,api_football_team_247
+204233,C. Musonda,Chelsea FC,,,2018-07-01,,false,1,api_football_team_247
 238186,M. Bułka,Paris Saint-Germain,,,2019-07-06,2022-06-11,false,1,api_football_team_85
 238190,Juan Carlos Familia-Castillo,Chelsea FC,,,2022-01-20,2022-01-21,false,1,api_football_team_49
 172723,A. Begović,Chelsea FC,,,2015-07-13,2017-07-01,false,1,api_football_team_49
@@ -965,7 +990,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 195356,M. Delač,Chelsea FC,,,2017-07-01,2018-07-01,false,1,api_football_team_49
 178509,O. Giroud,Chelsea FC,,,2018-01-31,,false,1,api_football_team_42
 178509,O. Giroud,AC Milan,,,2021-07-17,2024-07-18,false,1,api_football_team_489
-255786,Thiago Elias Do Nascimento Silva,Chelsea FC,,,2020-08-28,,false,1,api_football_team_85
+199304,Douglas Luiz,Chelsea FC,,,2016-08-31,,false,1,api_football_team_85
+199304,Douglas Luiz,Paris Saint-Germain,,,2014-07-01,2016-08-31,false,1,api_football_team_85
+199304,Douglas Luiz,Arsenal FC,,,2019-08-08,2021-09-13,false,1,api_football_team_42
 238070,J. Cumming,Chelsea FC,,,2023-07-01,2024-06-27,false,1,api_football_team_49
 211504,L. Baker,Chelsea FC,,,2021-07-01,,false,1,api_football_team_998
 211504,L. Baker,Trabzonspor,,,2020-09-18,2021-07-01,true,1,api_football_team_998
@@ -1027,11 +1054,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 202652,R. Sterling,Chelsea FC,,,2025-07-01,,true,1,api_football_team_42
 202652,R. Sterling,Arsenal FC,,,2024-08-30,2025-07-01,true,1,api_football_team_42
 202652,R. Sterling,Feyenoord,,,2026-02-11,,false,1,api_football_team_209
-238616,Pedro Neto,Chelsea FC,,,2024-08-11,,false,1,api_football_team_49
 256268,A. Broja,Chelsea FC,,,2025-07-01,,true,1,api_football_team_45
 256268,A. Broja,Everton FC,,,2024-08-30,2025-07-01,true,1,api_football_team_45
 263620,R. Lavia,Chelsea FC,,,2023-08-18,,false,1,api_football_team_49
-255475,Álex dos Santos,Chelsea FC,,,2025-07-01,,false,1,api_football_team_49
 258748,C. Chukwuemeka,Chelsea FC,,,2025-07-15,2025-08-26,true,1,api_football_team_165
 258748,C. Chukwuemeka,Borussia Dortmund,,,2025-08-26,,false,1,api_football_team_165
 247090,E. Fernández,Chelsea FC,,,2023-01-31,,false,1,api_football_team_211
@@ -1085,15 +1110,12 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 215180,Mariano Raúl Echeverría,Arsenal FC,,,2013-07-12,2014-08-06,false,1,api_football_team_42
 157304,Thomas Vermaelen,Arsenal FC,,,2009-07-01,,false,1,api_football_team_194
 157304,Thomas Vermaelen,FC Barcelona,,,2014-08-09,,false,1,api_football_team_42
-255475,André Clarindo dos Santos,Arsenal FC,,,2011-08-31,,false,1,api_football_team_611
 157503,Alexandre Dimitri Song-Billong,Arsenal FC,,,2005-08-14,2012-08-20,false,1,api_football_team_42
 182888,Håvard Nordtveit,Arsenal FC,,,2007-07-01,2011-01-01,false,1,api_football_team_42
 182888,Håvard Nordtveit,Borussia Mönchengladbach,,,2011-01-01,2016-07-01,false,1,api_football_team_163
 58,Guy Roland Demel,Arsenal FC,,,2000-08-01,2001-07-01,false,1,api_football_team_42
 58,Guy Roland Demel,Borussia Dortmund,,,2001-07-01,2005-07-01,false,1,api_football_team_165
 119152,Kolo Habib Touré,Arsenal FC,,,2001-08-18,,false,1,api_football_team_42
-229882,Elías Ricardo Figueroa Silva,Arsenal FC,,,2007-08-08,2010-07-22,false,1,api_football_team_42
-229882,Elías Ricardo Figueroa Silva,Shakhtar Donetsk,,,2010-07-22,,false,1,api_football_team_42
 8473,T. Rosický,Arsenal FC,,,2006-08-01,,false,1,api_football_team_165
 221982,Philip Roberts,Arsenal FC,,,2013-03-01,2013-07-01,false,1,api_football_team_42
 6895,Alexander Manninger,Arsenal FC,,,1997-08-01,2001-08-01,false,1,api_football_team_42
@@ -1199,7 +1221,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 150516,Ł. Podolski,Arsenal FC,,,2012-07-01,2015-07-04,false,1,api_football_team_42
 150516,Ł. Podolski,Inter Milan,,,2015-01-05,,true,1,api_football_team_505
 150516,Ł. Podolski,Galatasaray,,,2015-07-04,2017-07-01,false,1,api_football_team_645
-207884,Wellington Silva,Arsenal FC,,,2015-06-01,2015-08-18,false,1,api_football_team_42
 198784,A. Oxlade-Chamberlain,Arsenal FC,,,2011-08-08,2017-08-31,false,1,api_football_team_42
 188567,P. Aubameyang,Arsenal FC,,,2018-01-31,,false,1,api_football_team_165
 210697,C. Nørgaard,Arsenal FC,,,2025-07-10,,false,1,api_football_team_42
@@ -1261,6 +1282,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 231144,C. Maghoma,Tottenham Hotspur,,,2016-08-01,2018-07-01,false,1,api_football_team_47
 205351,A. Pritchard,Tottenham Hotspur,,,2016-06-01,2016-08-04,false,1,api_football_team_47
 225999,F. Lesniak,Tottenham Hotspur,,,2017-01-01,2017-07-01,false,1,api_football_team_47
+200949,Lucas Moura,Tottenham Hotspur,,,2018-01-31,,false,1,api_football_team_85
 183394,M. Sissoko,Tottenham Hotspur,,,2016-08-31,,false,1,api_football_team_34
 224225,A. Phillips,Tottenham Hotspur,,,2026-05-30,,true,1,api_football_team_47
 241042,O. Skipp,Tottenham Hotspur,,,2021-07-01,2024-08-19,false,1,api_football_team_47
@@ -1510,6 +1532,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 225387,L. Page,West Ham United,,,2016-07-01,2017-01-06,false,1,api_football_team_48
 231436,G. Diangana,West Ham United,,,2020-08-01,2020-09-04,false,1,api_football_team_48
 172962,V. Moses,Chelsea FC,,,2016-07-01,,false,1,api_football_team_48
+215556,E. Fernandes,West Ham United,,,2016-08-25,2019-07-01,false,1,api_football_team_48
+215556,E. Fernandes,Fiorentina,,,2018-08-13,,true,1,api_football_team_502
 238060,N. Trott,West Ham United,,,2022-07-01,2024-06-22,false,1,api_football_team_48
 238060,N. Trott,Copenhagen,,,2024-06-22,2025-08-06,false,1,api_football_team_400
 176285,W. Reid,West Ham United,,,2021-07-01,,false,1,api_football_team_48
@@ -1532,7 +1556,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 212747,Toni Martínez,West Ham United,,,2017-07-01,2018-02-01,false,1,api_football_team_48
 208892,S. Byram,West Ham United,,,2019-07-01,2019-07-16,false,1,api_football_team_48
 228151,J. Cullen,West Ham United,,,2020-08-01,2020-10-05,false,1,api_football_team_48
-232310,M. Antonio,West Ham United,,,2015-09-01,2025-08-16,false,1,api_football_team_48
+247377,M. Antonio,West Ham United,,,2015-09-01,2025-08-16,false,1,api_football_team_48
 224371,J. Bowen,West Ham United,,,2020-01-31,,false,1,api_football_team_48
 242856,E. Álvarez,West Ham United,,,2023-08-10,,false,1,api_football_team_194
 242856,E. Álvarez,Fenerbahce,,,2025-08-23,,true,1,api_football_team_611
@@ -1635,6 +1659,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 218066,M. Samatta,Aston Villa,,,2020-01-20,2021-07-01,false,1,api_football_team_66
 218066,M. Samatta,Fenerbahce,,,2021-07-01,,false,1,api_football_team_66
 210896,M. Sanson,Aston Villa,,,2021-01-26,,false,1,api_football_team_81
+199304,Douglas Luiz,Aston Villa,,,2026-01-27,,true,1,api_football_team_496
+199304,Douglas Luiz,Juventus,,,2024-07-01,2026-01-27,false,1,api_football_team_66
 211515,P. Gollini,Aston Villa,,,2016-07-08,2018-07-01,false,1,api_football_team_66
 231743,K. Davis,Aston Villa,,,2023-07-01,2023-09-01,false,1,api_football_team_66
 227222,F. Guilbert,Aston Villa,,,2022-07-01,2023-01-17,false,1,api_football_team_66
@@ -1668,6 +1694,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 258928,V. Sinisalo,Celtic FC,,,2024-07-16,,false,1,api_football_team_247
 207557,R. Olsen,Aston Villa,,,2022-06-10,,false,1,api_football_team_497
 210828,B. Engels,Aston Villa,,,2019-07-16,2021-07-01,false,1,api_football_team_66
+219693,Diego Carlos,Fenerbahce,,,2025-01-22,2025-09-01,false,1,api_football_team_611
 241852,M. Diaby,Aston Villa,,,2023-07-23,,false,1,api_football_team_168
 164505,B. Guzan,Aston Villa,,,2008-08-01,2016-07-29,false,1,api_football_team_66
 189280,A. Westwood,Aston Villa,,,2012-08-31,2017-01-31,false,1,api_football_team_66
@@ -1686,11 +1713,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 199074,Lacina Emeghara Traoré,Monaco,,,2014-07-01,,false,1,api_football_team_45
 189725,T. Cleverley,Everton FC,,,2017-06-30,2017-07-01,false,1,api_football_team_45
 164859,T. Walcott,Everton FC,,,2021-06-30,2021-07-01,false,1,api_football_team_45
-260183,João Silva,Everton FC,,,2010-06-09,2012-07-01,false,1,api_football_team_45
 185422,J. King,Everton FC,,,2021-02-01,2021-07-09,false,1,api_football_team_45
 172723,A. Begović,Everton FC,,,2024-08-23,2025-07-29,false,1,api_football_team_45
 118794,A. Lonergan,Everton FC,,,2021-08-20,2024-07-01,false,1,api_football_team_45
-244391,Francisco Júnior,Everton FC,,,2015-12-21,2016-02-20,false,1,api_football_team_45
 232648,L. Gibson,Everton FC,,,2022-07-01,,false,1,api_football_team_45
 192622,S. Duffy,Everton FC,,,2014-07-01,2014-09-01,false,1,api_football_team_45
 203483,D. Klaassen,Everton FC,,,2017-06-15,,false,1,api_football_team_194
@@ -1830,7 +1855,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 222493,M. Friedrich,Borussia Dortmund,,,2013-11-20,,false,1,api_football_team_168
 2196,R. Weidenfeller,Borussia Dortmund,,,2002-07-01,,false,1,api_football_team_165
 193130,A. Schürrle,Borussia Dortmund,,,2016-07-22,2019-07-31,false,1,api_football_team_165
-270086,Antônio da Silva,Borussia Dortmund,,,2010-08-31,2012-08-03,false,1,api_football_team_165
 200857,Moritz Leitner,Borussia Dortmund,,,2015-07-01,2016-08-12,false,1,api_football_team_165
 200857,Moritz Leitner,Lazio,,,2016-08-12,2017-01-31,false,1,api_football_team_487
 183556,N. Subotić,Borussia Dortmund,,,2017-07-01,2018-01-25,false,1,api_football_team_165
@@ -1929,9 +1953,10 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 225206,K. Narey,Borussia Dortmund,,,2016-06-30,2016-07-01,false,1,api_football_team_165
 188567,P. Aubameyang,Borussia Dortmund,,,2013-07-04,2018-01-31,false,1,api_football_team_165
 208333,E. Can,Borussia Dortmund,,,2020-02-01,,false,1,api_football_team_496
-259806,Fábio Silva,Borussia Dortmund,,,2025-08-29,,false,1,api_football_team_165
 252371,J. Bellingham,Borussia Dortmund,,,2025-06-10,,false,1,api_football_team_165
 240000,E. Abouchabaka,RB Leipzig,,,2020-07-01,,false,1,api_football_team_173
+180695,Rodnei Francisco de Lima,RB Leipzig,,,2015-02-01,2015-06-01,true,1,api_football_team_571
+180695,Rodnei Francisco de Lima,Salzburg,,,2015-06-01,2015-07-13,false,1,api_football_team_571
 170231,M. Compper,RB Leipzig,,,2014-08-02,,false,1,api_football_team_502
 170231,M. Compper,Celtic FC,,,2018-01-01,,false,1,api_football_team_247
 161844,Niklas Hoheneder,RB Leipzig,,,2012-01-31,2015-07-01,false,1,api_football_team_173
@@ -1978,7 +2003,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 256115,L. Samardžić,RB Leipzig,,,2020-09-08,2021-08-05,false,1,api_football_team_173
 153175,Jaime Gavilán Martínez,RB Leipzig,,,2020-07-15,2023-07-01,false,1,api_football_team_173
 260592,B. Šeško,RB Leipzig,,,2023-07-01,,false,1,api_football_team_571
-270086,Antônio da Silva,RB Leipzig,,,2025-07-01,2025-08-18,true,1,api_football_team_173
+199626,André Silva,RB Leipzig,,,2025-07-01,2025-08-18,true,1,api_football_team_173
 257876,N. Seiwald,RB Leipzig,,,2023-07-01,,false,1,api_football_team_571
 241390,E. Elmas,RB Leipzig,,,2025-07-01,2025-09-01,true,1,api_football_team_173
 241390,E. Elmas,Napoli,,,2025-09-01,,true,1,api_football_team_492
@@ -2134,8 +2159,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 206407,Jhonatan Da Silva  Pereira,Juventus,,,2014-01-01,2014-07-01,false,1,api_football_team_496
 137854,Marco Storari,Juventus,,,2010-07-01,,false,1,api_football_team_489
 102056,S. Padoin,Juventus,,,2012-01-31,2016-07-04,false,1,api_football_team_496
-204254,Wendel Santana Pereira Santos,Juventus,,,2017-11-16,,false,1,api_football_team_496
-255786,Thiago Elias Do Nascimento Silva,Juventus,,,2016-07-01,2016-12-15,false,1,api_football_team_496
+189509,Thiago Elias Do Nascimento Silva,Juventus,,,2016-07-01,2016-12-15,false,1,api_football_team_496
 186832,K. Asamoah,Juventus,,,2012-07-03,2018-07-02,false,1,api_football_team_496
 186832,K. Asamoah,Inter Milan,,,2018-07-02,,false,1,api_football_team_505
 167963,Amauri Carvalho de Oliveira,Juventus,,,2008-08-01,2011-02-01,false,1,api_football_team_496
@@ -2147,6 +2171,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 103936,Simone Pepe,Juventus,,,2011-07-01,2015-08-11,false,1,api_football_team_496
 137186,Andrea Barzagli,Juventus,,,2011-01-26,,false,1,api_football_team_496
 172049,Eljero George Rinaldo Elia,Juventus,,,2011-08-31,2012-07-09,false,1,api_football_team_496
+213874,Tiago Cardoso Mendes,Juventus,,,2007-07-01,,false,1,api_football_team_80
 108080,S. Lichtsteiner,Juventus,,,2011-07-01,,false,1,api_football_team_487
 153175,Jaime Gavilán Martínez,Juventus,,,2014-07-01,2016-07-01,false,1,api_football_team_496
 177528,A. Matri,Juventus,,,2015-02-02,2015-07-01,true,1,api_football_team_489
@@ -2228,6 +2253,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 240690,Nico González,Juventus,,,2025-07-01,,false,1,api_football_team_502
 240690,Nico González,Fiorentina,,,2025-07-01,2025-07-01,false,1,api_football_team_502
 222077,M. Locatelli,Juventus,,,2023-07-01,,false,1,api_football_team_496
+199304,Douglas Luiz,Juventus,,,2026-01-26,2026-01-27,true,1,api_football_team_496
 246430,D. Vlahović,Juventus,,,2022-01-28,,false,1,api_football_team_502
 268802,F. Miretti,Juventus,,,2025-07-01,,true,1,api_football_team_496
 238744,W. McKennie,Juventus,,,2023-07-01,,false,1,api_football_team_496
@@ -2270,6 +2296,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 173204,Luca Antonelli,AC Milan,,,2015-02-02,2018-08-11,false,1,api_football_team_489
 45595,D. Bonera,AC Milan,,,2006-08-01,2015-09-01,false,1,api_football_team_489
 137361,Giampaolo Pazzini,AC Milan,,,2012-08-22,,false,1,api_football_team_505
+216547,Ricardo Ferreira,AC Milan,,,2013-07-01,2013-07-26,false,1,api_football_team_489
 165526,G. Paletta,AC Milan,,,2016-07-01,2018-02-23,false,1,api_football_team_489
 49617,Cristian Zaccardo,AC Milan,,,2013-01-24,2015-08-31,false,1,api_football_team_489
 173909,Kingsley Boateng,AC Milan,,,2015-01-13,2015-01-15,false,1,api_football_team_489
@@ -2327,8 +2354,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 232656,T. Hernández,Al Hilal,,,2025-07-09,,false,1,api_football_team_2932
 238873,P. Pellegri,AC Milan,,,2021-08-25,,true,1,api_football_team_91
 202445,Rodrigo Ely,AC Milan,,,2017-07-01,2017-08-01,false,1,api_football_team_489
-255786,Thiago Elias Do Nascimento Silva,AC Milan,,,2009-01-01,2012-07-14,false,1,api_football_team_489
-255786,Thiago Elias Do Nascimento Silva,Paris Saint-Germain,,,2012-07-14,2020-08-28,false,1,api_football_team_85
 219998,J. Mauri,AC Milan,,,2017-07-01,2021-04-18,false,1,api_football_team_489
 186200,F. Borini,AC Milan,,,2018-07-01,2020-01-14,false,1,api_football_team_489
 204077,M. Niang,AC Milan,,,2017-07-01,2018-07-01,false,1,api_football_team_489
@@ -2376,7 +2401,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 204838,R. Rodríguez,PSV Eindhoven,,,2020-01-30,,true,1,api_football_team_197
 193133,J. Strand Larsen,AC Milan,,,2017-08-28,2018-07-01,true,1,api_football_team_489
 241096,S. Tonali,AC Milan,,,2021-07-08,2023-07-03,false,1,api_football_team_489
-193442,Léo Duarte,AC Milan,,,2022-07-01,2022-07-08,false,1,api_football_team_489
+233926,Léo Duarte,AC Milan,,,2022-07-01,2022-07-08,false,1,api_football_team_489
 229758,R. Krunić,AC Milan,,,2019-07-08,2024-07-01,false,1,api_football_team_489
 229758,R. Krunić,Fenerbahce,,,2024-07-01,2024-09-03,false,1,api_football_team_611
 189125,G. Bonaventura,AC Milan,,,2014-09-01,2020-09-08,false,1,api_football_team_489
@@ -2489,13 +2514,11 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 268534,A. Diouf,Inter Milan,,,2025-08-22,,false,1,api_football_team_505
 181402,W. Vainqueur,AS Roma,,,2017-07-01,,false,1,api_football_team_81
 181402,W. Vainqueur,Marseille,,,2016-08-31,2017-07-01,true,1,api_football_team_81
-180334,Marco Antônio de Mattos Filho,AS Roma,,,2012-07-01,2014-01-31,false,1,api_football_team_497
 177509,M. Benatia,AS Roma,,,2013-07-13,2014-08-27,false,1,api_football_team_497
 173198,Davide Astori,AS Roma,,,2014-07-24,,true,1,api_football_team_497
 178393,Alessio Cerci,Fiorentina,,,2010-08-26,2012-08-23,false,1,api_football_team_502
 2147,M. Stekelenburg,AS Roma,,,2011-08-01,,false,1,api_football_team_194
 191180,J. Pastore,AS Roma,,,2018-07-01,,false,1,api_football_team_85
-235688,Leandro Castán da Silva,AS Roma,,,2017-07-01,2018-01-10,false,1,api_football_team_497
 188428,Seydou Doumbia,AS Roma,,,2015-01-31,2018-07-01,false,1,api_football_team_497
 188428,Seydou Doumbia,Sporting CP,,,2018-07-01,2018-08-28,false,1,api_football_team_228
 171097,Matteo Motta,AS Roma,,,2009-02-02,2010-07-01,false,1,api_football_team_497
@@ -2521,7 +2544,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 178518,R. Nainggolan,Inter Milan,,,2018-07-01,,false,1,api_football_team_497
 210282,Bruno Peres,AS Roma,,,2020-01-01,2021-06-17,false,1,api_football_team_497
 210282,Bruno Peres,Trabzonspor,,,2021-06-17,,false,1,api_football_team_998
-260183,Joaquim Manuel Sampaio Silva,AS Roma,,,2018-01-31,,true,1,api_football_team_228
 203551,A. Florenzi,AS Roma,,,2012-07-06,2022-07-01,false,1,api_football_team_497
 203551,A. Florenzi,Paris Saint-Germain,,,2020-09-11,,true,1,api_football_team_85
 180206,M. Pjanić,AS Roma,,,2011-08-31,,false,1,api_football_team_80
@@ -2529,14 +2551,15 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 201519,J. Veretout,Marseille,,,2022-08-06,2024-09-04,false,1,api_football_team_81
 179645,S. Kjær,AS Roma,,,2011-08-31,,true,1,api_football_team_497
 199005,M. Ryan,AS Roma,,,2024-07-17,2025-01-21,false,1,api_football_team_497
-198031,Sérgio Oliveira,AS Roma,,,2022-01-12,2022-07-01,true,1,api_football_team_212
-198031,Sérgio Oliveira,FC Porto,,,2022-07-01,2022-07-09,false,1,api_football_team_212
+225478,Sérgio Oliveira,AS Roma,,,2022-01-12,2022-07-01,true,1,api_football_team_212
+225478,Sérgio Oliveira,FC Porto,,,2022-07-01,2022-07-09,false,1,api_football_team_212
+229927,Gerson,AS Roma,,,2016-07-01,2018-07-20,false,1,api_football_team_497
+229927,Gerson,Fiorentina,,,2018-07-20,,true,1,api_football_team_502
 230613,A. Diawara,AS Roma,,,2019-07-01,,false,1,api_football_team_492
 186200,F. Borini,AS Roma,,,2012-01-24,2012-07-16,false,1,api_football_team_497
 186200,F. Borini,Liverpool FC,,,2012-07-16,,false,1,api_football_team_497
 244401,M. Camara,AS Roma,,,2022-08-31,2023-07-01,true,1,api_football_team_497
 170368,E. Lamela,AS Roma,,,2011-07-10,2013-08-30,false,1,api_football_team_497
-239881,David Silva,AS Roma,,,2015-07-01,,false,1,api_football_team_497
 251854,Pau López,AS Roma,,,2019-07-10,2022-06-11,false,1,api_football_team_497
 251854,Pau López,Marseille,,,2022-06-11,,false,1,api_football_team_497
 207439,L. Paredes,AS Roma,,,2023-08-16,,false,1,api_football_team_85
@@ -2647,6 +2670,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 244263,Amir Rrahmani,Napoli,,,2020-09-01,,false,1,api_football_team_492
 268656,A. Zanoli,Napoli,,,2025-07-01,2025-09-01,true,1,api_football_team_492
 241390,E. Elmas,RB Leipzig,,,2024-01-01,2025-09-01,false,1,api_football_team_492
+201505,Diego López,Napoli,,,2014-08-31,2016-08-27,false,1,api_football_team_492
 212501,L. Dendoncker,Aston Villa,,,2024-07-01,,false,1,api_football_team_492
 221519,Rafael Cabral,Napoli,,,2013-07-18,2018-07-22,false,1,api_football_team_492
 175943,D. Mertens,Napoli,,,2013-07-01,,false,1,api_football_team_197
@@ -2657,13 +2681,13 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 239380,N. Lang,Galatasaray,,,2026-01-22,,true,1,api_football_team_645
 224836,V. Milinković-Savić,Napoli,,,2025-07-26,,true,1,api_football_team_492
 268474,L. Lucca,Napoli,,,2026-01-21,2026-01-22,false,1,api_football_team_492
-255475,André Clarindo dos Santos,Napoli,,,2026-02-01,,true,1,api_football_team_228
 251493,A. Mohamed,Lazio,,,2020-07-20,,false,1,api_football_team_487
 221332,Guido Guerrieri,Lazio,,,2017-07-01,,false,1,api_football_team_487
 176031,Bruno Pereirinha,Lazio,,,2013-01-30,,false,1,api_football_team_228
 52810,G. Sculli,Lazio,,,2014-07-01,,false,1,api_football_team_487
 161999,Abdoulay Konko,Lazio,,,2011-07-04,2016-08-19,false,1,api_football_team_487
 54037,T. Berni,Lazio,,,2006-08-01,2011-07-01,false,1,api_football_team_487
+216410,Vinícius Freitas,Lazio,,,2016-07-01,2017-01-31,false,1,api_football_team_487
 52797,Cristian Daniel Ledesma,Lazio,,,2006-08-01,2015-08-29,false,1,api_football_team_487
 51100,Stefano Mauri,Lazio,,,2006-01-01,2017-01-11,false,1,api_football_team_487
 183498,M. Parolo,Lazio,,,2014-07-01,,false,1,api_football_team_487
@@ -2675,7 +2699,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 108080,S. Lichtsteiner,Lazio,,,2008-08-01,,false,1,api_football_team_79
 183414,Davide Di Gennaro,Lazio,,,2020-08-02,2021-01-31,false,1,api_football_team_487
 162835,S. Handanovič,Lazio,,,2006-01-01,,true,1,api_football_team_487
-230316,Matuzalém Francelino da Silva,Lazio,,,2008-08-01,2013-01-03,false,1,api_football_team_487
 185103,A. Kolarov,Lazio,,,2007-08-01,2010-07-24,false,1,api_football_team_487
 167666,J. Carrizo,Lazio,,,2012-07-01,2013-01-31,false,1,api_football_team_487
 158963,L. Biglia,Lazio,,,2013-07-01,2017-07-16,false,1,api_football_team_487
@@ -2710,7 +2733,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 202934,O. Onazi,Trabzonspor,,,2016-08-03,2020-01-15,false,1,api_football_team_998
 218341,J. Elez,Lazio,,,2016-07-01,2017-07-01,false,1,api_football_team_487
 211385,R. Durmisi,Lazio,,,2022-07-01,2023-01-30,false,1,api_football_team_487
-232310,Marcos Antônio,Lazio,,,2026-02-28,2026-03-01,true,1,api_football_team_487
+247377,Marcos Antônio,Lazio,,,2026-02-28,2026-03-01,true,1,api_football_team_487
 216655,Bartolomeu Jacinto Quissanga,Lazio,,,2016-08-17,2020-10-22,false,1,api_football_team_487
 219391,G. Escalante,Lazio,,,2020-09-01,2023-07-01,false,1,api_football_team_487
 244316,Luís Maximiano,Lazio,,,2024-07-01,2024-07-02,false,1,api_football_team_487
@@ -2741,7 +2764,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 240988,D. Vavro,Copenhagen,,,2022-07-06,,false,1,api_football_team_487
 223710,V. Muriqi,Lazio,,,2020-09-15,,false,1,api_football_team_611
 231916,F. Prce,Lazio,,,2016-07-01,2018-07-17,false,1,api_football_team_487
-238616,Pedro Neto,Lazio,,,2019-07-01,2019-08-02,false,1,api_football_team_487
 224062,P. Dziczek,Lazio,,,2021-07-01,2022-08-31,false,1,api_football_team_487
 240175,Bruno Jordão,Lazio,,,2019-07-01,2019-08-02,false,1,api_football_team_487
 189296,E. Berisha,Lazio,,,2013-09-02,2017-07-01,false,1,api_football_team_487
@@ -2882,6 +2904,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 183285,M. Sakho,Liverpool FC,,,2013-08-31,,false,1,api_football_team_85
 241497,C. Dagba,Paris Saint-Germain,,,2024-07-01,2024-09-05,false,1,api_football_team_85
 201510,L. Kurzawa,Paris Saint-Germain,,,2023-07-01,,false,1,api_football_team_85
+190871,Neymar,Al Hilal,,,2023-08-15,2025-01-31,false,1,api_football_team_2932
+200949,Lucas Moura,Paris Saint-Germain,,,2013-01-01,2018-01-31,false,1,api_football_team_85
 248604,A. Zagré,Monaco,,,2019-08-29,2023-06-29,false,1,api_football_team_91
 261249,É. Michut,Paris Saint-Germain,,,2023-07-01,2024-07-01,false,1,api_football_team_85
 234371,R. Descamps,Paris Saint-Germain,,,2018-07-01,2018-08-21,false,1,api_football_team_85
@@ -2909,15 +2933,15 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 233866,O. Édouard,Celtic FC,,,2018-07-01,2021-08-31,false,1,api_football_team_247
 193105,A. Areola,Paris Saint-Germain,,,2016-07-01,2022-07-01,false,1,api_football_team_85
 257270,T. Pembélé,Paris Saint-Germain,,,2022-07-01,2023-09-01,false,1,api_football_team_85
+253306,M. Ugarte,Paris Saint-Germain,,,2023-07-07,,false,1,api_football_team_228
 200458,L. Digne,Paris Saint-Germain,,,2013-07-16,,false,1,api_football_team_79
 241852,M. Diaby,Paris Saint-Germain,,,2018-07-01,2019-07-01,false,1,api_football_team_85
-200888,Douglas Pereira,Paris Saint-Germain,,,2021-07-01,,false,1,api_football_team_212
+239881,Douglas Pereira,Paris Saint-Germain,,,2021-07-01,,false,1,api_football_team_212
 263194,Ismaël Gharbi,Paris Saint-Germain,,,2024-07-01,2024-08-31,false,1,api_football_team_85
 258781,I. Zabarnyi,Paris Saint-Germain,,,2025-08-12,,false,1,api_football_team_85
 41835,Gaël Danic,Lyon,,,2013-07-01,2015-01-31,false,1,api_football_team_80
 153298,Arnold Mvuemba,Lyon,,,2012-09-04,,false,1,api_football_team_80
 45674,Michael Essien,Lyon,,,2003-08-01,2005-08-01,false,1,api_football_team_80
-230675,Nilmar Honorato da Silva,Lyon,,,2004-08-01,2006-07-01,false,1,api_football_team_80
 183766,B. Koné,Lyon,,,2011-08-12,2016-07-01,false,1,api_football_team_80
 161648,H. Ben Arfa,Marseille,,,2008-08-01,2010-08-29,false,1,api_football_team_81
 153296,Yoann  Gourcuff,Lyon,,,2010-08-24,2015-09-14,false,1,api_football_team_80
@@ -2928,12 +2952,13 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 207640,M. Yattara,Lyon,,,2014-07-01,2015-07-17,false,1,api_football_team_80
 186347,M. Rybus,Lyon,,,2016-07-01,2017-07-19,false,1,api_football_team_80
 159145,B. Gomis,Lyon,,,2009-07-29,2014-07-01,false,1,api_football_team_80
+207676,Rafael,Lyon,,,2016-06-29,,false,1,api_football_team_80
 190163,S. Faure,Rangers FC,,,2012-08-22,,false,1,api_football_team_257
 269854,I. Lomami,Lyon,,,2024-07-01,,false,1,api_football_team_80
 259671,Y. Soumaré,Lyon,,,2023-07-01,2023-07-04,false,1,api_football_team_80
-259806,Fábio Silva,Lyon,,,2024-07-01,2024-11-29,false,1,api_football_team_80
 239496,Y. Fékir,Lyon,,,2018-07-01,,false,1,api_football_team_80
 188829,N. Nkoulou,Lyon,,,2016-07-01,,false,1,api_football_team_81
+213874,Tiago Cardoso Mendes,Lyon,,,2019-07-03,,false,1,api_football_team_79
 186550,Luciano Fabián Monzón,Lyon,,,2012-08-27,2013-07-16,false,1,api_football_team_80
 181455,A. Cissokho,Lyon,,,2009-07-18,,false,1,api_football_team_212
 181455,A. Cissokho,Valencia CF,,,2012-08-27,,false,1,api_football_team_80
@@ -2954,7 +2979,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 177326,M. Valbuena,Fenerbahce,,,2017-07-04,2019-07-01,false,1,api_football_team_611
 211256,N. Tagliafico,Lyon,,,2022-07-23,,false,1,api_football_team_194
 228509,J. Reine-Adélaïde,Lyon,,,2023-07-01,2023-09-06,false,1,api_football_team_80
-239881,David Silva,Lyon,,,2021-06-09,2023-01-01,false,1,api_football_team_80
 195086,D. Lovren,Lyon,,,2023-01-02,,false,1,api_football_team_80
 199464,L. Rose,Lyon,,,2014-07-12,2016-07-01,false,1,api_football_team_80
 211300,A. Martial,Monaco,,,2013-07-01,2015-09-01,false,1,api_football_team_91
@@ -3031,6 +3055,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 177326,M. Valbuena,Marseille,,,2006-07-01,2014-08-02,false,1,api_football_team_81
 204884,B. Mendy,Marseille,,,2013-07-09,2016-07-01,false,1,api_football_team_81
 204884,B. Mendy,Monaco,,,2016-07-01,2017-07-24,false,1,api_football_team_91
+229927,Gerson,Marseille,,,2021-07-01,2023-01-01,false,1,api_football_team_81
 232118,A. Rabillard,Marseille,,,2013-10-01,2017-07-25,false,1,api_football_team_81
 211358,J. Fabri,Marseille,,,2017-06-09,2017-06-23,false,1,api_football_team_81
 203280,V. Germain,Marseille,,,2017-07-01,,false,1,api_football_team_91
@@ -3078,7 +3103,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 214907,F. Bahlouli,Lille OSC,,,2017-01-31,,false,1,api_football_team_79
 139836,C. Medjani,Monaco,,,2013-01-31,2014-01-03,false,1,api_football_team_91
 160766,J. Ménez,Monaco,,,2006-08-01,2008-08-27,false,1,api_football_team_91
-270086,Antônio da Silva,Monaco,,,2019-01-31,2020-07-01,true,1,api_football_team_91
 211239,C. Jean,Monaco,,,2016-07-01,2017-07-01,false,1,api_football_team_91
 254088,Armand Traoré,Monaco,,,2019-07-01,2019-08-31,false,1,api_football_team_91
 225711,Amadou Diallo,Monaco,,,2016-07-01,2017-07-14,false,1,api_football_team_91
@@ -3114,7 +3138,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 231433,Alejandro García Fernández,Monaco,,,2017-07-11,,false,1,api_football_team_91
 213565,T. Lemar,Monaco,,,2015-07-01,2018-07-30,false,1,api_football_team_91
 241637,A. Tchouaméni,Monaco,,,2020-01-29,2022-07-01,false,1,api_football_team_91
-218667,Bruno Leone Camacho da Silva,Monaco,,,2015-01-21,,false,1,api_football_team_211
 229942,A. Disasi,Monaco,,,2020-08-07,2023-08-04,false,1,api_football_team_91
 229942,A. Disasi,Chelsea FC,,,2023-08-04,,false,1,api_football_team_91
 241266,W. Geubbels,Monaco,,,2022-07-01,2023-01-24,false,1,api_football_team_91
@@ -3138,6 +3161,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 210520,Edgar Ié,Trabzonspor,,,2019-08-06,,false,1,api_football_team_79
 254088,Armand Traoré,Lille OSC,,,2014-07-01,2015-07-10,false,1,api_football_team_79
 254088,Armand Traoré,Monaco,,,2015-07-10,,false,1,api_football_team_79
+213874,Tiago Cardoso Mendes,Lille OSC,,,2017-07-08,2019-07-03,false,1,api_football_team_79
 183518,Rui Fonte,Lille OSC,,,2018-08-31,2019-07-01,true,1,api_football_team_79
 213135,D. Origi,Liverpool FC,,,2015-06-01,,false,1,api_football_team_79
 222160,Y. Koné,Lille OSC,,,2018-01-04,2019-07-03,false,1,api_football_team_79
@@ -3188,7 +3212,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 268738,M. Broholm,Lille OSC,,,2025-06-30,,false,1,api_football_team_79
 232360,G. Perrin,Lille OSC,,,2026-02-01,,false,1,api_football_team_79
 204367,B. van Leer,Ajax,,,2019-06-24,2020-07-01,false,1,api_football_team_194
-218667,Bruno Leone Camacho da Silva,Ajax,,,2008-01-01,2012-12-21,false,1,api_football_team_194
 137767,R. Graafland,Ajax,,,2010-09-09,2011-08-20,false,1,api_football_team_194
 137767,R. Graafland,Feyenoord,,,2011-08-20,,false,1,api_football_team_209
 9833,D. Boer,Ajax,,,2014-09-01,2017-06-09,false,1,api_football_team_194
@@ -3204,7 +3227,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 53405,Maxwell Scherrer Cabelino Andrade,Ajax,,,2001-07-01,,false,1,api_football_team_194
 211176,R. Kishna,Lazio,,,2015-07-29,,false,1,api_football_team_194
 186452,S. de Jong,Ajax,,,2019-07-01,2020-02-20,false,1,api_football_team_194
-193442,Léo Duarte,Ajax,,,2013-09-02,2016-09-01,false,1,api_football_team_194
+233926,Léo Duarte,Ajax,,,2013-09-02,2016-09-01,false,1,api_football_team_194
 172862,N. Moisander,Ajax,,,2012-08-21,2015-07-01,false,1,api_football_team_194
 204138,R. Ligeon,Ajax,,,2015-06-01,2016-06-09,false,1,api_football_team_194
 224148,R. Murić,Ajax,,,2017-07-01,2017-08-31,false,1,api_football_team_194
@@ -3287,10 +3310,10 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 183483,Konstantinos Mitroglou,PSV Eindhoven,,,2019-08-21,,true,1,api_football_team_645
 9014,A. Robben,PSV Eindhoven,,,2002-07-01,2004-08-01,false,1,api_football_team_197
 53410,M. Väyrynen,PSV Eindhoven,,,2005-07-01,2008-09-01,false,1,api_football_team_197
+229927,Gerson,PSV Eindhoven,,,2011-02-09,,true,1,api_football_team_197
 189712,K. Strootman,PSV Eindhoven,,,2011-07-01,2013-07-16,false,1,api_football_team_197
 243956,J. Vuković,PSV Eindhoven,,,2009-08-01,2013-08-31,false,1,api_football_team_197
 176949,Bryan Jafet Ruiz González,PSV Eindhoven,,,2014-01-15,2014-07-01,true,1,api_football_team_197
-235688,Leandro Castán da Silva,PSV Eindhoven,,,2016-01-04,2017-01-20,false,1,api_football_team_197
 192362,L. Narsingh,PSV Eindhoven,,,2012-07-16,2017-01-12,false,1,api_football_team_197
 246960,M. Ihattaren,Juventus,,,2021-08-30,,false,1,api_football_team_197
 134744,A. Hutchinson,PSV Eindhoven,,,2010-07-01,,false,1,api_football_team_400
@@ -3303,9 +3326,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 239380,N. Lang,PSV Eindhoven,,,2023-07-08,,false,1,api_football_team_569
 189805,L. de Jong,FC Porto,,,2025-08-03,,false,1,api_football_team_212
 235663,G. Til,PSV Eindhoven,,,2022-07-04,,false,1,api_football_team_197
-176676,Mauro Júnior,PSV Eindhoven,,,2020-07-01,,false,1,api_football_team_197
 233096,D. Dumfries,PSV Eindhoven,,,2018-06-19,2021-08-14,false,1,api_football_team_197
-259806,Fábio Silva,PSV Eindhoven,,,2023-01-25,2023-07-01,true,1,api_football_team_197
 246763,K. Hoever,PSV Eindhoven,,,2022-07-01,,true,1,api_football_team_197
 198640,Z. Labyad,Sporting CP,,,2012-07-26,,false,1,api_football_team_197
 175943,D. Mertens,PSV Eindhoven,,,2011-07-01,2013-07-01,false,1,api_football_team_197
@@ -3449,9 +3470,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 208230,A. Samaris,Benfica,,,2014-08-22,2021-11-26,false,1,api_football_team_211
 245331,J. Fernandez,Benfica,,,2012-07-01,2013-07-01,false,1,api_football_team_211
 221668,F. Ferreyra,Benfica,,,2020-08-04,2021-02-01,false,1,api_football_team_211
-259806,Flávio Silva,Benfica,,,2015-02-01,2015-07-01,false,1,api_football_team_211
 202101,O. John,Benfica,,,2014-07-01,2018-07-21,false,1,api_football_team_211
 239465,M. Chrien,Benfica,,,2017-07-01,2018-08-16,false,1,api_football_team_211
+235688,Lucas Veríssimo,Benfica,,,2021-01-31,2024-01-25,false,1,api_football_team_211
 214770,Diego González,Benfica,,,2012-07-01,,false,1,api_football_team_211
 183518,Rui Fonte,Benfica,,,2013-01-29,2015-02-02,false,1,api_football_team_211
 179605,A. Taarabt,Benfica,,,2018-07-01,2022-09-24,false,1,api_football_team_211
@@ -3460,7 +3481,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 244627,L. Marković,Benfica,,,2013-07-01,2014-07-15,false,1,api_football_team_211
 244627,L. Marković,Liverpool FC,,,2014-07-15,,false,1,api_football_team_211
 212878,Nicolás Ignacio Castillo Mora,Benfica,,,2018-07-02,2019-02-01,false,1,api_football_team_211
-243238,Alan Júnior,Benfica,,,2017-07-01,2019-07-01,false,1,api_football_team_211
+209736,Victor Andrade,Benfica,,,2017-07-01,2017-08-29,false,1,api_football_team_211
 225659,Gianni Rodríguez,Benfica,,,2013-01-31,2015-02-06,false,1,api_football_team_211
 230988,F. Krovinović,Benfica,,,2021-07-01,2021-07-19,false,1,api_football_team_211
 224213,T. Ebuehi,Benfica,,,2022-07-01,2022-07-05,false,1,api_football_team_211
@@ -3473,9 +3494,11 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 192528,S. Vitória,Benfica,,,2016-01-01,2016-09-01,false,1,api_football_team_211
 172522,D. Wass,Benfica,,,2011-07-01,2012-07-01,false,1,api_football_team_211
 257920,C. Tengstedt,Benfica,,,2025-07-01,2025-07-24,true,1,api_football_team_211
+199304,Douglas Luiz,Benfica,,,2007-08-12,2011-02-01,false,1,api_football_team_211
+199304,Douglas Luiz,Chelsea FC,,,2011-02-01,,false,1,api_football_team_211
 252114,B. Rollheiser,Benfica,,,2024-07-01,2025-02-12,false,1,api_football_team_211
+223517,Danilo Barbosa,Benfica,,,2016-07-28,,true,1,api_football_team_211
 204082,J. Brooks,Benfica,,,2022-09-01,2023-01-26,false,1,api_football_team_211
-237211,Yuri Ribeiro,Benfica,,,2018-07-01,2019-07-08,false,1,api_football_team_211
 208141,Gabriel Pires,Benfica,,,2024-01-01,2024-01-20,false,1,api_football_team_211
 193881,F. Đuričić,Benfica,,,2015-07-01,2017-01-03,false,1,api_football_team_211
 220746,A. Živković,Benfica,,,2016-07-05,2020-09-07,false,1,api_football_team_211
@@ -3502,6 +3525,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 227928,Nélson Semedo,Benfica,,,2013-07-01,2017-07-14,false,1,api_football_team_211
 262642,Z. Amdouni,Benfica,,,2024-08-29,2025-07-01,true,1,api_football_team_211
 211990,O. Vlachodimos,Benfica,,,2018-07-02,2023-09-01,false,1,api_football_team_211
+253072,D. Núñez,Benfica,,,2020-09-04,2022-06-14,false,1,api_football_team_211
 247090,E. Fernández,Benfica,,,2022-07-14,2023-01-31,false,1,api_football_team_211
 244797,P. Musa,Benfica,,,2022-07-01,2024-02-01,false,1,api_football_team_211
 231390,Diogo Gonçalves,Benfica,,,2020-08-03,2023-01-01,false,1,api_football_team_211
@@ -3520,32 +3544,28 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 266905,Henrique Araújo,Benfica,,,2025-07-01,,true,1,api_football_team_211
 245235,Abdulay Bah,Benfica,,,2022-07-01,,false,1,api_football_team_211
 250753,A. Trubin,Benfica,,,2023-08-10,,false,1,api_football_team_550
-227890,Nuno Santos,Benfica,,,2017-07-01,2017-07-02,false,1,api_football_team_211
 231391,João Carvalho,Benfica,,,2017-07-01,2018-06-14,false,1,api_football_team_211
 189303,Nélson Oliveira,Benfica,,,2016-06-01,2016-08-30,false,1,api_football_team_211
-227890,Nuno Santos,Benfica,,,2022-07-01,2022-08-04,false,1,api_football_team_211
 229683,Rodrigo Pinho,Benfica,,,2021-07-01,2023-01-10,false,1,api_football_team_211
 241783,K. Parks,Benfica,,,2020-01-01,2020-01-08,false,1,api_football_team_211
 253403,Rafael Rodrigues,Benfica,,,2025-06-29,2025-07-27,true,1,api_football_team_211
 257345,A. Dedić,Benfica,,,2025-07-14,,false,1,api_football_team_571
 246186,Arthur Cabral,Benfica,,,2026-01-23,,false,1,api_football_team_211
-207734,Pedro Santos,Benfica,,,2025-06-29,2025-07-10,true,1,api_football_team_211
 259913,H. Sudakov,Benfica,,,2025-08-30,,true,1,api_football_team_550
 167963,Amauri Carvalho de Oliveira,FC Porto,,,2015-01-01,2015-07-19,false,1,api_football_team_212
 205951,Raúl Tiago Soares Almeida,FC Porto,,,2016-07-01,2017-07-01,true,1,api_football_team_212
-255475,André Clarindo dos Santos,FC Porto,,,2012-08-15,2013-07-23,true,1,api_football_team_212
 178087,Alberto Bueno Calvo,FC Porto,,,2015-07-01,2017-01-31,false,1,api_football_team_212
 190494,D. Opare,FC Porto,,,2014-07-01,2015-08-13,false,1,api_football_team_212
 190494,D. Opare,Besiktas,,,2015-01-20,,true,1,api_football_team_549
-255786,Thiago Elias Do Nascimento Silva,FC Porto,,,2013-03-15,2013-07-01,false,1,api_football_team_212
 166080,Evandro Goebel,FC Porto,,,2014-07-01,2017-01-13,false,1,api_football_team_212
+216547,Ricardo Ferreira,AC Milan,,,2011-07-05,,false,1,api_football_team_212
 172672,Silvestre Varela,FC Porto,,,2017-01-20,,false,1,api_football_team_212
 20775,Ricardo Andrade Quaresma Bernardo,FC Porto,,,2014-01-01,2015-08-14,false,1,api_football_team_212
 20775,Ricardo Andrade Quaresma Bernardo,Besiktas,,,2015-08-14,2019-08-29,false,1,api_football_team_549
 138110,Bruno Eduardo Regufe Alves,FC Porto,,,2005-07-01,2010-08-04,false,1,api_football_team_212
 182629,António Alberto Bastos Pimparel,FC Porto,,,2009-08-18,2011-08-31,false,1,api_football_team_212
 234826,Adrián López,FC Porto,,,2018-07-01,2019-07-30,false,1,api_football_team_212
-243238,Ademar Jose Tavares Junior,FC Porto,,,2013-03-01,,false,1,api_football_team_212
+270086,Ademar Jose Tavares Junior,FC Porto,,,2013-03-01,,false,1,api_football_team_212
 138384,M. Janko,FC Porto,,,2012-01-31,2012-08-28,false,1,api_football_team_212
 138384,M. Janko,Trabzonspor,,,2012-08-28,2014-07-30,false,1,api_football_team_998
 153175,Jaime Gavilán Martínez,FC Porto,,,2012-07-07,2015-07-15,false,1,api_football_team_212
@@ -3557,21 +3577,22 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 182736,Ricardo Nunes,FC Porto,,,2014-07-01,2017-07-01,false,1,api_football_team_212
 227536,M. Marega,FC Porto,,,2017-07-01,2021-07-01,false,1,api_football_team_212
 227536,M. Marega,Al Hilal,,,2021-07-01,2023-09-08,false,1,api_football_team_2932
+243591,Fernando Andrade,FC Porto,,,2022-01-01,2023-07-01,false,1,api_football_team_212
 184267,Y. Brahimi,FC Porto,,,2014-07-23,2019-07-22,false,1,api_football_team_212
 216778,Rúben Semedo,FC Porto,,,2022-01-31,2022-07-01,true,1,api_football_team_212
-235688,Leandro Castán da Silva,FC Porto,,,2017-07-01,2017-07-25,false,1,api_football_team_212
 211559,Tiago Rodrigues,FC Porto,,,2014-07-01,2017-07-01,false,1,api_football_team_212
-199626,André André,FC Porto,,,2015-07-01,2018-07-04,false,1,api_football_team_212
-232310,Maurício Antônio,FC Porto,,,2015-07-31,,false,1,api_football_team_212
+199626,André Silva,FC Porto,,,2015-07-01,2018-07-04,false,1,api_football_team_212
+270060,Soares,FC Porto,,,2009-09-11,2012-07-02,false,1,api_football_team_212
+247377,Maurício Antônio,FC Porto,,,2015-07-31,,false,1,api_football_team_212
 244960,Bruno Costa,FC Porto,,,2021-07-06,2023-09-01,false,1,api_football_team_212
+239999,Pedro Moreira,FC Porto,,,2015-06-01,2015-07-07,false,1,api_football_team_212
 190531,E. Mangala,FC Porto,,,2011-08-14,2014-08-11,false,1,api_football_team_212
 190531,E. Mangala,Manchester City,,,2014-08-11,,false,1,api_football_team_212
 230355,Ricardo Costa,FC Porto,,,2019-07-01,2020-09-18,false,1,api_football_team_212
 212692,Miguel Lopes,FC Porto,,,2012-07-01,2013-01-07,false,1,api_football_team_212
 212692,Miguel Lopes,Sporting CP,,,2013-01-07,,false,1,api_football_team_212
-198031,Sérgio Oliveira,Galatasaray,,,2022-07-09,2024-09-04,false,1,api_football_team_645
+225478,Sérgio Oliveira,Galatasaray,,,2022-07-09,2024-09-04,false,1,api_football_team_645
 215256,R. Saravia,FC Porto,,,2022-01-01,2022-03-15,false,1,api_football_team_212
-255786,Thiago Elias Do Nascimento Silva,FC Porto,,,2025-12-31,,false,1,api_football_team_212
 212462,Alex Telles,FC Porto,,,2016-07-12,,false,1,api_football_team_645
 231433,Alejandro García Fernández,FC Porto,,,2014-07-30,2017-07-01,false,1,api_football_team_212
 252033,Tomás Esteves,FC Porto,,,2023-07-01,2023-08-03,false,1,api_football_team_212
@@ -3584,7 +3605,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 235454,M. Sarr,Chelsea FC,,,2021-07-01,,false,1,api_football_team_212
 232693,C. Awaziem,FC Porto,,,2020-08-03,2020-09-05,false,1,api_football_team_212
 241788,M. Taremi,FC Porto,,,2020-08-31,2024-07-13,false,1,api_football_team_212
-270086,Antônio da Silva,AC Milan,,,2017-07-01,,false,1,api_football_team_212
+199626,André Silva,AC Milan,,,2017-07-01,,false,1,api_football_team_212
 234575,Diogo Leite,FC Porto,,,2022-07-01,2023-07-01,false,1,api_football_team_212
 240130,Éder Militão,FC Porto,,,2018-08-06,2019-07-01,false,1,api_football_team_212
 212747,Toni Martínez,FC Porto,,,2020-10-04,2024-08-27,false,1,api_football_team_212
@@ -3595,7 +3616,8 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 252038,Romário Baró,FC Porto,,,2025-07-01,2025-08-22,true,1,api_football_team_212
 199069,V. Aboubakar,FC Porto,,,2017-07-01,2020-09-25,false,1,api_football_team_549
 199069,V. Aboubakar,Besiktas,,,2020-09-25,,false,1,api_football_team_212
-200888,Douglas Pereira,FC Porto,,,2015-07-02,2021-07-01,false,1,api_football_team_212
+219693,Diego Carlos,FC Porto,,,2014-09-01,2015-06-01,true,1,api_football_team_212
+239881,Douglas Pereira,FC Porto,,,2015-07-02,2021-07-01,false,1,api_football_team_212
 192366,N. Otamendi,FC Porto,,,2010-08-31,2014-01-30,false,1,api_football_team_212
 192366,N. Otamendi,Valencia CF,,,2014-01-30,,false,1,api_football_team_212
 242380,S. Eustáquio,FC Porto,,,2022-07-01,2026-02-05,false,1,api_football_team_212
@@ -3610,16 +3632,15 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 187688,Pedro Lima,FC Porto,,,2025-08-31,2025-12-30,true,1,api_football_team_212
 220570,J. Bednarek,FC Porto,,,2025-07-28,,false,1,api_football_team_212
 243055,Rafael Camacho,Sporting CP,,,2023-07-01,,false,1,api_football_team_228
-266850,Jorge Manuel Pereira Santos,Sporting CP,,,2014-07-01,2015-02-01,false,1,api_football_team_228
+206407,Jorge Manuel Pereira Santos,Sporting CP,,,2014-07-01,2015-02-01,false,1,api_football_team_228
 193062,M. Zeegelaar,Sporting CP,,,2016-01-05,2017-08-31,false,1,api_football_team_228
-268411,Vítor Emanuel Cruz da Silva,Sporting CP,,,2013-09-02,2014-08-25,false,1,api_football_team_228
 247865,Luís Filipe Gomes Almeida,Sporting CP,,,2016-01-01,,false,1,api_football_team_228
 225903,Bruno Jacinto da Silva,Sporting CP,,,2020-01-01,2022-01-01,false,1,api_football_team_228
 156271,Marcelo Boeck,Sporting CP,,,2011-07-01,2016-01-27,false,1,api_football_team_228
 188086,Jefferson Moreira Nascimento,Sporting CP,,,2018-07-01,2020-06-25,false,1,api_football_team_228
 193862,André Almeida Pinto,Sporting CP,,,2017-07-01,2019-08-29,false,1,api_football_team_228
-206407,Jhonatan Da Silva  Pereira,Sporting CP,,,2021-02-04,,false,1,api_football_team_998
-206407,Jhonatan Da Silva  Pereira,Trabzonspor,,,2017-01-04,2021-02-04,false,1,api_football_team_998
+206407,Jorge Manuel Pereira Santos,Sporting CP,,,2021-02-04,,false,1,api_football_team_998
+206407,Jorge Manuel Pereira Santos,Trabzonspor,,,2017-01-04,2021-02-04,false,1,api_football_team_998
 229735,Alejandro Gomes Rodriguez,Sporting CP,,,2011-07-01,2012-07-24,false,1,api_football_team_228
 257290,José Luis Mendes Lopes,Sporting CP,,,2015-01-01,2016-07-25,false,1,api_football_team_228
 196899,Héldon Augusto Almeida Ramos,Sporting CP,,,2014-01-31,2017-09-01,false,1,api_football_team_228
@@ -3627,11 +3648,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 174549,Matías Ariel Fernández Fernández,Fiorentina,,,2012-07-26,,false,1,api_football_team_228
 200962,André Martins,Sporting CP,,,2011-07-01,2016-08-09,false,1,api_football_team_228
 189068,B. Dost,Sporting CP,,,2016-08-28,2019-08-26,false,1,api_football_team_228
-270086,Antônio da Silva,Sporting CP,,,2012-07-01,2018-01-01,false,1,api_football_team_228
+229882,Eduardo Henrique,Sporting CP,,,2022-07-01,,false,1,api_football_team_228
 168354,E. Viviano,Sporting CP,,,2018-07-02,2019-01-07,false,1,api_football_team_228
-204341,Luís Neto,Sporting CP,,,2019-07-01,,false,1,api_football_team_228
 198175,L. Castaignos,Sporting CP,,,2018-07-01,2019-02-17,false,1,api_football_team_228
-268837,Rúben Ribeiro,Sporting CP,,,2018-01-11,,false,1,api_football_team_228
 225711,Amadou Diallo,Sporting CP,,,2015-01-01,2015-07-01,false,1,api_football_team_228
 176949,Bryan Jafet Ruiz González,Sporting CP,,,2015-07-07,2018-07-23,false,1,api_football_team_228
 150477,R. Salin,Sporting CP,,,2017-07-29,2019-07-01,false,1,api_football_team_228
@@ -3641,7 +3660,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 205185,Tiago Ilori,Sporting CP,,,2022-07-01,2022-07-22,false,1,api_football_team_228
 234725,I. Doumbia,Sporting CP,,,2019-01-15,2023-07-01,false,1,api_football_team_228
 216778,Rúben Semedo,Sporting CP,,,2015-07-01,2017-07-01,false,1,api_football_team_228
-255475,André Clarindo dos Santos,Sporting CP,,,2013-07-01,2013-08-28,false,1,api_football_team_228
+199626,André Santos,Sporting CP,,,2013-07-01,2013-08-28,false,1,api_football_team_228
 238361,Mattheus Oliveira,Sporting CP,,,2019-07-01,2020-10-01,false,1,api_football_team_228
 143745,A. Turan,Sporting CP,,,2013-07-01,2013-08-28,false,1,api_football_team_228
 212231,Tobias Figueiredo,Sporting CP,,,2017-07-01,2018-07-01,false,1,api_football_team_228
@@ -3649,14 +3668,13 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 231007,J. Mišić,Sporting CP,,,2020-07-01,2021-07-01,false,1,api_football_team_228
 205965,S. Ristovski,Sporting CP,,,2017-08-08,2021-02-02,true,1,api_football_team_228
 195087,R. Petrović,Sporting CP,,,2017-07-01,2019-08-19,false,1,api_football_team_228
-260183,Joaquim Manuel Sampaio Silva,Sporting CP,,,2017-07-01,2019-07-01,false,1,api_football_team_228
 240779,M. Meli,Sporting CP,,,2016-08-01,,true,1,api_football_team_228
 201939,C. Piccini,Sporting CP,,,2017-07-01,2018-07-23,false,1,api_football_team_228
 201939,C. Piccini,Valencia CF,,,2018-07-23,,false,1,api_football_team_228
 238858,Bruno Ramos,Sporting CP,,,2024-09-21,,false,1,api_football_team_228
 202330,A. Diaby,Sporting CP,,,2021-07-01,2021-08-23,false,1,api_football_team_228
 202330,A. Diaby,Besiktas,,,2019-09-02,2020-08-01,true,1,api_football_team_549
-253163,Rudinilson Gomes Brito Silva,Sporting CP,,,2025-06-29,2026-02-01,true,1,api_football_team_228
+207676,Rafael Silva,Sporting CP,,,2025-06-29,2026-02-01,true,1,api_football_team_228
 216408,L. Spalvis,Sporting CP,,,2017-01-26,2018-07-01,false,1,api_football_team_228
 136764,K. Boulahrouz,Sporting CP,,,2012-07-19,2013-10-07,false,1,api_football_team_228
 225402,Bruno Gaspar,Sporting CP,,,2020-09-01,2022-01-31,false,1,api_football_team_228
@@ -3678,6 +3696,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 234730,V. Rosier,Besiktas,,,2022-07-01,2024-07-05,false,1,api_football_team_549
 193198,N. Gudelj,Sporting CP,,,2018-08-23,,true,1,api_football_team_228
 235619,M. Edwards,Sporting CP,,,2022-01-31,2025-07-01,false,1,api_football_team_228
+253306,M. Ugarte,Sporting CP,,,2021-08-09,2023-07-07,false,1,api_football_team_228
 212198,Bruno Fernandes,Sporting CP,,,2017-07-02,2020-01-30,false,1,api_football_team_228
 261530,Dário Essugo,Sporting CP,,,2025-07-01,,false,1,api_football_team_228
 252025,K. Koindredi,Sporting CP,,,2025-07-01,,false,1,api_football_team_228
@@ -3689,7 +3708,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 192397,Rafael Barbosa,Sporting CP,,,2017-01-11,2020-08-18,false,1,api_football_team_228
 264022,Gonçalo Esteves,Sporting CP,,,2023-01-06,,false,1,api_football_team_228
 210679,Paulo Oliveira,Sporting CP,,,2014-07-01,2017-07-17,false,1,api_football_team_228
-268837,Rodrigo Ribeiro,Sporting CP,,,2025-07-01,2026-01-14,true,1,api_football_team_228
 252143,Daniel Bragança,Sporting CP,,,2019-07-01,2019-08-09,false,1,api_football_team_228
 226853,J. St. Juste,Sporting CP,,,2022-07-01,2026-01-21,false,1,api_football_team_228
 254262,Z. Debast,Sporting CP,,,2024-07-04,,false,1,api_football_team_228
@@ -3698,9 +3716,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 194781,Renan Ribeiro,Sporting CP,,,2019-01-31,,false,1,api_football_team_228
 240507,Arthur Gomes,Sporting CP,,,2022-09-01,2023-07-15,false,1,api_football_team_228
 185221,Lucas Filipa Silva Dias,Sporting CP,,,2025-07-01,,true,1,api_football_team_228
-255475,André Clarindo dos Santos,Sporting CP,,,2025-06-30,2026-02-01,false,1,api_football_team_228
-253163,Rudinilson Gomes Brito Silva,Sporting CP,,,2025-07-01,,false,1,api_football_team_228
-255472,Pedro Silva,Sporting CP,,,2025-06-29,2025-07-20,true,1,api_football_team_228
 258015,F. Ioannidis,Sporting CP,,,2025-09-01,,false,1,api_football_team_228
 255634,G. Vagiannidis,Sporting CP,,,2025-08-06,,false,1,api_football_team_228
 200305,Mohamed Bangura,Celtic FC,,,2011-08-30,2014-02-03,false,1,api_football_team_247
@@ -3865,7 +3880,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 242214,J. Sands,Rangers FC,,,2022-01-05,2023-03-01,true,1,api_football_team_257
 216860,V. Černý,Rangers FC,,,2024-07-26,2025-07-01,true,1,api_football_team_257
 223746,G. Stewart,Rangers FC,,,2019-07-01,2021-07-01,false,1,api_football_team_257
-259806,Flávio Silva,Rangers FC,,,2024-01-01,2024-07-01,true,1,api_football_team_257
 193182,W. Foderingham,Rangers FC,,,2015-07-01,2020-07-27,false,1,api_football_team_257
 225711,Amadou Diallo,Manchester United,,,2022-07-01,,false,1,api_football_team_257
 233139,C. Itten,Rangers FC,,,2022-01-12,2022-06-10,false,1,api_football_team_257
@@ -3893,6 +3907,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 200746,J. Lundstram,Trabzonspor,,,2024-06-25,2025-07-31,false,1,api_football_team_998
 241673,B. Barišić,Rangers FC,,,2018-08-06,2024-06-25,false,1,api_football_team_257
 241673,B. Barišić,Trabzonspor,,,2024-06-25,,false,1,api_football_team_257
+244391,F. Sakala,Rangers FC,,,2021-07-01,2023-08-08,false,1,api_football_team_257
 213917,Fábio Cardoso,Rangers FC,,,2017-06-09,2018-07-30,false,1,api_football_team_257
 226793,M. Polster,Rangers FC,,,2019-01-30,2020-07-08,false,1,api_football_team_257
 207807,R. Fraser,Rangers FC,,,2025-07-01,2025-08-15,true,1,api_football_team_257
@@ -3953,9 +3968,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 189105,Volkan Şen,Trabzonspor,,,2017-09-08,2018-01-31,false,1,api_football_team_998
 166114,C. Kazim-Richards,Fenerbahce,,,2007-07-01,2011-01-05,false,1,api_football_team_611
 189595,Mehmet Ekici,Fenerbahce,,,2017-06-23,,false,1,api_football_team_998
-255475,André Clarindo dos Santos,Fenerbahce,,,2009-07-01,2011-08-31,false,1,api_football_team_611
 183574,M. Kruse,Fenerbahce,,,2019-07-01,2020-08-05,false,1,api_football_team_611
-204341,Luís Neto,Fenerbahce,,,2017-08-31,2018-07-01,true,1,api_football_team_611
 184344,L. Bonucci,Fenerbahce,,,2024-01-11,,false,1,api_football_team_611
 251873,Y. Demir,Fenerbahce,,,2025-07-01,,true,1,api_football_team_611
 252870,E. Demir,Fenerbahce,,,2025-07-01,2025-07-22,true,1,api_football_team_611
@@ -3969,6 +3982,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 185422,J. King,Fenerbahce,,,2022-07-13,2024-08-29,false,1,api_football_team_611
 205364,F. Novák,Fenerbahce,,,2020-08-06,,false,1,api_football_team_998
 227884,B. Osayi-Samuel,Fenerbahce,,,2021-01-27,2025-07-04,false,1,api_football_team_611
+207884,Willian Arão,Fenerbahce,,,2022-07-14,2023-08-17,false,1,api_football_team_611
 218066,M. Samatta,Fenerbahce,,,2023-07-01,2023-07-17,false,1,api_football_team_611
 199254,J. Galvão,Fenerbahce,,,2024-08-01,,false,1,api_football_team_611
 143121,J. Sosa,Fenerbahce,,,2020-08-21,,false,1,api_football_team_998
@@ -3982,6 +3996,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 235889,C. Ünder,Besiktas,,,2025-09-08,,true,1,api_football_team_549
 187800,M. Isla,Fenerbahce,,,2017-07-21,2020-08-25,false,1,api_football_team_611
 189930,İ. Köybaşı,Fenerbahce,,,2016-07-15,,false,1,api_football_team_549
+262411,Miguel Crespo,Fenerbahce,,,2024-06-28,2024-08-19,false,1,api_football_team_611
 184789,Á. Szalai,Fenerbahce,,,2021-01-17,2023-07-24,false,1,api_football_team_611
 216814,S. Uçan,Fenerbahce,,,2018-07-01,2018-08-17,false,1,api_football_team_611
 231240,E. Mor,Fenerbahce,,,2025-07-01,,true,1,api_football_team_611
@@ -4023,6 +4038,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 210372,R. Ghezzal,Besiktas,,,2021-08-12,2024-09-13,false,1,api_football_team_549
 202330,A. Diaby,Sporting CP,,,2020-08-01,,false,1,api_football_team_549
 178237,A. Demir,Besiktas,,,2025-07-01,2025-07-31,true,1,api_football_team_549
+188081,Alex Teixeira,Besiktas,,,2021-08-10,2022-07-28,false,1,api_football_team_549
 203775,L. Karius,Liverpool FC,,,2020-09-01,,false,1,api_football_team_549
 223689,W. Weghorst,Besiktas,,,2022-07-05,2023-01-13,true,1,api_football_team_549
 226777,C. Larin,Besiktas,,,2020-07-01,2022-07-04,false,1,api_football_team_549
@@ -4035,7 +4051,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 229167,M. Rashica,Besiktas,,,2023-08-16,,false,1,api_football_team_549
 242919,T. Sanuç,Besiktas,,,2022-09-08,2025-09-07,false,1,api_football_team_549
 206408,T. Boyd,Besiktas,,,2022-07-01,,false,1,api_football_team_549
-260183,Joaquim Manuel Sampaio Silva,Besiktas,,,2025-09-12,,true,1,api_football_team_549
 178237,A. Demir,Besiktas,,,2025-06-29,,true,1,api_football_team_549
 216860,V. Černý,Besiktas,,,2025-09-02,,false,1,api_football_team_549
 178029,Ö. Hurmacı,Trabzonspor,,,2014-01-16,2016-07-01,true,1,api_football_team_998
@@ -4144,7 +4159,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 193561,K. Leerdam,Inter Miami,,,2021-03-23,2022-01-06,false,1,api_football_team_9568
 51353,Kenny Miller,Inter Miami,,,2023-04-10,2024-01-31,false,1,api_football_team_9568
 242199,C. McVey,Inter Miami,,,2022-01-21,2024-02-01,false,1,api_football_team_9568
-267636,C. dos Santos,Inter Miami,,,2022-02-11,2025-01-31,false,1,api_football_team_9568
 232291,M. Rojas,Inter Miami,,,2024-04-23,2025-01-03,false,1,api_football_team_9568
 142750,L. González,Inter Miami,,,2020-07-06,2024-01-07,false,1,api_football_team_9568
 224330,N. Stefanelli,Inter Miami,,,2023-01-05,2024-01-31,false,1,api_football_team_9568
@@ -4164,7 +4178,7 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 218894,S. Fernández,LA Galaxy,,,2014-02-05,2015-01-09,false,1,api_football_team_1603
 210711,B. Rowe,LA Galaxy,,,2017-12-15,2019-02-22,false,1,api_football_team_1603
 202642,Felipe Martins,LA Galaxy,,,2018-03-02,2019-08-06,false,1,api_football_team_1603
-167967,Paulo Morais de Araújo Júnior,LA Galaxy,,,2013-01-15,,false,1,api_football_team_1603
+222709,Paulo Morais de Araújo Júnior,LA Galaxy,,,2013-01-15,,false,1,api_football_team_1603
 243056,A. Lewis,LA Galaxy,,,2015-01-01,2016-03-18,false,1,api_football_team_1603
 202282,S. Armstrong,LA Galaxy,,,2024-09-03,2025-01-31,false,1,api_football_team_1603
 201208,D. Henry,LA Galaxy,,,2018-06-01,2020-01-01,false,1,api_football_team_1603
@@ -4221,7 +4235,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 225409,Abdulrahman Al Shammari,Al Nassr,,,2015-07-01,2017-01-25,false,1,api_football_team_2939
 191263,Ahmed Mohammed Al Fraidi,Al Nassr,,,2014-07-01,2020-02-24,false,1,api_football_team_2939
 208928,Khaled Asiri Al Zealaiy,Al Nassr,,,2015-07-01,,true,1,api_football_team_2939
-229882,Elías Ricardo Figueroa Silva,Al Nassr,,,2013-07-01,,false,1,api_football_team_2939
 191409,Naif Ahmed Taib Hazazi,Al Nassr,,,2015-07-01,2017-07-01,false,1,api_football_team_2939
 239971,Saad Lagrou,Al Nassr,,,2017-07-14,2018-01-27,true,1,api_football_team_2939
 215971,Ali Nasser Al Khaibari,Al Nassr,,,2016-07-01,2017-07-09,false,1,api_football_team_2939
@@ -4271,8 +4284,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 162503,O. Gladkyi,Shakhtar Donetsk,,,2014-07-02,2016-07-01,false,1,api_football_team_550
 162503,O. Gladkyi,Dynamo Kyiv,,,2016-07-01,2017-09-15,false,1,api_football_team_572
 229526,Maksym Malyshev,Shakhtar Donetsk,,,2015-07-01,,false,1,api_football_team_550
-230316,Matuzalém Francelino da Silva,Shakhtar Donetsk,,,2004-08-01,2007-08-01,false,1,api_football_team_550
-229882,Elías Ricardo Figueroa Silva,Shakhtar Donetsk,,,2015-07-13,2017-03-01,false,1,api_football_team_550
 224812,S. Bolbat,Shakhtar Donetsk,,,2018-07-01,2021-08-20,false,1,api_football_team_550
 239717,O. Danchenko,Shakhtar Donetsk,,,2018-07-01,2019-06-15,false,1,api_football_team_550
 236345,A. Totovytskyi,Shakhtar Donetsk,,,2022-07-15,2025-07-31,false,1,api_football_team_550
@@ -4298,8 +4309,9 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 229527,S. Gryn,Shakhtar Donetsk,,,2015-07-01,2019-01-15,false,1,api_football_team_550
 239904,D. Khocholava,Shakhtar Donetsk,,,2017-07-01,2021-07-06,false,1,api_football_team_550
 239904,D. Khocholava,Copenhagen,,,2021-07-06,,false,1,api_football_team_400
-232310,Maurício Antônio,Shakhtar Donetsk,,,2019-02-19,2022-07-01,false,1,api_football_team_550
-232310,Maurício Antônio,Lazio,,,2022-07-01,,false,1,api_football_team_550
+188081,Alex Teixeira,Shakhtar Donetsk,,,2010-01-01,2016-02-05,false,1,api_football_team_550
+247377,Maurício Antônio,Shakhtar Donetsk,,,2019-02-19,2022-07-01,false,1,api_football_team_550
+247377,Maurício Antônio,Lazio,,,2022-07-01,,false,1,api_football_team_550
 222461,Douglas Costa,Shakhtar Donetsk,,,2010-01-01,2015-07-01,false,1,api_football_team_550
 222461,Douglas Costa,Bayern Munich,,,2015-07-01,,false,1,api_football_team_550
 213928,E. Sobol,Shakhtar Donetsk,,,2016-06-01,2019-07-04,false,1,api_football_team_550
@@ -4314,7 +4326,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 206413,T. Stepanenko,Shakhtar Donetsk,,,2010-07-02,2025-01-31,false,1,api_football_team_550
 247122,D. Sikan,Shakhtar Donetsk,,,2022-07-01,2025-01-22,false,1,api_football_team_550
 237055,O. Zubkov,Shakhtar Donetsk,,,2022-08-06,2025-02-03,false,1,api_football_team_550
-239881,Danilo Silva,Dynamo Kyiv,,,2010-03-01,,false,1,api_football_team_572
 206424,Mykola Morozyuk,Dynamo Kyiv,,,2015-07-01,2019-06-27,false,1,api_football_team_572
 188058,Artem Kravets,Dynamo Kyiv,,,2020-08-19,2020-09-22,false,1,api_football_team_572
 144622,Raffael Caetano de Araújo,Dynamo Kyiv,,,2012-07-27,2013-07-01,false,1,api_football_team_572
@@ -4371,7 +4382,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 199005,M. Ryan,Copenhagen,,,2022-08-09,2023-01-09,false,1,api_football_team_400
 225997,B. Verbič,Copenhagen,,,2015-07-01,2018-01-31,false,1,api_football_team_400
 225997,B. Verbič,Dynamo Kyiv,,,2018-01-31,,false,1,api_football_team_400
-247377,M. Santos,Copenhagen,,,2019-08-21,2021-02-07,false,1,api_football_team_400
 240988,D. Vavro,Copenhagen,,,2025-06-29,2025-06-30,true,1,api_football_team_400
 226583,S. Papagiannopoulos,Copenhagen,,,2018-07-01,2020-08-17,false,1,api_football_team_400
 207557,R. Olsen,Copenhagen,,,2016-07-01,2018-07-24,false,1,api_football_team_400
@@ -4383,7 +4393,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 189068,B. Dost,Club Brugge,,,2021-01-04,2022-07-01,false,1,api_football_team_569
 188157,L. Immers,Club Brugge,,,2017-01-07,2017-07-03,false,1,api_football_team_569
 194135,Leandro Pereira,Club Brugge,,,2015-08-31,2018-03-29,false,1,api_football_team_569
-259806,Flávio Silva,Club Brugge,,,2014-09-01,2015-06-01,true,1,api_football_team_569
 164878,L. Refaelov,Club Brugge,,,2011-07-01,2019-07-01,false,1,api_football_team_569
 212878,Nicolás Ignacio Castillo Mora,Club Brugge,,,2016-07-01,2017-01-01,false,1,api_football_team_569
 235202,I. Tomečak,Club Brugge,,,2018-01-08,2019-02-05,false,1,api_football_team_569

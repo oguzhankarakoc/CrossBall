@@ -22,3 +22,6 @@ id,name,team,nationality,position,start_date,end_date,is_loan,appearances,source
 241464,Declan Rice,Arsenal FC,GB,CDM,2023-07-15,2028-06-30,false,1,manual_patch_rice_arsenal
 231281,Mason Mount,Chelsea FC,GB,CAM,2019-07-01,2023-07-01,false,1,manual_patch_mount_chelsea
 231281,Mason Mount,Manchester United,GB,CAM,2023-07-05,2028-06-30,false,1,manual_patch_mount_manutd
+258580,Muhammed Kerem Aktürkoğlu,Galatasaray,TR,LM,2020-09-02,2024-07-15,false,1,manual_patch_kerem_gala
+258580,Muhammed Kerem Aktürkoğlu,Benfica,TR,LM,2024-07-15,2025-07-01,false,1,manual_patch_kerem_benfica
+258580,Muhammed Kerem Aktürkoğlu,Fenerbahce,TR,LM,2025-07-01,,false,1,manual_patch_kerem_fenerbahce

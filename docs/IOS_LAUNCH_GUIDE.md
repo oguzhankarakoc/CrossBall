@@ -6,7 +6,7 @@ Bu doküman, CrossBall’ı App Store’a göndermek için gereken tüm adımlar
 
 **Hedef kitle:** Geliştirici (Oğuzhan Karakoç)  
 **Son güncelleme:** Temmuz 2026  
-**CrossBall sürüm:** `1.0.0+1`
+**CrossBall sürüm:** `1.0.0+21` (App Store — Ready for Distribution / soft launch)
 
 **Semboller**
 
@@ -700,6 +700,7 @@ CrossBall ATT’yi zaten istiyor (`lib/core/ads/tracking_permission_service.dart
 
 - `NSUserTrackingUsageDescription` Info.plist’te var
 - AdMob init öncesi `requestTrackingPermissionIfNeeded()` çağrılıyor (`main.dart`)
+- `SKAdNetworkItems` Info.plist’te (Google + buyer list) — production fill için gerekli
 
 **App Store Connect Privacy:** Tracking için AdMob + ATT açıklaması tutarlı olmalı.
 
@@ -707,7 +708,18 @@ CrossBall ATT’yi zaten istiyor (`lib/core/ads/tracking_permission_service.dart
 
 App yayına alındıktan sonra:
 
-AdMob → App → **App settings** → **Link to store** → Apple App Store → CrossBall
+1. AdMob → App → **App settings** → **Link to store** → Apple App Store → CrossBall (`id6787542181`)
+2. **app-ads.txt** doğrulama (önerilir):
+
+```text
+google.com, pub-5852330455572459, DIRECT, f08c47fec0942fa0
+```
+
+- Dosya hostname **kökünde** olmalı: `https://oguzhankarakoc.github.io/app-ads.txt`  
+  (repo: [oguzhankarakoc.github.io](https://github.com/oguzhankarakoc/oguzhankarakoc.github.io); kopya: `docs/app-ads.txt`)
+- App Store **Marketing URL** sürüm sayfasında (`1.0.0` → Marketing URL). Yayındaki sürümde alan kilitli olabilir — yeni sürüm gerekir.
+- AdMob hostname’e bakar; Marketing URL `.../CrossBall/` olsa da kök `app-ads.txt` yeterlidir.
+- Doğrulama sonrası AdMob’da **Güncellemeleri kontrol edin** (crawl 1–24 saat sürebilir).
 
 ### 6.7 Test vs production
 

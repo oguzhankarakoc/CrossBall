@@ -129,3 +129,52 @@ class AppStatsSkeleton extends StatelessWidget {
     );
   }
 }
+
+/// 3×3 puzzle grid placeholder — prefer over a lone spinner on load.
+class AppPuzzleSkeleton extends StatelessWidget {
+  const AppPuzzleSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: Column(
+        children: [
+          const AppSkeletonBox(width: 160, height: 22),
+          const SizedBox(height: AppSpacing.lg),
+          Expanded(
+            child: Column(
+              children: [
+                for (var row = 0; row < 3; row++) ...[
+                  if (row > 0) const SizedBox(height: AppSpacing.sm),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        for (var col = 0; col < 3; col++) ...[
+                          if (col > 0) const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return AppSkeletonBox(
+                                  width: constraints.maxWidth,
+                                  height: constraints.maxHeight,
+                                  borderRadius: AppRadius.md,
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const AppSkeletonBox(width: double.infinity, height: 48),
+        ],
+      ),
+    );
+  }
+}

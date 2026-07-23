@@ -22,6 +22,7 @@ from .career_patches import (
     load_all_career_patches,
     load_career_patches,
 )
+from .career_truth_pass import run_career_truth_pass
 from .fetch_kaggle import fetch_kaggle_dataset
 from .kaggle_transform import transform_kaggle_files, write_pipeline_csv
 from .load import (
@@ -637,6 +638,33 @@ def main():
     )
     enrich_parser.add_argument('--clubs', type=Path, default=Path('data/raw/clubs.csv'))
 
+    truth_parser = sub.add_parser(
+        'career-truth-pass',
+        help='One-shot reconcile: curated+API patches → enriched deltas + truth report (no scrape)',
+    )
+    truth_parser.add_argument('--players-csv', type=Path, default=Path('data/raw/players.csv'))
+    truth_parser.add_argument(
+        '--output',
+        type=Path,
+        default=Path('data/raw/patches/enriched_careers.csv'),
+    )
+    truth_parser.add_argument(
+        '--gap-report',
+        type=Path,
+        default=Path('../reports/career_gaps.csv'),
+    )
+    truth_parser.add_argument(
+        '--truth-report',
+        type=Path,
+        default=Path('../reports/career_truth_pass.csv'),
+    )
+    truth_parser.add_argument(
+        '--load',
+        action='store_true',
+        help='After truth pass, apply enriched deltas to PostgreSQL',
+    )
+    truth_parser.add_argument('--clubs', type=Path, default=Path('data/raw/clubs.csv'))
+
     args = parser.parse_args()
 
     if args.command == 'run':
@@ -697,6 +725,22 @@ def main():
             api_limit=api_limit,
             use_cache=not args.no_cache,
             cache_only=args.cache_only,
+        )
+        for key, value in summary.items():
+            print(f'  {key}: {value}')
+        if args.load:
+            cmd_apply_patches(
+                DEFAULT_PATCHES_PATH,
+                args.clubs,
+                light=False,
+                enriched_only=True,
+            )
+    elif args.command == 'career-truth-pass':
+        summary = run_career_truth_pass(
+            players_csv=args.players_csv,
+            enriched_output=args.output,
+            gap_report_output=args.gap_report,
+            truth_report_output=args.truth_report,
         )
         for key, value in summary.items():
             print(f'  {key}: {value}')

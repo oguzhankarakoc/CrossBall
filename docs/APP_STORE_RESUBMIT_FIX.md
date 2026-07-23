@@ -6,7 +6,9 @@
 |------|-------|--------|
 | Jul 14, 2026 | 19 | Rejected — **2.1(b)** + **4.1(a)** |
 | Jul 16, 2026 | 20 | Rejected — **2.1(b) only** (4.1a cleared) |
-| Next | **21** | Must include IAP in the **same submission** |
+| Jul 22, 2026 | **21** | Submitted with IAP in **Items** (app + `crossball_premium`) → **Ready for Distribution** / live |
+
+Apple ID: `6787542181` · Store URL: `https://apps.apple.com/app/id6787542181`
 
 ---
 

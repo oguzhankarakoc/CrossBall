@@ -1294,7 +1294,12 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     String? adToken;
     if (!isPremium) {
       final rewarded = await _ref.read(adsServiceProvider).showRewarded();
-      if (!rewarded) return null;
+      if (!rewarded) {
+        throw const HintRequestException(
+          'Ad unavailable',
+          errorCode: 'ad_unavailable',
+        );
+      }
       adToken = _uuid.v4();
       if (AppConfig.isSupabaseConfigured) {
         final granted = await _repo.grantHintAdToken(
