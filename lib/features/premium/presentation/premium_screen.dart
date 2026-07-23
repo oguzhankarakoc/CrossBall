@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../../shared/components/app_screen_body.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 import '../../auth/data/auth_remote_data_source.dart';
@@ -20,6 +21,7 @@ class PremiumScreen extends ConsumerStatefulWidget {
 
 class _PremiumScreenState extends ConsumerState<PremiumScreen> {
   bool _loading = false;
+  bool _restoring = false;
   String? _priceLabel;
 
   @override
@@ -44,7 +46,8 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       final profile = await ref.read(userProfileProvider.future);
-      final success = await ref.read(premiumServiceProvider).purchasePremium(profile.userUuid);
+      final success =
+          await ref.read(premiumServiceProvider).purchasePremium(profile.userUuid);
       if (!mounted) return;
       if (success) {
         ref.invalidate(userProfileProvider);
@@ -87,77 +90,138 @@ class _PremiumScreenState extends ConsumerState<PremiumScreen> {
     }
   }
 
+  Future<void> _restore() async {
+    setState(() => _restoring = true);
+    try {
+      final profile = await ref.read(userProfileProvider.future);
+      await ref.read(premiumServiceProvider).restorePurchases(profile.userUuid);
+      ref.invalidate(userProfileProvider);
+    } finally {
+      if (mounted) setState(() => _restoring = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
+    final theme = Theme.of(context);
     final isPremium = ref.watch(isPremiumProvider);
+
+    final features = <({IconData icon, String text})>[
+      (icon: Icons.block_rounded, text: l10n.premiumFeatureNoAds),
+      (icon: Icons.all_inclusive_rounded, text: l10n.premiumFeaturePractice),
+      (icon: Icons.grid_4x4_rounded, text: l10n.premiumFeatureGrid),
+      (icon: Icons.analytics_outlined, text: l10n.premiumFeatureStats),
+      (icon: Icons.palette_outlined, text: l10n.premiumFeatureThemes),
+    ];
 
     return Scaffold(
       appBar: CrossBallAppBar(title: l10n.premium),
-      body: PitchBackground(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppSpacing.lg),
-            child: Column(
-              children: [
-                Icon(Icons.workspace_premium, size: 72, color: colors.accent),
-                const SizedBox(height: AppSpacing.lg),
+      body: AppScreenBody(
+        scrollable: true,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.lg,
+          AppSpacing.xl,
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.workspace_premium_rounded,
+              size: 72,
+              color: colors.accent,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l10n.premiumEyebrow.toUpperCase(),
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: colors.lime,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.7,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              l10n.premiumTitle,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              l10n.premiumDesc,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: colors.textSecondary,
+                height: 1.4,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            for (final feature in features)
+              _PremiumFeature(icon: feature.icon, text: feature.text),
+            const SizedBox(height: AppSpacing.lg),
+            Text(
+              l10n.premiumOnceNote,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colors.textSecondary,
+                height: 1.35,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            if (isPremium)
+              Text(
+                l10n.premiumActive,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: colors.accent,
+                  fontWeight: FontWeight.w800,
+                ),
+              )
+            else ...[
+              if (_priceLabel != null) ...[
                 Text(
-                  l10n.premiumTitle,
-                  style: Theme.of(context).textTheme.headlineMedium,
-                  textAlign: TextAlign.center,
+                  _priceLabel!,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: colors.accent,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.md),
-                Text(
-                  l10n.premiumDesc,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                _PremiumFeature(icon: Icons.all_inclusive, text: l10n.premiumFeaturePractice),
-                _PremiumFeature(icon: Icons.analytics_outlined, text: l10n.premiumFeatureStats),
-                _PremiumFeature(icon: Icons.palette_outlined, text: l10n.premiumFeatureThemes),
-                _PremiumFeature(icon: Icons.block, text: l10n.premiumFeatureNoAds),
-                const SizedBox(height: AppSpacing.xxl),
-                if (isPremium)
-                  Text(l10n.premiumActive, style: TextStyle(color: colors.accent))
-                else ...[
-                  if (_priceLabel != null) ...[
-                    Text(
-                      _priceLabel!,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            color: colors.accent,
-                            fontWeight: FontWeight.w800,
-                          ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                  ],
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: _loading ? null : _purchase,
-                      child: _loading
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : Text(l10n.upgradePremium),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      final profile = await ref.read(userProfileProvider.future);
-                      await ref.read(premiumServiceProvider).restorePurchases(profile.userUuid);
-                      ref.invalidate(userProfileProvider);
-                    },
-                    child: Text(l10n.restorePurchases),
-                  ),
-                ],
               ],
-            ),
-          ),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: _loading ? null : _purchase,
+                  child: _loading
+                      ? SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        )
+                      : Text(l10n.upgradePremium),
+                ),
+              ),
+              TextButton(
+                onPressed: _restoring ? null : _restore,
+                child: _restoring
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: colors.textSecondary,
+                        ),
+                      )
+                    : Text(l10n.restorePurchases),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -173,14 +237,20 @@ class _PremiumFeature extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.cb;
+    final theme = Theme.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
-          Icon(icon, color: colors.primary, size: 20),
+          Icon(icon, color: colors.primary, size: 22),
           const SizedBox(width: AppSpacing.md),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Text(
+              text,
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.3),
+            ),
+          ),
         ],
       ),
     );

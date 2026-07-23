@@ -119,8 +119,18 @@
   "copied": "Link kopyalandı!",
   "language": "Dil",
   "premiumTitle": "CrossBall Premium",
-  "premiumDesc": "Günde 10 reklamsız antrenman, gelişmiş istatistikler, reklamsız.",
-  "upgradePremium": "Premium'a Yükselt",
+  "premiumEyebrow": "Tek seferlik",
+  "premiumDesc": "Reklamsız antrenman, özel temalar ve gelişmiş istatistikler — bu Apple ID’de kalıcı.",
+  "premiumOnceNote": "Tek seferlik satın alma. Abonelik yok. Aynı Apple ID ile istediğin zaman geri yükle.",
+  "premiumUnlockForPrice": "{price} karşılığında aç",
+  "@premiumUnlockForPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "upgradePremium": "Premium’ı aç",
   "searchPlayer": "Oyuncu ara...",
   "recentPicks": "Son seçimler",
   "popularPicks": "Popüler seçimler",
@@ -218,10 +228,10 @@
     }
   },
   "premiumFeatureGrid": "4×4 premium ızgaralar",
-  "premiumFeaturePractice": "Günde 10 reklamsız antrenman",
+  "premiumFeaturePractice": "Sınırsız antrenman — oturumlar arası reklam yok",
   "premiumFeatureStats": "Gelişmiş istatistikler",
-  "premiumFeatureThemes": "Özel temalar",
-  "premiumFeatureNoAds": "Reklamsız",
+  "premiumFeatureThemes": "Özel temalar (Stadium Gold & Classic)",
+  "premiumFeatureNoAds": "Banner ve ödüllü reklam yok",
   "premiumActivated": "Premium aktif!",
   "premiumActive": "Premium aktif",
   "premiumPurchaseFailed": "Premium etkinleştirilemedi. Lütfen tekrar deneyin.",

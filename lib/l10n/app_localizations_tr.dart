@@ -296,11 +296,23 @@ class AppLocalizationsTr extends AppLocalizations {
   String get premiumTitle => 'CrossBall Premium';
 
   @override
-  String get premiumDesc =>
-      'Günde 10 reklamsız antrenman, gelişmiş istatistikler, reklamsız.';
+  String get premiumEyebrow => 'Tek seferlik';
 
   @override
-  String get upgradePremium => 'Premium\'a Yükselt';
+  String get premiumDesc =>
+      'Reklamsız antrenman, özel temalar ve gelişmiş istatistikler — bu Apple ID’de kalıcı.';
+
+  @override
+  String get premiumOnceNote =>
+      'Tek seferlik satın alma. Abonelik yok. Aynı Apple ID ile istediğin zaman geri yükle.';
+
+  @override
+  String premiumUnlockForPrice(String price) {
+    return '$price karşılığında aç';
+  }
+
+  @override
+  String get upgradePremium => 'Premium’ı aç';
 
   @override
   String get searchPlayer => 'Oyuncu ara...';
@@ -533,16 +545,17 @@ class AppLocalizationsTr extends AppLocalizations {
   String get premiumFeatureGrid => '4×4 premium ızgaralar';
 
   @override
-  String get premiumFeaturePractice => 'Günde 10 reklamsız antrenman';
+  String get premiumFeaturePractice =>
+      'Sınırsız antrenman — oturumlar arası reklam yok';
 
   @override
   String get premiumFeatureStats => 'Gelişmiş istatistikler';
 
   @override
-  String get premiumFeatureThemes => 'Özel temalar';
+  String get premiumFeatureThemes => 'Özel temalar (Stadium Gold & Classic)';
 
   @override
-  String get premiumFeatureNoAds => 'Reklamsız';
+  String get premiumFeatureNoAds => 'Banner ve ödüllü reklam yok';
 
   @override
   String get premiumActivated => 'Premium aktif!';

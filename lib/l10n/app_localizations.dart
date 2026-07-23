@@ -610,16 +610,34 @@ abstract class AppLocalizations {
   /// **'CrossBall Premium'**
   String get premiumTitle;
 
+  /// No description provided for @premiumEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time unlock'**
+  String get premiumEyebrow;
+
   /// No description provided for @premiumDesc.
   ///
   /// In en, this message translates to:
-  /// **'10 ad-free training sessions per day, advanced stats, no ads.'**
+  /// **'Train without ads, unlock exclusive themes and advanced stats — forever on this Apple ID.'**
   String get premiumDesc;
+
+  /// No description provided for @premiumOnceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time purchase. No subscription. Restore anytime on this Apple ID.'**
+  String get premiumOnceNote;
+
+  /// No description provided for @premiumUnlockForPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock for {price}'**
+  String premiumUnlockForPrice(String price);
 
   /// No description provided for @upgradePremium.
   ///
   /// In en, this message translates to:
-  /// **'Upgrade to Premium'**
+  /// **'Unlock Premium'**
   String get upgradePremium;
 
   /// No description provided for @searchPlayer.
@@ -1045,7 +1063,7 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeaturePractice.
   ///
   /// In en, this message translates to:
-  /// **'10 ad-free training sessions per day'**
+  /// **'Unlimited training — no ads between sessions'**
   String get premiumFeaturePractice;
 
   /// No description provided for @premiumFeatureStats.
@@ -1057,13 +1075,13 @@ abstract class AppLocalizations {
   /// No description provided for @premiumFeatureThemes.
   ///
   /// In en, this message translates to:
-  /// **'Exclusive themes'**
+  /// **'Exclusive themes (Stadium Gold & Classic)'**
   String get premiumFeatureThemes;
 
   /// No description provided for @premiumFeatureNoAds.
   ///
   /// In en, this message translates to:
-  /// **'No ads'**
+  /// **'No banners or rewarded ads'**
   String get premiumFeatureNoAds;
 
   /// No description provided for @premiumActivated.

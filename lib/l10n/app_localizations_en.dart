@@ -296,11 +296,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumTitle => 'CrossBall Premium';
 
   @override
-  String get premiumDesc =>
-      '10 ad-free training sessions per day, advanced stats, no ads.';
+  String get premiumEyebrow => 'One-time unlock';
 
   @override
-  String get upgradePremium => 'Upgrade to Premium';
+  String get premiumDesc =>
+      'Train without ads, unlock exclusive themes and advanced stats — forever on this Apple ID.';
+
+  @override
+  String get premiumOnceNote =>
+      'One-time purchase. No subscription. Restore anytime on this Apple ID.';
+
+  @override
+  String premiumUnlockForPrice(String price) {
+    return 'Unlock for $price';
+  }
+
+  @override
+  String get upgradePremium => 'Unlock Premium';
 
   @override
   String get searchPlayer => 'Search player...';
@@ -532,16 +544,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get premiumFeatureGrid => '4×4 premium grids';
 
   @override
-  String get premiumFeaturePractice => '10 ad-free training sessions per day';
+  String get premiumFeaturePractice =>
+      'Unlimited training — no ads between sessions';
 
   @override
   String get premiumFeatureStats => 'Advanced stats';
 
   @override
-  String get premiumFeatureThemes => 'Exclusive themes';
+  String get premiumFeatureThemes =>
+      'Exclusive themes (Stadium Gold & Classic)';
 
   @override
-  String get premiumFeatureNoAds => 'No ads';
+  String get premiumFeatureNoAds => 'No banners or rewarded ads';
 
   @override
   String get premiumActivated => 'Premium activated!';

@@ -119,8 +119,18 @@
   "copied": "Link kopiert!",
   "language": "Sprache",
   "premiumTitle": "CrossBall Premium",
-  "premiumDesc": "10 werbefreie Trainingseinheiten pro Tag, erweiterte Stats, keine Werbung.",
-  "upgradePremium": "Premium upgraden",
+  "premiumEyebrow": "Einmaliger Kauf",
+  "premiumDesc": "Werbefrei trainieren, exklusive Themes und erweiterte Stats — dauerhaft auf dieser Apple-ID.",
+  "premiumOnceNote": "Einmaliger Kauf. Kein Abo. Jederzeit auf dieser Apple-ID wiederherstellen.",
+  "premiumUnlockForPrice": "Freischalten für {price}",
+  "@premiumUnlockForPrice": {
+    "placeholders": {
+      "price": {
+        "type": "String"
+      }
+    }
+  },
+  "upgradePremium": "Premium freischalten",
   "searchPlayer": "Spieler suchen...",
   "recentPicks": "Letzte Tipps",
   "popularPicks": "Beliebte Tipps",
@@ -218,10 +228,10 @@
     }
   },
   "premiumFeatureGrid": "4×4 Premium-Gitter",
-  "premiumFeaturePractice": "10 werbefreie Trainingseinheiten pro Tag",
+  "premiumFeaturePractice": "Unbegrenztes Training — keine Ads zwischen Sessions",
   "premiumFeatureStats": "Erweiterte Statistiken",
-  "premiumFeatureThemes": "Exklusive Themes",
-  "premiumFeatureNoAds": "Keine Werbung",
+  "premiumFeatureThemes": "Exklusive Themes (Stadium Gold & Classic)",
+  "premiumFeatureNoAds": "Keine Banner- oder Rewarded-Ads",
   "premiumActivated": "Premium aktiviert!",
   "premiumActive": "Premium aktiv",
   "premiumPurchaseFailed": "Premium konnte nicht aktiviert werden. Bitte erneut versuchen.",
