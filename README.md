@@ -4,7 +4,7 @@
 
 Production-grade football intersection puzzle app for iOS and Android. Name players who played for **both** clubs at each grid intersection.
 
-**Status (soft launch):** iOS `1.0.0` (build **22** — ads fix + first-puzzle coach tip; upload after merge to `main`). AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
+**Status (soft launch):** iOS `1.0.1` (build **23** — ads fix + first-puzzle coach; `1.0.0` train is closed). AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
 
 ## Stack
 
