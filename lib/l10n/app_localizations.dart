@@ -1582,11 +1582,41 @@ abstract class AppLocalizations {
   /// **'All players placed — nice work!'**
   String get matchGridTrayEmpty;
 
+  /// No description provided for @matchGridTrayEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your score is locked in on the result screen.'**
+  String get matchGridTrayEmptySubtitle;
+
   /// No description provided for @matchGridBankError.
   ///
   /// In en, this message translates to:
   /// **'Couldn\'t load Match Grid players. Check your connection and retry.'**
   String get matchGridBankError;
+
+  /// No description provided for @matchGridResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid complete'**
+  String get matchGridResultTitle;
+
+  /// No description provided for @matchGridResultPerfectDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Every intersection locked — clean tray work.'**
+  String get matchGridResultPerfectDesc;
+
+  /// No description provided for @matchGridResultPartialDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended with cells still open — placed players still count.'**
+  String get matchGridResultPartialDesc;
+
+  /// No description provided for @matchGridPlacedStat.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed'**
+  String get matchGridPlacedStat;
 
   /// No description provided for @practiceUnlimitedHint.
   ///

@@ -20,7 +20,8 @@ class SearchApiService {
         'limit': limit.toString(),
       };
       // Always send cell clubs so clubs_preview can prioritize the puzzle pair.
-      // competitive=1 keeps is_cell_relevant off (no ranking / badge spoilers).
+      // competitive=1 suppresses relevance ranking boost only; green badge still
+      // comes from is_cell_relevant when the player validates for the cell.
       if (context?.rowClubId != null) {
         params['row_club_id'] = context!.rowClubId!;
       }

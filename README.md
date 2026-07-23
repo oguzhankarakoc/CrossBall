@@ -4,7 +4,7 @@
 
 Production-grade football intersection puzzle app for iOS and Android. Name players who played for **both** clubs at each grid intersection.
 
-**Status (soft launch):** iOS `1.0.1` (build **23** — ads fix + first-puzzle coach; `1.0.0` train is closed). AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
+**Status (soft launch):** iOS marketing train **`1.0.2`** (build **24** — Match Grid + app icon refresh + search relevance + faster puzzle open). Prior soft-launch builds: `1.0.1` (+23 ads/coach), `1.0.0` (+22) closed. AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
 
 ## Stack
 
@@ -61,6 +61,7 @@ supabase functions deploy challenge-create challenge-get challenge-complete
 supabase functions deploy sync-user stats verify-premium register-push-token
 supabase functions deploy club-mastery season consume-hint-taste
 supabase functions deploy activity-feed player-fact tournament career-timeline
+supabase functions deploy match-grid-bank
 ```
 
 See [Supabase Setup](supabase/README.md), [Security model](supabase/SECURITY.md), and [Data Pipeline](data_pipeline/README.md) for details.
@@ -89,9 +90,11 @@ test/               # unit + widget tests (60+ tests)
 |------|------|--------|
 | Daily Challenge | 3×3 | Free |
 | Friend Challenge | 3×3 | Free |
-| Practice | 3×3 | Free (server quota + ad gate) |
+| Practice (Classic) | 3×3 | Free (unlimited + rewarded ad per session) |
 | Practice | 4×4 | Premium |
-| Timeline | Career years | Premium feature flag |
+| Quick Grid | 3×3 timed pick | Free (training ad gate) |
+| Match Grid | 3×3 drag tray | Free (training ad gate) — see [MATCH_GRID.md](docs/MATCH_GRID.md) |
+| Timeline | Career years | Feature flag |
 
 ## Original Club Identity System
 
@@ -129,7 +132,7 @@ All themes use brightness-aware typography (headline/title styles adapt for cont
 - [Supabase Setup](supabase/README.md) — migrations, edge functions, deploy
 - [Data Pipeline](data_pipeline/README.md) — Kaggle ETL, API-Football sync, career enrichment / truth pass
 - [Career Truth Pass](docs/CAREER_TRUTH_PASS.md) — soft-launch career reconcile + loading UX
-- [Match Grid](docs/MATCH_GRID.md) — drag-and-drop practice mode (in progress)
+- [Match Grid](docs/MATCH_GRID.md) — drag-and-drop practice mode (shipped on `1.0.2` train)
 - [iOS Launch Guide](docs/IOS_LAUNCH_GUIDE.md) — App Store Connect, AdMob, ATT, push
 - [App Store Resubmit](docs/APP_STORE_RESUBMIT_FIX.md) — IAP in submission (2.1b) notes
 

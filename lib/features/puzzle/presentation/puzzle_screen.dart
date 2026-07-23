@@ -467,27 +467,23 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                               ? const AppPuzzleSkeleton()
                                               : _matchBankError != null
                                                   ? Center(
-                                                      child: Column(
-                                                        mainAxisSize: MainAxisSize.min,
-                                                        children: [
-                                                          Text(
-                                                            l10n.matchGridBankError,
-                                                            textAlign: TextAlign.center,
-                                                          ),
-                                                          const SizedBox(height: AppSpacing.md),
-                                                          FilledButton(
-                                                            onPressed: () {
-                                                              final id = game.puzzle?.id;
-                                                              if (id != null) {
-                                                                _matchBankPuzzleId = null;
-                                                                unawaited(
-                                                                  _ensureMatchGridBank(id),
-                                                                );
-                                                              }
-                                                            },
-                                                            child: Text(l10n.retry),
-                                                          ),
-                                                        ],
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.all(
+                                                          AppSpacing.lg,
+                                                        ),
+                                                        child: CrossBallErrorPanel(
+                                                          message: l10n.matchGridBankError,
+                                                          icon: Icons.wifi_off_rounded,
+                                                          onRetry: () {
+                                                            final id = game.puzzle?.id;
+                                                            if (id != null) {
+                                                              _matchBankPuzzleId = null;
+                                                              unawaited(
+                                                                _ensureMatchGridBank(id),
+                                                              );
+                                                            }
+                                                          },
+                                                        ),
                                                       ),
                                                     )
                                                   : MatchGridPlayfield(
@@ -620,15 +616,21 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     final limit = session.dailyLimit;
     final canPlayMore = remaining > 0;
     final needsAd = session.needsRewardedAdForNextSession && canPlayMore;
+    final isMatchGrid = widget.params.mode == PuzzleMode.matchGrid;
+    final perfected = game.totalCells > 0 && game.solvedCount >= game.totalCells;
 
     return PuzzleResultScreen(
-      title: l10n.practiceResultTitle,
+      title: isMatchGrid ? l10n.matchGridResultTitle : l10n.practiceResultTitle,
       score: game.totalScore,
       mistakes: game.mistakes,
       hintsUsed: game.hintsUsed,
-      subtitle: game.finishedEarly
-          ? l10n.practiceResultEarlyDesc
-          : l10n.practiceCompleteDesc,
+      subtitle: isMatchGrid
+          ? (perfected
+              ? l10n.matchGridResultPerfectDesc
+              : l10n.matchGridResultPartialDesc)
+          : (game.finishedEarly
+              ? l10n.practiceResultEarlyDesc
+              : l10n.practiceCompleteDesc),
       remainingSessions: remaining,
       sessionsUsed: session.completedToday,
       sessionsLimit: limit,
@@ -636,6 +638,10 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       newSessionRequiresAd: needsAd,
       onNewSession: canPlayMore ? () => _startNextPracticeSession(needsAd: needsAd) : null,
       onHome: () => context.go(AppRoutes.home),
+      showHintsStat: !isMatchGrid,
+      altStatLabel: isMatchGrid ? l10n.matchGridPlacedStat : null,
+      altStatValue:
+          isMatchGrid ? '${game.solvedCount}/${game.totalCells}' : null,
     );
   }
 

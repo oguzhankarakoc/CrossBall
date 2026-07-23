@@ -842,8 +842,26 @@ class AppLocalizationsDe extends AppLocalizations {
   String get matchGridTrayEmpty => 'Alle Spieler platziert — stark!';
 
   @override
+  String get matchGridTrayEmptySubtitle =>
+      'Dein Score ist auf dem Ergebnisbildschirm gesichert.';
+
+  @override
   String get matchGridBankError =>
       'Match-Grid-Spieler konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.';
+
+  @override
+  String get matchGridResultTitle => 'Match Grid abgeschlossen';
+
+  @override
+  String get matchGridResultPerfectDesc =>
+      'Jede Schnittstelle sitzt — saubere Ablage.';
+
+  @override
+  String get matchGridResultPartialDesc =>
+      'Zeit vorbei oder früh beendet — platzierte Spieler zählen trotzdem.';
+
+  @override
+  String get matchGridPlacedStat => 'Platziert';
 
   @override
   String get practiceUnlimitedHint =>

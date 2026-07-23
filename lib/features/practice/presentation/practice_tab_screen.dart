@@ -12,11 +12,26 @@ import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
 /// Practice tab — launches training sessions (shell branch 1).
-class PracticeTabScreen extends ConsumerWidget {
+class PracticeTabScreen extends ConsumerStatefulWidget {
   const PracticeTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PracticeTabScreen> createState() => _PracticeTabScreenState();
+}
+
+class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Prefetch quota while the Practice tab is visible so mode opens skip a round-trip.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(practiceSessionProvider.notifier).syncForCurrentUser();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
     final session = ref.watch(practiceSessionProvider);

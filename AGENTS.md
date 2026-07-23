@@ -173,6 +173,15 @@ flutter analyze
 flutter test
 ```
 
+Match Grid / practice quota (when shipping that train):
+
+```bash
+./scripts/run_migrations.sh 054
+supabase functions deploy match-grid-bank
+```
+
+See `docs/MATCH_GRID.md` for mode rules (drag tray, 120s, bounce on wrong, unlimited practice + ad gate).
+
 ## Environment Variables
 
 | Key | Purpose |

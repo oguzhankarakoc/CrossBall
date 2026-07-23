@@ -42,7 +42,10 @@ String _extractApiErrorField(Object? errorField) {
   return errorField.toString();
 }
 
-PuzzleFetchException _dailyFetchExceptionFromResponse(int statusCode, String body) {
+PuzzleFetchException _dailyFetchExceptionFromResponse(
+  int statusCode,
+  String body,
+) {
   String detail = '';
   String? errorCode;
   int? retryAfter;
@@ -73,8 +76,8 @@ PuzzleFetchException _dailyFetchExceptionFromResponse(int statusCode, String bod
 
 class PuzzleApiService {
   PuzzleApiService({SupabaseClient? client, ApiHttpClient? httpClient})
-      : _client = client,
-        _api = httpClient ?? ApiHttpClient();
+    : _client = client,
+      _api = httpClient ?? ApiHttpClient();
 
   final SupabaseClient? _client;
   final ApiHttpClient _api;
@@ -105,7 +108,9 @@ class PuzzleApiService {
             .timeout(
               const Duration(seconds: 30),
               onTimeout: () {
-                throw const PuzzleFetchException('Daily puzzle request timed out after 30s');
+                throw const PuzzleFetchException(
+                  'Daily puzzle request timed out after 30s',
+                );
               },
             );
         stopwatch.stop();
@@ -129,7 +134,10 @@ class PuzzleApiService {
           return decoded;
         }
 
-        throw _dailyFetchExceptionFromResponse(response.statusCode, response.body);
+        throw _dailyFetchExceptionFromResponse(
+          response.statusCode,
+          response.body,
+        );
       } on PuzzleFetchException catch (e, st) {
         cbDebugError('Daily', 'PuzzleFetchException', e, st);
         rethrow;
@@ -145,7 +153,10 @@ class PuzzleApiService {
       }
     }
 
-    cbDebug('Daily', 'using demo puzzle (Supabase not configured or no client)');
+    cbDebug(
+      'Daily',
+      'using demo puzzle (Supabase not configured or no client)',
+    );
     return _demoPuzzle();
   }
 
@@ -185,7 +196,10 @@ class PuzzleApiService {
   Future<Map<String, dynamic>> fetchPuzzleById(String puzzleId) async {
     if (_client != null && AppConfig.isSupabaseConfigured) {
       try {
-        final response = await _api.getRaw('puzzle-by-id', query: {'id': puzzleId});
+        final response = await _api.getRaw(
+          'puzzle-by-id',
+          query: {'id': puzzleId},
+        );
         if (response.statusCode == 200) {
           return response.jsonMap ?? <String, dynamic>{};
         }
@@ -240,7 +254,7 @@ class PuzzleApiService {
             'player_id': playerId,
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
-            if (responseTimeMs != null) 'response_time_ms': responseTimeMs,
+            'response_time_ms': ?responseTimeMs,
           },
         );
         cbDebug('Session', 'validate-answer response', {
@@ -301,7 +315,9 @@ class PuzzleApiService {
           .timeout(
             const Duration(seconds: 20),
             onTimeout: () {
-              throw const PuzzleFetchException('start-session timed out after 20s');
+              throw const PuzzleFetchException(
+                'start-session timed out after 20s',
+              );
             },
           );
       stopwatch.stop();
@@ -331,7 +347,10 @@ class PuzzleApiService {
           });
           return result;
         }
-        cbDebug('Session', 'startSession missing session_id/started_at in 200 body');
+        cbDebug(
+          'Session',
+          'startSession missing session_id/started_at in 200 body',
+        );
       }
 
       String detail = '';
@@ -372,23 +391,22 @@ class PuzzleApiService {
     String accent = '#FFD700',
     String iconType = 'abstract_shield',
     String gradient = 'vertical',
-  }) =>
-      {
-        'id': id,
-        'name': name,
-        'slug': slug,
-        'country_code': countryCode,
-        'display_name': displayName ?? name,
-        'short_name': shortName ?? name,
-        'short_code': initials,
-        'league_name': leagueName,
-        'badge_primary_color': primary,
-        'badge_secondary_color': secondary,
-        'badge_accent_color': accent,
-        'badge_initials': initials,
-        'badge_icon_type': iconType,
-        'badge_gradient_style': gradient,
-      };
+  }) => {
+    'id': id,
+    'name': name,
+    'slug': slug,
+    'country_code': countryCode,
+    'display_name': displayName ?? name,
+    'short_name': shortName ?? name,
+    'short_code': initials,
+    'league_name': leagueName,
+    'badge_primary_color': primary,
+    'badge_secondary_color': secondary,
+    'badge_accent_color': accent,
+    'badge_initials': initials,
+    'badge_icon_type': iconType,
+    'badge_gradient_style': gradient,
+  };
 
   Future<Map<String, dynamic>> fetchPracticePuzzle({
     required int gridSize,
@@ -452,7 +470,10 @@ class PuzzleApiService {
         if (body != null) {
           detail = body['error']?.toString() ?? '';
         }
-        practiceDebug('HTTP non-200', {'detail': detail, 'status': response.statusCode});
+        practiceDebug('HTTP non-200', {
+          'detail': detail,
+          'status': response.statusCode,
+        });
         throw PuzzleFetchException(
           detail.isNotEmpty
               ? 'Practice puzzle unavailable: $detail'
@@ -479,24 +500,88 @@ class PuzzleApiService {
 
   Map<String, dynamic> _demoPuzzle() {
     final clubs = [
-      _clubBadge('barcelona', 'FC Barcelona', 'barcelona', 'ES', '#A50044', '#004D98', 'BAR',
-          displayName: 'FC Barcelona', shortName: 'Barcelona', leagueName: 'La Liga',
-          iconType: 'abstract_stripes'),
-      _clubBadge('chelsea', 'Chelsea FC', 'chelsea', 'GB', '#034694', '#FFFFFF', 'CHE',
-          displayName: 'Chelsea FC', shortName: 'Chelsea', leagueName: 'Premier League',
-          iconType: 'abstract_lion', gradient: 'metallic'),
-      _clubBadge('real-madrid', 'Real Madrid', 'real-madrid', 'ES', '#F5F5F5', '#FEBE10', 'RMA',
-          displayName: 'Real Madrid CF', shortName: 'Real Madrid', leagueName: 'La Liga',
-          accent: '#C0C0C0', iconType: 'abstract_crown', gradient: 'metallic'),
-      _clubBadge('man-utd', 'Manchester United', 'manchester-united', 'GB', '#DA291C', '#FBE122', 'MUN',
-          displayName: 'Manchester United', shortName: 'Man United', leagueName: 'Premier League',
-          iconType: 'abstract_orb'),
-      _clubBadge('bayern-munich', 'Bayern Munich', 'bayern-munich', 'DE', '#DC052D', '#0066B2', 'BAY',
-          displayName: 'FC Bayern Munich', shortName: 'Bayern', leagueName: 'Bundesliga',
-          iconType: 'abstract_diamond'),
-      _clubBadge('juventus', 'Juventus', 'juventus', 'IT', '#000000', '#FFFFFF', 'JUV',
-          displayName: 'Juventus FC', shortName: 'Juventus', leagueName: 'Serie A',
-          iconType: 'abstract_stripes', gradient: 'metallic'),
+      _clubBadge(
+        'barcelona',
+        'FC Barcelona',
+        'barcelona',
+        'ES',
+        '#A50044',
+        '#004D98',
+        'BAR',
+        displayName: 'FC Barcelona',
+        shortName: 'Barcelona',
+        leagueName: 'La Liga',
+        iconType: 'abstract_stripes',
+      ),
+      _clubBadge(
+        'chelsea',
+        'Chelsea FC',
+        'chelsea',
+        'GB',
+        '#034694',
+        '#FFFFFF',
+        'CHE',
+        displayName: 'Chelsea FC',
+        shortName: 'Chelsea',
+        leagueName: 'Premier League',
+        iconType: 'abstract_lion',
+        gradient: 'metallic',
+      ),
+      _clubBadge(
+        'real-madrid',
+        'Real Madrid',
+        'real-madrid',
+        'ES',
+        '#F5F5F5',
+        '#FEBE10',
+        'RMA',
+        displayName: 'Real Madrid CF',
+        shortName: 'Real Madrid',
+        leagueName: 'La Liga',
+        accent: '#C0C0C0',
+        iconType: 'abstract_crown',
+        gradient: 'metallic',
+      ),
+      _clubBadge(
+        'man-utd',
+        'Manchester United',
+        'manchester-united',
+        'GB',
+        '#DA291C',
+        '#FBE122',
+        'MUN',
+        displayName: 'Manchester United',
+        shortName: 'Man United',
+        leagueName: 'Premier League',
+        iconType: 'abstract_orb',
+      ),
+      _clubBadge(
+        'bayern-munich',
+        'Bayern Munich',
+        'bayern-munich',
+        'DE',
+        '#DC052D',
+        '#0066B2',
+        'BAY',
+        displayName: 'FC Bayern Munich',
+        shortName: 'Bayern',
+        leagueName: 'Bundesliga',
+        iconType: 'abstract_diamond',
+      ),
+      _clubBadge(
+        'juventus',
+        'Juventus',
+        'juventus',
+        'IT',
+        '#000000',
+        '#FFFFFF',
+        'JUV',
+        displayName: 'Juventus FC',
+        shortName: 'Juventus',
+        leagueName: 'Serie A',
+        iconType: 'abstract_stripes',
+        gradient: 'metallic',
+      ),
     ];
 
     final cells = <Map<String, dynamic>>[];
@@ -523,7 +608,11 @@ class PuzzleApiService {
     };
   }
 
-  AnswerResult _demoValidate(String playerId, String rowClubId, String colClubId) {
+  AnswerResult _demoValidate(
+    String playerId,
+    String rowClubId,
+    String colClubId,
+  ) {
     const validAnswers = {
       'pedro': {'name': 'Pedro', 'usage': 67.0, 'tier': 'common'},
       'deco': {'name': 'Deco', 'usage': 4.0, 'tier': 'legendary'},
@@ -535,8 +624,10 @@ class PuzzleApiService {
         ref == slug || ref.replaceAll('-', '') == slug.replaceAll('-', '');
 
     final isBarcelonaChelsea =
-        (matchesClub(rowClubId, 'barcelona') && matchesClub(colClubId, 'chelsea')) ||
-        (matchesClub(rowClubId, 'chelsea') && matchesClub(colClubId, 'barcelona'));
+        (matchesClub(rowClubId, 'barcelona') &&
+            matchesClub(colClubId, 'chelsea')) ||
+        (matchesClub(rowClubId, 'chelsea') &&
+            matchesClub(colClubId, 'barcelona'));
 
     final match = validAnswers[playerId];
     if (match != null && isBarcelonaChelsea) {
@@ -592,8 +683,8 @@ class PuzzleApiService {
             'puzzle_cell_id': puzzleCellId,
             'session_id': sessionId,
             'hint_type': _hintTypeToApi(hintType),
-            if (adToken != null) 'ad_token': adToken,
-            if (userUuid != null) 'user_uuid': userUuid,
+            'ad_token': ?adToken,
+            'user_uuid': ?userUuid,
           },
         );
         stopwatch.stop();
@@ -628,10 +719,7 @@ class PuzzleApiService {
         throw HintRequestException('request-hint network error: $e');
       }
     }
-    return _demoHint(
-      hintType,
-      seed: '$rowClubId:$colClubId:$puzzleCellId',
-    );
+    return _demoHint(hintType, seed: '$rowClubId:$colClubId:$puzzleCellId');
   }
 
   Future<bool> grantHintAdToken({
@@ -672,13 +760,13 @@ class PuzzleApiService {
   }
 
   String _hintTypeToApi(HintType hintType) => switch (hintType) {
-        HintType.nationality => 'nationality',
-        HintType.position => 'position',
-        HintType.firstLetter => 'first_letter',
-        HintType.careerLeague => 'career_league',
-        HintType.retiredStatus => 'retired_status',
-        HintType.careerClub => 'career_club',
-      };
+    HintType.nationality => 'nationality',
+    HintType.position => 'position',
+    HintType.firstLetter => 'first_letter',
+    HintType.careerLeague => 'career_league',
+    HintType.retiredStatus => 'retired_status',
+    HintType.careerClub => 'career_club',
+  };
 
   int _demoSeedIndex(String seed, int length) {
     if (length <= 0) return 0;
@@ -693,37 +781,48 @@ class PuzzleApiService {
     const nationalities = ['Brazil', 'Spain', 'France', 'Portugal', 'Italy'];
     const positions = ['Midfielder', 'Forward', 'Defender', 'Goalkeeper'];
     const leagues = ['Premier League', 'La Liga', 'Serie A', 'Bundesliga'];
-    const clubs = ['Arsenal', 'Chelsea', 'Barcelona', 'Bayern Munich', 'Juventus'];
+    const clubs = [
+      'Arsenal',
+      'Chelsea',
+      'Barcelona',
+      'Bayern Munich',
+      'Juventus',
+    ];
     const letters = ['D', 'M', 'P', 'S', 'C'];
     final index = _demoSeedIndex(seed, 5);
 
     return switch (hintType) {
       HintType.nationality => HintResult(
-          hintType: hintType,
-          hintValue: nationalities[index % nationalities.length],
-        ),
+        hintType: hintType,
+        hintValue: nationalities[index % nationalities.length],
+      ),
       HintType.position => HintResult(
-          hintType: hintType,
-          hintValue: positions[index % positions.length],
-        ),
+        hintType: hintType,
+        hintValue: positions[index % positions.length],
+      ),
       HintType.firstLetter => HintResult(
-          hintType: hintType,
-          hintValue: '${letters[index % letters.length]} _ _ _',
-        ),
+        hintType: hintType,
+        hintValue: '${letters[index % letters.length]} _ _ _',
+      ),
       HintType.careerLeague => HintResult(
-          hintType: hintType,
-          hintValue: leagues[index % leagues.length],
-        ),
+        hintType: hintType,
+        hintValue: leagues[index % leagues.length],
+      ),
       HintType.retiredStatus => HintResult(
-          hintType: hintType,
-          hintValue: index.isEven ? 'Active' : 'Retired',
-        ),
+        hintType: hintType,
+        hintValue: index.isEven ? 'Active' : 'Retired',
+      ),
       HintType.careerClub => HintResult(
-          hintType: hintType,
-          hintValue: clubs[index % clubs.length],
-        ),
+        hintType: hintType,
+        hintValue: clubs[index % clubs.length],
+      ),
     };
   }
+}
+
+bool _puzzleHasValidCells(Puzzle puzzle) {
+  if (puzzle.cells.isEmpty) return false;
+  return puzzle.cells.every((cell) => _uuidPattern.hasMatch(cell.id));
 }
 
 class PuzzleRepositoryImpl implements PuzzleRepository {
@@ -731,9 +830,9 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required PuzzleApiService api,
     required OfflineCache cache,
     ApiHttpClient? httpClient,
-  })  : _api = api,
-        _cache = cache,
-        _http = httpClient ?? ApiHttpClient();
+  }) : _api = api,
+       _cache = cache,
+       _http = httpClient ?? ApiHttpClient();
 
   final PuzzleApiService _api;
   final OfflineCache _cache;
@@ -743,8 +842,18 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   Future<Puzzle> _withValidatedCells(
     Puzzle puzzle, {
     String? userUuid,
+    bool force = false,
   }) async {
     if (!AppConfig.isSupabaseConfigured) return puzzle;
+    // Skip redundant puzzle-by-id round-trips when the payload already has
+    // UUID cell ids (warm cache / fresh daily+practice responses).
+    if (!force && _puzzleHasValidCells(puzzle)) {
+      cbDebug('Puzzle', 'cells already valid — skip re-fetch', {
+        'puzzleId': puzzle.id,
+        'cellCount': puzzle.cells.length,
+      });
+      return puzzle;
+    }
 
     cbDebug('Puzzle', 'syncing puzzle cells from server', {
       'puzzleId': puzzle.id,
@@ -756,7 +865,12 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     try {
       raw = await _api.fetchPuzzleById(puzzle.id);
     } catch (e, st) {
-      cbDebugError('Puzzle', 'puzzle-by-id failed; trying daily-puzzle fallback', e, st);
+      cbDebugError(
+        'Puzzle',
+        'puzzle-by-id failed; trying daily-puzzle fallback',
+        e,
+        st,
+      );
     }
 
     if ((raw?['cells'] as List<dynamic>? ?? []).isEmpty &&
@@ -804,14 +918,21 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
   }
 
   @override
-  Future<Puzzle> getDailyPuzzle({bool forceRefresh = false, String? userUuid}) async {
+  Future<Puzzle> getDailyPuzzle({
+    bool forceRefresh = false,
+    String? userUuid,
+  }) async {
     final today = DailyPuzzleSchedule.todayPuzzleDateUtc();
-    cbDebug('Daily', 'getDailyPuzzle', {'today': today, 'forceRefresh': forceRefresh});
+    cbDebug('Daily', 'getDailyPuzzle', {
+      'today': today,
+      'forceRefresh': forceRefresh,
+    });
 
     if (!forceRefresh) {
       final cached = await _cache.getDailyPuzzle(forDate: today);
       if (cached != null) {
-        final cachedDate = cached['date'] as String? ?? cached['puzzle_date'] as String?;
+        final cachedDate =
+            cached['date'] as String? ?? cached['puzzle_date'] as String?;
         if (cachedDate != null && cachedDate != today) {
           cbDebug('Daily', 'stale cache for previous day — invalidating', {
             'cachedDate': cachedDate,
@@ -819,7 +940,9 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
           });
           await _cache.invalidateDailyPuzzle();
         } else {
-          final valid = _isValidLivePuzzleCache(cached) || !AppConfig.isSupabaseConfigured;
+          final valid =
+              _isValidLivePuzzleCache(cached) ||
+              !AppConfig.isSupabaseConfigured;
           cbDebug('Daily', 'cache lookup', {
             'hit': true,
             'valid': valid,
@@ -852,22 +975,23 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
         await _cache.cacheDailyPuzzle(raw);
         cbDebug('Daily', 'cached fresh daily puzzle');
       }
-      return _withValidatedCells(
-        Puzzle.fromJson(raw),
-        userUuid: userUuid,
-      );
+      return _withValidatedCells(Puzzle.fromJson(raw), userUuid: userUuid);
     } on PuzzleFetchException catch (e) {
       cbDebugError('Daily', 'getDailyPuzzle fetch failed', e);
       if (e.isGenerationInProgress || e.isGenerationFailed) {
         rethrow;
       }
-      cbDebug('Daily', 'no valid cache fallback for daily (previous day closed at UTC midnight)');
+      cbDebug(
+        'Daily',
+        'no valid cache fallback for daily (previous day closed at UTC midnight)',
+      );
       rethrow;
     }
   }
 
   @override
-  Future<Map<String, dynamic>> fetchDailyRolloutStatus() => _api.fetchDailyRolloutStatus();
+  Future<Map<String, dynamic>> fetchDailyRolloutStatus() =>
+      _api.fetchDailyRolloutStatus();
 
   @override
   Future<Puzzle> getPuzzleById(String puzzleId) async {
@@ -938,16 +1062,15 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required String sessionId,
     required String userUuid,
     int? responseTimeMs,
-  }) =>
-      _api.validateAnswer(
-        rowClubId: rowClubId,
-        colClubId: colClubId,
-        playerId: playerId,
-        puzzleCellId: puzzleCellId,
-        sessionId: sessionId,
-        userUuid: userUuid,
-        responseTimeMs: responseTimeMs,
-      );
+  }) => _api.validateAnswer(
+    rowClubId: rowClubId,
+    colClubId: colClubId,
+    playerId: playerId,
+    puzzleCellId: puzzleCellId,
+    sessionId: sessionId,
+    userUuid: userUuid,
+    responseTimeMs: responseTimeMs,
+  );
 
   @override
   Future<HintResult> requestHint({
@@ -958,28 +1081,26 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
     required HintType hintType,
     String? userUuid,
     String? adToken,
-  }) =>
-      _api.requestHint(
-        rowClubId: rowClubId,
-        colClubId: colClubId,
-        puzzleCellId: puzzleCellId,
-        sessionId: sessionId,
-        hintType: hintType,
-        userUuid: userUuid,
-        adToken: adToken,
-      );
+  }) => _api.requestHint(
+    rowClubId: rowClubId,
+    colClubId: colClubId,
+    puzzleCellId: puzzleCellId,
+    sessionId: sessionId,
+    hintType: hintType,
+    userUuid: userUuid,
+    adToken: adToken,
+  );
 
   @override
   Future<bool> grantHintAdToken({
     required String userUuid,
     required String adToken,
     required String sessionId,
-  }) =>
-      _api.grantHintAdToken(
-        userUuid: userUuid,
-        adToken: adToken,
-        sessionId: sessionId,
-      );
+  }) => _api.grantHintAdToken(
+    userUuid: userUuid,
+    adToken: adToken,
+    sessionId: sessionId,
+  );
 
   @override
   Future<SessionStartResult> createSession({
@@ -1005,10 +1126,7 @@ class PuzzleRepositoryImpl implements PuzzleRepository {
       'supabaseConfigured': AppConfig.isSupabaseConfigured,
       'hasUserUuid': userUuid != null,
     });
-    return SessionStartResult(
-      sessionId: localId,
-      startedAt: DateTime.now(),
-    );
+    return SessionStartResult(sessionId: localId, startedAt: DateTime.now());
   }
 
   @override

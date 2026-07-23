@@ -335,7 +335,12 @@
   "matchGridModeDesc": "Ziehe die richtigen Spieler auf die Vereins-Schnittpunkte. 120 Sekunden.",
   "matchGridTrayHint": "Spieler lange drücken und auf die passende Zelle legen.",
   "matchGridTrayEmpty": "Alle Spieler platziert — stark!",
+  "matchGridTrayEmptySubtitle": "Dein Score ist auf dem Ergebnisbildschirm gesichert.",
   "matchGridBankError": "Match-Grid-Spieler konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+  "matchGridResultTitle": "Match Grid abgeschlossen",
+  "matchGridResultPerfectDesc": "Jede Schnittstelle sitzt — saubere Ablage.",
+  "matchGridResultPartialDesc": "Zeit vorbei oder früh beendet — platzierte Spieler zählen trotzdem.",
+  "matchGridPlacedStat": "Platziert",
   "practiceUnlimitedHint": "Unbegrenztes Training. Vor jeder neuen Runde eine kurze Werbung.",
   "practiceSessionsPlayedToday": "Heute {count} Trainingseinheiten",
   "@practiceSessionsPlayedToday": {

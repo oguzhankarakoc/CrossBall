@@ -830,8 +830,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get matchGridTrayEmpty => 'All players placed — nice work!';
 
   @override
+  String get matchGridTrayEmptySubtitle =>
+      'Your score is locked in on the result screen.';
+
+  @override
   String get matchGridBankError =>
       'Couldn\'t load Match Grid players. Check your connection and retry.';
+
+  @override
+  String get matchGridResultTitle => 'Match Grid complete';
+
+  @override
+  String get matchGridResultPerfectDesc =>
+      'Every intersection locked — clean tray work.';
+
+  @override
+  String get matchGridResultPartialDesc =>
+      'Session ended with cells still open — placed players still count.';
+
+  @override
+  String get matchGridPlacedStat => 'Placed';
 
   @override
   String get practiceUnlimitedHint =>

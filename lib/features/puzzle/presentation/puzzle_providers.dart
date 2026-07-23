@@ -26,6 +26,7 @@ import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/providers/session_providers.dart';
 import '../../../features/economy/presentation/achievement_providers.dart';
+import '../../../features/stats/domain/stats.dart';
 
 class PuzzleGameParams extends Equatable {
   const PuzzleGameParams({required this.mode, this.challengeId, this.gridSize});
@@ -657,25 +658,32 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           return;
         }
         _ref.invalidate(userStatsProvider);
+        // Stats + rollout in parallel — both are network gates before grid load.
+        late final UserStats stats;
+        late final DailyPuzzleRolloutStatus rollout;
         try {
-          final stats = await _ref.read(userStatsProvider.future);
-          if (stats.dailyCompletedToday) {
-            await dailyStore.markCompletedToday(
-              userUuid: profile.userUuid,
-              score: stats.todayDailyScore > 0 ? stats.todayDailyScore : null,
-            );
-            await _clearCachedSnapshot();
-            state = state.copyWith(isLoading: false, error: 'daily_already_completed');
-            return;
-          }
+          final results = await Future.wait([
+            _ref.read(userStatsProvider.future),
+            _ref.read(dailyPuzzleRolloutProvider.future),
+          ]);
+          stats = results[0] as UserStats;
+          rollout = results[1] as DailyPuzzleRolloutStatus;
         } catch (e, st) {
-          cbDebugError('Daily', 'stats pre-check failed — blocking daily load', e, st);
+          cbDebugError('Daily', 'stats/rollout pre-check failed — blocking daily load', e, st);
           state = state.copyWith(isLoading: false, error: 'puzzle_load_failed');
+          return;
+        }
+        if (stats.dailyCompletedToday) {
+          await dailyStore.markCompletedToday(
+            userUuid: profile.userUuid,
+            score: stats.todayDailyScore > 0 ? stats.todayDailyScore : null,
+          );
+          await _clearCachedSnapshot();
+          state = state.copyWith(isLoading: false, error: 'daily_already_completed');
           return;
         }
 
         // Gate: never play a stale grid while today's puzzle is still rolling out.
-        final rollout = await _ref.read(dailyPuzzleRolloutProvider.future);
         if (DailyPuzzleContract.shouldBlockLoad(rollout)) {
           cbDebug('Daily', 'blocked by rollout gate', {
             'phase': rollout.phase.name,
@@ -816,15 +824,22 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         }
       }
 
-      puzzle = await _repo.hydratePuzzleCells(puzzle);
-      if (puzzle.cells.isEmpty) {
-        cbDebugError(logTag, 'puzzle has no cells after server sync', {
+      if (_cellsNeedHydration(puzzle)) {
+        puzzle = await _repo.hydratePuzzleCells(puzzle);
+        if (puzzle.cells.isEmpty) {
+          cbDebugError(logTag, 'puzzle has no cells after server sync', {
+            'puzzleId': puzzle.id,
+          });
+        } else if (_cellsNeedHydration(puzzle)) {
+          cbDebugError(logTag, 'puzzle cells still invalid after hydration', {
+            'puzzleId': puzzle.id,
+            'cellIds': puzzle.cells.map((c) => c.id).toList(),
+          });
+        }
+      } else {
+        cbDebug(logTag, 'puzzle cells ready — skip hydrate', {
           'puzzleId': puzzle.id,
-        });
-      } else if (_cellsNeedHydration(puzzle)) {
-        cbDebugError(logTag, 'puzzle cells still invalid after hydration', {
-          'puzzleId': puzzle.id,
-          'cellIds': puzzle.cells.map((c) => c.id).toList(),
+          'cellCount': puzzle.cells.length,
         });
       }
 

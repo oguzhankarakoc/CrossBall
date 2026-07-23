@@ -831,8 +831,25 @@ class AppLocalizationsTr extends AppLocalizations {
   String get matchGridTrayEmpty => 'Tüm oyuncular yerleştirildi — harika!';
 
   @override
+  String get matchGridTrayEmptySubtitle => 'Skorun sonuç ekranında kilitlendi.';
+
+  @override
   String get matchGridBankError =>
       'Match Grid oyuncuları yüklenemedi. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get matchGridResultTitle => 'Match Grid tamamlandı';
+
+  @override
+  String get matchGridResultPerfectDesc =>
+      'Tüm kesişimler kilitlendi — temiz iş.';
+
+  @override
+  String get matchGridResultPartialDesc =>
+      'Süre bitti veya erken çıktın — yerleştirdiğin oyuncular yine sayılır.';
+
+  @override
+  String get matchGridPlacedStat => 'Yerleştirilen';
 
   @override
   String get practiceUnlimitedHint =>

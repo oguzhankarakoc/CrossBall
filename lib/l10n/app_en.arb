@@ -342,7 +342,12 @@
   "matchGridModeDesc": "Drag the correct players onto the club intersections. 120 seconds.",
   "matchGridTrayHint": "Long-press a player, then drop them on the matching cell.",
   "matchGridTrayEmpty": "All players placed — nice work!",
+  "matchGridTrayEmptySubtitle": "Your score is locked in on the result screen.",
   "matchGridBankError": "Couldn't load Match Grid players. Check your connection and retry.",
+  "matchGridResultTitle": "Match Grid complete",
+  "matchGridResultPerfectDesc": "Every intersection locked — clean tray work.",
+  "matchGridResultPartialDesc": "Session ended with cells still open — placed players still count.",
+  "matchGridPlacedStat": "Placed",
   "practiceUnlimitedHint": "Unlimited training. Watch a short ad to start each new session.",
   "practiceSessionsPlayedToday": "{count} training sessions today",
   "@practiceSessionsPlayedToday": {

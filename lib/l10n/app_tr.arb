@@ -335,7 +335,12 @@
   "matchGridModeDesc": "Doğru oyuncuları kulüp kesişimlerine sürükle. 120 saniye.",
   "matchGridTrayHint": "Oyuncuya basılı tut, eşleşen hücreye bırak.",
   "matchGridTrayEmpty": "Tüm oyuncular yerleştirildi — harika!",
+  "matchGridTrayEmptySubtitle": "Skorun sonuç ekranında kilitlendi.",
   "matchGridBankError": "Match Grid oyuncuları yüklenemedi. Bağlantını kontrol edip tekrar dene.",
+  "matchGridResultTitle": "Match Grid tamamlandı",
+  "matchGridResultPerfectDesc": "Tüm kesişimler kilitlendi — temiz iş.",
+  "matchGridResultPartialDesc": "Süre bitti veya erken çıktın — yerleştirdiğin oyuncular yine sayılır.",
+  "matchGridPlacedStat": "Yerleştirilen",
   "practiceUnlimitedHint": "Sınırsız antrenman. Her yeni tur için kısa bir reklam izle.",
   "practiceSessionsPlayedToday": "Bugün {count} antrenman",
   "@practiceSessionsPlayedToday": {

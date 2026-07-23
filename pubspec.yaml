@@ -2,7 +2,7 @@ name: crossball
 description: "CrossBall — Connect clubs. Prove your football IQ. Football intersection puzzle app."
 publish_to: 'none'
 
-version: 1.0.1+23
+version: 1.0.2+24
 
 environment:
   sdk: ^3.10.8
@@ -50,7 +50,7 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: assets/icon/app_icon.png
-  adaptive_icon_background: "#0F2418"
+  adaptive_icon_background: "#205939"
   adaptive_icon_foreground: assets/icon/app_icon.png
   remove_alpha_ios: true
 

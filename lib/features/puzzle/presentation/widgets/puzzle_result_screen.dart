@@ -23,6 +23,9 @@ class PuzzleResultScreen extends StatefulWidget {
     this.onNewSession,
     this.newSessionLabel,
     this.newSessionRequiresAd = false,
+    this.showHintsStat = true,
+    this.altStatLabel,
+    this.altStatValue,
   });
 
   final double score;
@@ -39,6 +42,11 @@ class PuzzleResultScreen extends StatefulWidget {
   final VoidCallback? onNewSession;
   final String? newSessionLabel;
   final bool newSessionRequiresAd;
+  /// When false, hide the hints column (e.g. Match Grid has no hints).
+  final bool showHintsStat;
+  /// Optional replacement for the hints column (e.g. "Placed 9/9").
+  final String? altStatLabel;
+  final String? altStatValue;
 
   @override
   State<PuzzleResultScreen> createState() => _PuzzleResultScreenState();
@@ -148,12 +156,21 @@ class _PuzzleResultScreenState extends State<PuzzleResultScreen> {
                                   value: widget.mistakes.toString(),
                                 ),
                               ),
-                              Expanded(
-                                child: _VictoryStat(
-                                  label: l10n.hintsUsed,
-                                  value: widget.hintsUsed.toString(),
+                              if (widget.altStatLabel != null &&
+                                  widget.altStatValue != null)
+                                Expanded(
+                                  child: _VictoryStat(
+                                    label: widget.altStatLabel!,
+                                    value: widget.altStatValue!,
+                                  ),
+                                )
+                              else if (widget.showHintsStat)
+                                Expanded(
+                                  child: _VictoryStat(
+                                    label: l10n.hintsUsed,
+                                    value: widget.hintsUsed.toString(),
+                                  ),
                                 ),
-                              ),
                             ],
                           ),
                         ],

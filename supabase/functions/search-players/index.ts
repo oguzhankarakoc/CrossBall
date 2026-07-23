@@ -285,12 +285,18 @@ async function fillMissingPlayerMetadata(
   })
 }
 
-function scorePlayer(player: EnrichedPlayer, normalized: string): number {
+function scorePlayer(
+  player: EnrichedPlayer,
+  normalized: string,
+  options?: { boostCellRelevant?: boolean },
+): number {
   const name = player.name.toLowerCase()
   // Prefer intersection-valid + obscure picks over global popularity.
   let score = (player.obscurity_score ?? 50) * 3 - player.popularity_score * 2
 
-  if (player.is_cell_relevant) score += 400
+  // Competitive modes still expose is_cell_relevant for the green badge, but must
+  // not boost ranking (would spoil answers by floating correct picks to the top).
+  if (options?.boostCellRelevant !== false && player.is_cell_relevant) score += 400
   if (!normalized) return score
 
   if (name === normalized) score += 1000
@@ -366,7 +372,8 @@ async function enrichPlayers(
   // Always resolve intersection when cell clubs are known so dedupe can
   // prefer a player_id that validate_player_intersection accepts (fixes
   // "green ticks but Wrong" when name-deduped duplicates lack identity_key).
-  // is_cell_relevant badge still only set when markCellRelevant (non-competitive).
+  // is_cell_relevant follows validates_cell whenever markCellRelevant is on
+  // (training) OR when callers pass markCellRelevant for badge-only modes.
   const [{ data: careers }, { data: popularity }, intersectionIds] = await Promise.all([
     supabase
       .from('player_career_history')
@@ -554,9 +561,10 @@ Deno.serve(async (req) => {
     const rowClubId = url.searchParams.get('row_club_id')
     const colClubId = url.searchParams.get('col_club_id')
     const competitive = url.searchParams.get('competitive') === '1'
-    // Competitive search may still send club ids for preview ordering, but must not
-    // mark is_cell_relevant (would spoil answers via ranking / bolt badge).
-    const markCellRelevant = Boolean(rowClubId && colClubId && !competitive)
+    // Always mark is_cell_relevant when the player validates for the cell so the
+    // client can show the green badge in daily/practice/timeline. Competitive
+    // only suppresses the ranking boost (see scorePlayer) to avoid spoilers.
+    const markCellRelevant = Boolean(rowClubId && colClubId)
 
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -671,7 +679,11 @@ Deno.serve(async (req) => {
     )
     const deduped = withPrioritizedClubs(dedupePlayersByIdentity(enriched))
     const ranked = deduped
-      .sort((a, b) => scorePlayer(b, normalized) - scorePlayer(a, normalized))
+      .sort(
+        (a, b) =>
+          scorePlayer(b, normalized, { boostCellRelevant: !competitive }) -
+          scorePlayer(a, normalized, { boostCellRelevant: !competitive }),
+      )
       .slice(0, limit)
       .map(({ validates_cell: _v, ...rest }) => rest)
 

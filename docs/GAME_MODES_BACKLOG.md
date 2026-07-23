@@ -4,7 +4,7 @@
 **Audience:** Product, Marketing, Engineering, LiveOps  
 **Version:** 1.1.0  
 **Date:** July 2026  
-**Status:** Planning (modes beyond Classic / Practice / Challenge / Timeline not shipped)
+**Status:** Planning (World XI and later axes); Quick Grid + Match Grid shipped as training variants
 
 Related: [ARCHITECTURE.md](./ARCHITECTURE.md) §4 Game Modes, [PRODUCT_AUDIT.md](./PRODUCT_AUDIT.md) §13 Innovation Backlog.
 
@@ -414,6 +414,8 @@ World XI v1 may use `puzzle_col_nationalities` for speed; migrate to `puzzle_axe
 | `practice` | Shipped | ARCHITECTURE §15 |
 | `challenge` | Shipped | ARCHITECTURE §14 |
 | `timeline` | Shipped | migration 024 |
+| `quickGrid` | Shipped | client timed pick (persists as `practice`) |
+| `matchGrid` | Shipped | [MATCH_GRID.md](./MATCH_GRID.md) (persists as `practice`) |
 | `world_xi` | **Planned P1** | Part 2 |
 | themed / blitz / mystery | Modifiers | Part 1 |
 | `club_league` / era / glory | Planned P2–P4 | Part 1 |

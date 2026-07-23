@@ -68,11 +68,10 @@ class MatchGridPlayfield extends StatelessWidget {
               border: Border.all(color: colors.glassBorder),
             ),
             child: tray.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.matchGridTrayEmpty,
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
+                ? CrossBallEmptyState(
+                    message: l10n.matchGridTrayEmpty,
+                    subtitle: l10n.matchGridTrayEmptySubtitle,
+                    icon: Icons.check_circle_outline_rounded,
                   )
                 : SingleChildScrollView(
                     padding: const EdgeInsets.all(AppSpacing.md),
@@ -294,6 +293,9 @@ class _DropCellState extends State<_DropCell> {
     return DragTarget<Player>(
       onWillAcceptWithDetails: (details) {
         if (locked != null || widget.solved) return false;
+        if (!_hover) {
+          HapticFeedback.selectionClick();
+        }
         setState(() => _hover = true);
         return true;
       },
