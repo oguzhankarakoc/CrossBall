@@ -5,6 +5,7 @@ import '../../features/auth/presentation/auth_providers.dart';
 import '../../core/network/network_providers.dart';
 import '../../features/challenge/data/challenge_repository_impl.dart';
 import '../../features/challenge/domain/challenge.dart';
+import '../../features/puzzle/data/first_puzzle_coach_store.dart';
 import '../../features/puzzle/data/puzzle_repository_impl.dart';
 import '../../features/puzzle/domain/puzzle_repository.dart';
 import '../../features/search/data/search_repository_impl.dart';
@@ -26,6 +27,10 @@ import 'locale_provider.dart';
 import 'session_providers.dart';
 
 final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
+
+final firstPuzzleCoachStoreProvider = Provider<FirstPuzzleCoachStore>(
+  (ref) => FirstPuzzleCoachStore(),
+);
 
 final activePuzzleCacheProvider = Provider<ActivePuzzleCache>(
   (ref) => ActivePuzzleCache(),

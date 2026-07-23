@@ -150,20 +150,53 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboarding1Title => 'Wähle eine Zelle';
 
   @override
-  String get onboarding1Body => 'Tippe auf eine Zelle, um zu beginnen.';
+  String get onboarding1Body =>
+      'Tippe auf eine leere Zelle im 3×3-Raster, um die Suche zu öffnen.';
 
   @override
   String get onboarding2Title => 'Verbinde beide Vereine';
 
   @override
   String get onboarding2Body =>
-      'Finde einen Spieler, der für beide Vereine gespielt hat.';
+      'Die Antwort muss für den Zeilen- und den Spaltenverein gespielt haben.';
 
   @override
   String get onboarding3Title => 'Seltene Tipps bringen mehr Punkte';
 
   @override
-  String get onboarding3Body => 'Weniger bekannte Spieler geben mehr Punkte.';
+  String get onboarding3Body =>
+      'Obskure Namen schlagen offensichtliche — halte deine Serie am Leben.';
+
+  @override
+  String get firstPuzzleCoachTitle => 'Kurz erklärt';
+
+  @override
+  String get firstPuzzleCoachSubtitle =>
+      'Du bist im Tagesrätsel. So funktioniert eine Zelle.';
+
+  @override
+  String get firstPuzzleCoachStep1Title => 'Zelle antippen';
+
+  @override
+  String get firstPuzzleCoachStep1Body =>
+      'Jedes Feld liegt zwischen einem Zeilen- und einem Spaltenverein.';
+
+  @override
+  String get firstPuzzleCoachStep2Title => 'Die Verbindung finden';
+
+  @override
+  String get firstPuzzleCoachStep2Body =>
+      'Suche einen Spieler, der für beide Vereine aufgelaufen ist.';
+
+  @override
+  String get firstPuzzleCoachStep3Title => 'Seltenheit jagen';
+
+  @override
+  String get firstPuzzleCoachStep3Body =>
+      'Ungewöhnlichere Antworten bringen mehr Punkte. Schließe das Raster für deine Serie.';
+
+  @override
+  String get firstPuzzleCoachCta => 'Verstanden — los';
 
   @override
   String get comingSoon => 'Laden...';
