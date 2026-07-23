@@ -326,11 +326,25 @@
   "timelineMode": "Timeline-Training",
   "timelineModeDesc": "Sieh Karrierejahre nach jeder richtigen Antwort.",
   "quickGridMode": "Quick Grid",
-  "quickGridModeDesc": "Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 90 Sekunden. Kein Tippen.",
+  "quickGridModeDesc": "Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 120 Sekunden. Kein Tippen.",
   "quickGridPickTitle": "Spieler wählen",
   "quickGridChoicesError": "Auswahl konnte nicht geladen werden. Erneut versuchen.",
   "quickGridEliminateAd": "Werbung ansehen — 1 Falsche entfernen",
   "quickGridEliminateFree": "1 falsche Antwort entfernen",
+  "matchGridMode": "Match Grid",
+  "matchGridModeDesc": "Ziehe die richtigen Spieler auf die Vereins-Schnittpunkte. 120 Sekunden.",
+  "matchGridTrayHint": "Spieler lange drücken und auf die passende Zelle legen.",
+  "matchGridTrayEmpty": "Alle Spieler platziert — stark!",
+  "matchGridBankError": "Match-Grid-Spieler konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.",
+  "practiceUnlimitedHint": "Unbegrenztes Training. Vor jeder neuen Runde eine kurze Werbung.",
+  "practiceSessionsPlayedToday": "Heute {count} Trainingseinheiten",
+  "@practiceSessionsPlayedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timelineSheetTitle": "{name} — Karriere-Timeline",
   "@timelineSheetTitle": {
     "placeholders": {

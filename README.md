@@ -129,6 +129,7 @@ All themes use brightness-aware typography (headline/title styles adapt for cont
 - [Supabase Setup](supabase/README.md) — migrations, edge functions, deploy
 - [Data Pipeline](data_pipeline/README.md) — Kaggle ETL, API-Football sync, career enrichment / truth pass
 - [Career Truth Pass](docs/CAREER_TRUTH_PASS.md) — soft-launch career reconcile + loading UX
+- [Match Grid](docs/MATCH_GRID.md) — drag-and-drop practice mode (in progress)
 - [iOS Launch Guide](docs/IOS_LAUNCH_GUIDE.md) — App Store Connect, AdMob, ATT, push
 - [App Store Resubmit](docs/APP_STORE_RESUBMIT_FIX.md) — IAP in submission (2.1b) notes
 

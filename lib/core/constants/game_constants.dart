@@ -2,11 +2,15 @@ abstract final class GameConstants {
   static const int gridSize = 3;
   static const int freeGridSize = 3;
   static const int premiumGridSize = 4;
-  /// Max practice sessions per calendar day (free users).
-  static const int freePracticeDailyLimit = 5;
 
-  /// Max practice sessions per calendar day (premium — ad-free between sessions).
-  static const int premiumPracticeDailyLimit = 10;
+  /// Soft cap for practice metrics (unlimited play; ad gate is the real limiter).
+  static const int practiceDailySoftCap = 9999;
+
+  /// @Deprecated — use [practiceDailySoftCap]; kept for older call sites.
+  static const int freePracticeDailyLimit = practiceDailySoftCap;
+
+  /// @Deprecated — use [practiceDailySoftCap].
+  static const int premiumPracticeDailyLimit = practiceDailySoftCap;
 
   static const int suspiciousDurationMs3x3 = 40 * 60 * 1000;
   static const int suspiciousDurationMs4x4 = 60 * 60 * 1000;
@@ -35,8 +39,11 @@ abstract final class GameConstants {
   static const int searchDefaultLimit = 20;
   static const int maxRecentPicks = 10;
 
-  /// Quick Grid: session countdown (seconds).
-  static const int quickGridDurationSec = 90;
+  /// Quick Grid / Match Grid: session countdown (seconds).
+  static const int quickGridDurationSec = 120;
+
+  /// Match Grid shares the Quick Grid countdown length.
+  static const int matchGridDurationSec = quickGridDurationSec;
 
   /// Quick Grid: choices shown per cell (1 correct + N-1 distractors).
   static const int quickGridChoiceCount = 5;
@@ -49,4 +56,7 @@ abstract final class GameConstants {
 
   /// Quick Grid: penalty per wrong choice.
   static const int quickGridMistakePenalty = 25;
+
+  /// Match Grid: no mistake penalty on bounce (product rule).
+  static const int matchGridMistakePenalty = 0;
 }

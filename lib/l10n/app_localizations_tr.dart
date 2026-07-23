@@ -803,7 +803,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickGridModeDesc =>
-      'Aynı CrossBall ızgarası — 5 oyuncudan seç. 90 saniye. Yazma yok.';
+      'Aynı CrossBall ızgarası — 5 oyuncudan seç. 120 saniye. Yazma yok.';
 
   @override
   String get quickGridPickTitle => 'Oyuncuyu seç';
@@ -816,6 +816,32 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get quickGridEliminateFree => '1 yanlış cevabı kaldır';
+
+  @override
+  String get matchGridMode => 'Match Grid';
+
+  @override
+  String get matchGridModeDesc =>
+      'Doğru oyuncuları kulüp kesişimlerine sürükle. 120 saniye.';
+
+  @override
+  String get matchGridTrayHint => 'Oyuncuya basılı tut, eşleşen hücreye bırak.';
+
+  @override
+  String get matchGridTrayEmpty => 'Tüm oyuncular yerleştirildi — harika!';
+
+  @override
+  String get matchGridBankError =>
+      'Match Grid oyuncuları yüklenemedi. Bağlantını kontrol edip tekrar dene.';
+
+  @override
+  String get practiceUnlimitedHint =>
+      'Sınırsız antrenman. Her yeni tur için kısa bir reklam izle.';
+
+  @override
+  String practiceSessionsPlayedToday(int count) {
+    return 'Bugün $count antrenman';
+  }
 
   @override
   String timelineSheetTitle(String name) {

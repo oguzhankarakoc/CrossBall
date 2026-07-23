@@ -30,9 +30,8 @@ class PracticeSessionState {
 
   bool get hasReachedLimit => completedToday >= dailyLimit;
 
-  /// Free users need a rewarded ad before sessions 2..N (first session of the day is free).
-  bool get needsRewardedAdForNextSession =>
-      !isPremium && completedToday > 0 && !adUnlockGranted && !hasReachedLimit;
+  /// Free users need a rewarded ad before every new training session.
+  bool get needsRewardedAdForNextSession => !isPremium && !adUnlockGranted;
 
   bool get canStartSession =>
       !hasReachedLimit && (!needsRewardedAdForNextSession || adUnlockGranted);

@@ -38,12 +38,15 @@ import 'daily_puzzle_rollout_provider.dart';
 import 'widgets/daily_puzzle_completed_panel.dart';
 import 'widgets/daily_puzzle_refresh_panel.dart';
 import 'widgets/first_puzzle_coach_sheet.dart';
+import 'widgets/match_grid_playfield.dart';
 import 'widgets/player_search_modal.dart';
 import 'widgets/puzzle_countdown_timer.dart';
 import 'widgets/puzzle_grid.dart';
 import 'widgets/puzzle_result_screen.dart';
 import 'widgets/puzzle_timer.dart';
 import 'widgets/quick_grid_choice_sheet.dart';
+import '../data/match_grid_bank_api.dart';
+import '../../../core/network/network_providers.dart';
 
 class PuzzleScreen extends ConsumerStatefulWidget {
   const PuzzleScreen({
@@ -60,8 +63,15 @@ class PuzzleScreen extends ConsumerStatefulWidget {
 class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   Timer? _dailyRefreshPollTimer;
   bool _firstPuzzleCoachScheduled = false;
+  List<Player> _matchTray = const [];
+  final Map<String, Player> _matchLocked = {};
+  String? _matchBankError;
+  bool _matchBankLoading = false;
+  String? _matchBankPuzzleId;
 
   bool get _isTrainingMode => widget.params.mode.isTraining;
+  bool get _isMatchGrid => widget.params.mode == PuzzleMode.matchGrid;
+  bool get _isTimedTraining => widget.params.mode.isTimedTraining;
 
   @override
   void initState() {
@@ -95,10 +105,68 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
             error == null &&
             !isComplete) {
           _maybeShowFirstPuzzleCoach();
+          if (_isMatchGrid) {
+            unawaited(_ensureMatchGridBank(puzzleId));
+          }
         }
       },
       fireImmediately: true,
     );
+  }
+
+  Future<void> _ensureMatchGridBank(String puzzleId) async {
+    if (_matchBankPuzzleId == puzzleId &&
+        (_matchTray.isNotEmpty || _matchBankLoading)) {
+      return;
+    }
+    final puzzle = ref.read(puzzleGameProvider(widget.params)).puzzle;
+    if (puzzle == null) return;
+
+    setState(() {
+      _matchBankLoading = true;
+      _matchBankError = null;
+      _matchBankPuzzleId = puzzleId;
+      _matchTray = const [];
+      _matchLocked.clear();
+    });
+
+    try {
+      final api = MatchGridBankApi(httpClient: ref.read(apiHttpClientProvider));
+      final bank = await api.fetchBank(puzzle);
+      if (!mounted) return;
+      setState(() {
+        _matchTray = List<Player>.from(bank.tray);
+        _matchBankLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _matchBankLoading = false;
+        _matchBankError = 'match_grid_bank_failed';
+      });
+    }
+  }
+
+  Future<bool> _onMatchGridDrop(int row, int col, Player player) async {
+    final key = '${row}_$col';
+    if (_matchLocked.containsKey(key)) return false;
+
+    final notifier = ref.read(puzzleGameProvider(widget.params).notifier);
+    notifier.selectCell(row, col);
+    try {
+      final result = await notifier.submitAnswer(player);
+      if (result == null || !result.correct) {
+        return false;
+      }
+      if (!mounted) return true;
+      setState(() {
+        _matchLocked[key] = player;
+        _matchTray = _matchTray.where((p) => p.id != player.id).toList();
+      });
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   Future<void> _maybeShowFirstPuzzleCoach() async {
@@ -372,11 +440,13 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                       compact: true,
                                     ),
                                   ),
-                                if (widget.params.mode == PuzzleMode.quickGrid)
+                                if (_isTimedTraining)
                                   PuzzleCountdownTimer(
                                     startedAt: game.startedAt ?? DateTime.now(),
-                                    duration: const Duration(
-                                      seconds: GameConstants.quickGridDurationSec,
+                                    duration: Duration(
+                                      seconds: _isMatchGrid
+                                          ? GameConstants.matchGridDurationSec
+                                          : GameConstants.quickGridDurationSec,
                                     ),
                                     onExpired: () {
                                       ref
@@ -387,22 +457,65 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                 else
                                   PuzzleTimer(startedAt: game.startedAt ?? DateTime.now()),
                                 Expanded(
-                                  child: Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: AppSpacing.md,
-                                        vertical: AppSpacing.sm,
-                                      ),
-                                      child: PuzzleGrid(
-                                        puzzle: game.puzzle!,
-                                        cells: game.cells,
-                                        selectedRow: game.selectedRow,
-                                        selectedCol: game.selectedCol,
-                                        validatingCellKey: game.validatingCellKey,
-                                        onCellTap: _onCellTap,
-                                      ),
-                                    ),
-                                  ),
+                                  child: _isMatchGrid
+                                      ? Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: AppSpacing.md,
+                                            vertical: AppSpacing.sm,
+                                          ),
+                                          child: _matchBankLoading
+                                              ? const AppPuzzleSkeleton()
+                                              : _matchBankError != null
+                                                  ? Center(
+                                                      child: Column(
+                                                        mainAxisSize: MainAxisSize.min,
+                                                        children: [
+                                                          Text(
+                                                            l10n.matchGridBankError,
+                                                            textAlign: TextAlign.center,
+                                                          ),
+                                                          const SizedBox(height: AppSpacing.md),
+                                                          FilledButton(
+                                                            onPressed: () {
+                                                              final id = game.puzzle?.id;
+                                                              if (id != null) {
+                                                                _matchBankPuzzleId = null;
+                                                                unawaited(
+                                                                  _ensureMatchGridBank(id),
+                                                                );
+                                                              }
+                                                            },
+                                                            child: Text(l10n.retry),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    )
+                                                  : MatchGridPlayfield(
+                                                      puzzle: game.puzzle!,
+                                                      cells: game.cells,
+                                                      tray: _matchTray,
+                                                      lockedByCell: _matchLocked,
+                                                      validatingCellKey:
+                                                          game.validatingCellKey,
+                                                      onDropPlayer: _onMatchGridDrop,
+                                                    ),
+                                        )
+                                      : Center(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: AppSpacing.md,
+                                              vertical: AppSpacing.sm,
+                                            ),
+                                            child: PuzzleGrid(
+                                              puzzle: game.puzzle!,
+                                              cells: game.cells,
+                                              selectedRow: game.selectedRow,
+                                              selectedCol: game.selectedCol,
+                                              validatingCellKey: game.validatingCellKey,
+                                              onCellTap: _onCellTap,
+                                            ),
+                                          ),
+                                        ),
                                 ),
                                 if (_isTrainingMode)
                                   _PracticeBottomBar(
@@ -438,6 +551,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         PuzzleMode.practice => l10n.practice,
         PuzzleMode.timeline => l10n.timelineMode,
         PuzzleMode.quickGrid => l10n.quickGridMode,
+        PuzzleMode.matchGrid => l10n.matchGridMode,
         PuzzleMode.challenge => l10n.friendChallenge,
       };
 
@@ -627,6 +741,9 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
         colClub: puzzle.colClubAt(col),
         isPremium: ref.read(isPremiumProvider),
       );
+    } else if (widget.params.mode == PuzzleMode.matchGrid) {
+      notifier.clearSelection();
+      return;
     } else {
       player = await showModalBottomSheet<Player>(
         context: context,

@@ -1013,20 +1013,24 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         PuzzleMode.practice => 'Practice',
         PuzzleMode.timeline => 'Practice',
         PuzzleMode.quickGrid => 'QuickGrid',
+        PuzzleMode.matchGrid => 'MatchGrid',
         PuzzleMode.challenge => 'Challenge',
       };
 
   int _quickGridRemainingMs() {
     final started = state.startedAt;
-    if (started == null) return GameConstants.quickGridDurationSec * 1000;
+    final durationSec = params.mode == PuzzleMode.matchGrid
+        ? GameConstants.matchGridDurationSec
+        : GameConstants.quickGridDurationSec;
+    if (started == null) return durationSec * 1000;
     final elapsed = DateTime.now().difference(started).inMilliseconds;
-    final total = GameConstants.quickGridDurationSec * 1000;
+    final total = durationSec * 1000;
     return (total - elapsed).clamp(0, total);
   }
 
-  /// Called when Quick Grid countdown hits zero.
+  /// Called when Quick/Match Grid countdown hits zero.
   Future<void> onQuickGridTimeUp() async {
-    if (params.mode != PuzzleMode.quickGrid) return;
+    if (!params.mode.isTimedTraining) return;
     if (state.isComplete || _sessionFinalized) return;
     state = state.copyWith(isComplete: true, finishedEarly: true);
     await _completeSession();
@@ -1160,10 +1164,10 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     final latencyMs = DateTime.now().difference(submitStart).inMilliseconds;
 
     if (answer.correct) {
-      final remainingMs = params.mode == PuzzleMode.quickGrid
+      final remainingMs = params.mode.isTimedTraining
           ? _quickGridRemainingMs()
           : 0;
-      final cellScore = params.mode == PuzzleMode.quickGrid
+      final cellScore = params.mode.isTimedTraining
           ? ScoringEngine.quickGridCellScore(remainingSessionMs: remainingMs)
           : ScoringEngine.calculateCellScore(
               usagePercentage: answer.usagePercentage,
@@ -1192,7 +1196,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           newCells.values.where((c) => c.isSolved).length == puzzle.totalCells;
       final isComplete = allSolved;
 
-      final sessionScore = params.mode == PuzzleMode.quickGrid
+      final sessionScore = params.mode.isTimedTraining
           ? ScoringEngine.quickGridSessionScore(
               cellScores: allScores,
               mistakes: state.mistakes,
@@ -1227,7 +1231,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       }
     } else {
       final nextMistakes = state.mistakes + 1;
-      final previewScore = params.mode == PuzzleMode.quickGrid
+      final previewScore = params.mode.isTimedTraining
           ? ScoringEngine.quickGridSessionScore(
               cellScores: state.cells.values
                   .where((c) => c.cellScore != null)
