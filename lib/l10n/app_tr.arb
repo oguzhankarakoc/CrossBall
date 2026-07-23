@@ -205,7 +205,7 @@
       }
     }
   },
-  "practiceAdGateHint": "Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.",
+  "practiceAdGateHint": "Ücretsiz planda her iki antrenmanda bir kısa reklam izlemen gerekir.",
   "adUnavailable": "Reklam şu an yüklenemedi. Biraz sonra tekrar dene.",
   "practicePremiumSkipAds": "Premium: sınırsız antrenman, oturumlar arası reklam yok.",
   "cancel": "Vazgeç",
@@ -341,7 +341,7 @@
   "matchGridResultPerfectDesc": "Tüm kesişimler kilitlendi — temiz iş.",
   "matchGridResultPartialDesc": "Süre bitti veya erken çıktın — yerleştirdiğin oyuncular yine sayılır.",
   "matchGridPlacedStat": "Yerleştirilen",
-  "practiceUnlimitedHint": "Sınırsız antrenman. Her yeni tur için kısa bir reklam izle.",
+  "practiceUnlimitedHint": "Sınırsız antrenman. Ücretsiz planda her iki turda bir kısa reklam.",
   "practiceSessionsPlayedToday": "Bugün {count} antrenman",
   "@practiceSessionsPlayedToday": {
     "placeholders": {
@@ -540,5 +540,79 @@
         "type": "int"
       }
     }
-  }
+  },
+  "featureInfoTooltip": "Nasıl çalışır",
+  "featureInfoGotIt": "Anladım",
+  "tipSheetEyebrow": "İpucu",
+  "whatsNewEyebrow": "Güncelleme",
+  "featureInfoHomeTitle": "CrossBall’a hoş geldin",
+  "featureInfoHomeSubtitle": "Ana sayfada neler yapabileceğine kısa bir bakış.",
+  "featureInfoHomeStep1Title": "Günün bulmacası",
+  "featureInfoHomeStep1Body": "Her gün tek ortak bulmaca. Seri ve haftalık sıralama için tamamla.",
+  "featureInfoHomeStep2Title": "Antrenman",
+  "featureInfoHomeStep2Body": "Klasik, Hızlı Grid veya Match Grid’i Antrenman sekmesinden istediğin zaman oyna.",
+  "featureInfoHomeStep3Title": "Seri ve sezon",
+  "featureInfoHomeStep3Body": "Serini canlı tut; sezon ilerlemeni bu ekrandaki kartlardan takip et.",
+  "featureInfoPracticeHubTitle": "Antrenman modları",
+  "featureInfoPracticeHubSubtitle": "Bir mod seç — ücretsiz planda sınırsız oyun; her iki turda bir kısa reklam.",
+  "featureInfoPracticeHubStep1Title": "Klasik",
+  "featureInfoPracticeHubStep1Body": "Kulüp kesişimleri için oyuncu ara — Günlük ile aynı kurallar.",
+  "featureInfoPracticeHubStep2Title": "Hızlı Grid",
+  "featureInfoPracticeHubStep2Body": "Her hücrede 5 oyuncudan seç. 120 saniye, yazısız.",
+  "featureInfoPracticeHubStep3Title": "Match Grid",
+  "featureInfoPracticeHubStep3Body": "Tepsiden oyuncuları doğru hücrelere sürükle. Her oyuncunun tek doğru yeri var.",
+  "featureInfoDailyTitle": "Günün bulmacası",
+  "featureInfoDailySubtitle": "Her hücreyi her iki kulüpte de oynamış bir oyuncuyla doldur.",
+  "featureInfoDailyStep1Title": "Hücreye dokun",
+  "featureInfoDailyStep1Body": "Tabloda boş bir kesişim seç.",
+  "featureInfoDailyStep2Title": "Bağlantıyı bul",
+  "featureInfoDailyStep2Body": "Hem satır hem sütun kulübünde forma giymiş oyuncuyu ara.",
+  "featureInfoDailyStep3Title": "Nadiri yakala",
+  "featureInfoDailyStep3Body": "Daha nadir cevaplar daha çok puan getirir — tüm grid’i bitirerek bonus al.",
+  "featureInfoClassicTitle": "Klasik antrenman",
+  "featureInfoClassicSubtitle": "Günlük ile aynı arama akışı — sınırsız pratik.",
+  "featureInfoClassicStep1Title": "Ara ve yerleştir",
+  "featureInfoClassicStep1Body": "Hücreye dokun, her iki kulübe uyan oyuncuyu seç.",
+  "featureInfoClassicStep2Title": "İstediğin zaman",
+  "featureInfoClassicStep2Body": "Günlük limit yok — dilediğin kadar antrenman yap.",
+  "featureInfoClassicStep3Title": "Ücretsiz reklam",
+  "featureInfoClassicStep3Body": "Ücretsiz plan: her iki antrenmanda bir kısa ödüllü reklam.",
+  "featureInfoQuickGridTitle": "Hızlı Grid",
+  "featureInfoQuickGridSubtitle": "Hız modu — süre bitmeden beş seçenekten doğru olanı seç.",
+  "featureInfoQuickGridStep1Title": "Beş seçenek",
+  "featureInfoQuickGridStep1Body": "Her hücrede 5 oyuncu çıkar; biri o kesişim için doğru.",
+  "featureInfoQuickGridStep2Title": "120 saniye",
+  "featureInfoQuickGridStep2Body": "Sayaç tahta hazır olunca başlar. Erken bitirmek skoru yükseltir.",
+  "featureInfoQuickGridStep3Title": "Yazısız",
+  "featureInfoQuickGridStep3Body": "Doğru isme dokun — yanlış seçimler puan düşürür.",
+  "featureInfoMatchGridTitle": "Match Grid",
+  "featureInfoMatchGridSubtitle": "Tepsiden sürükle-bırak. Her oyuncunun tek doğru hücresi var.",
+  "featureInfoMatchGridStep1Title": "Basılı tut ve bırak",
+  "featureInfoMatchGridStep1Body": "Oyuncu kartına basılı tut, eşleşen kesişime bırak.",
+  "featureInfoMatchGridStep2Title": "Her birine bir hücre",
+  "featureInfoMatchGridStep2Body": "Her tepsi oyuncusu yalnızca bir hücreye aittir — yanlış bırakınca geri döner.",
+  "featureInfoMatchGridStep3Title": "120 saniye",
+  "featureInfoMatchGridStep3Body": "Süre dolmadan mümkün olduğunca çok yerleştir.",
+  "featureInfoTimelineTitle": "Kariyer Zaman Çizelgesi",
+  "featureInfoTimelineSubtitle": "Hücreleri kariyer dönemi bağlamıyla çöz.",
+  "featureInfoTimelineStep1Title": "Dönem önemli",
+  "featureInfoTimelineStep1Body": "Sadece oynamış olmak değil, hangi dönemde hangi kulüpte olduğu da önemli.",
+  "featureInfoTimelineStep2Title": "Aynı grid mantığı",
+  "featureInfoTimelineStep2Body": "Hücreye dokun ve ara — zaman çizelgesi ipuçları doğru ismi daraltır.",
+  "whatsNewTitle": "Yenilikler",
+  "whatsNewSubtitle": "CrossBall {version}",
+  "@whatsNewSubtitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewGotIt": "Başlayalım",
+  "whatsNewStep1Title": "Match Grid",
+  "whatsNewStep1Body": "Yeni Antrenman modu — oyuncuya basılı tut, eşleşen kulüp hücresine bırak. Her chip’in tek doğru yeri var.",
+  "whatsNewStep2Title": "Daha adil reklam",
+  "whatsNewStep2Body": "Ücretsiz planda kısa ödüllü reklam her iki antrenmanda bir gelir — her oyunda değil.",
+  "whatsNewStep3Title": "Her zaman yardım",
+  "whatsNewStep3Body": "Ana sayfa, Antrenman ve her modda ⓘ ikonuna dokunarak kısa anlatımı tekrar açabilirsin."
 }

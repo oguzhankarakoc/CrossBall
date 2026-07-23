@@ -1009,7 +1009,7 @@ abstract class AppLocalizations {
   /// No description provided for @practiceAdGateHint.
   ///
   /// In en, this message translates to:
-  /// **'On the free plan, watch a short ad before each new training session.'**
+  /// **'On the free plan, watch a short ad every two training sessions.'**
   String get practiceAdGateHint;
 
   /// No description provided for @adUnavailable.
@@ -1621,7 +1621,7 @@ abstract class AppLocalizations {
   /// No description provided for @practiceUnlimitedHint.
   ///
   /// In en, this message translates to:
-  /// **'Unlimited training. Watch a short ad to start each new session.'**
+  /// **'Unlimited training. Free plan: a short ad every two sessions.'**
   String get practiceUnlimitedHint;
 
   /// No description provided for @practiceSessionsPlayedToday.
@@ -1971,6 +1971,408 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count}d ago'**
   String timeDaysAgo(int count);
+
+  /// No description provided for @featureInfoTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'How this works'**
+  String get featureInfoTooltip;
+
+  /// No description provided for @featureInfoGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get featureInfoGotIt;
+
+  /// No description provided for @tipSheetEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip'**
+  String get tipSheetEyebrow;
+
+  /// No description provided for @whatsNewEyebrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get whatsNewEyebrow;
+
+  /// No description provided for @featureInfoHomeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to CrossBall'**
+  String get featureInfoHomeTitle;
+
+  /// No description provided for @featureInfoHomeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick tour of what you can do from Home.'**
+  String get featureInfoHomeSubtitle;
+
+  /// No description provided for @featureInfoHomeStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Challenge'**
+  String get featureInfoHomeStep1Title;
+
+  /// No description provided for @featureInfoHomeStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'One shared puzzle each day. Finish it for streak and weekly ranking.'**
+  String get featureInfoHomeStep1Body;
+
+  /// No description provided for @featureInfoHomeStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get featureInfoHomeStep2Title;
+
+  /// No description provided for @featureInfoHomeStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Classic, Quick Grid, or Match Grid anytime from the Training tab.'**
+  String get featureInfoHomeStep2Body;
+
+  /// No description provided for @featureInfoHomeStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak & season'**
+  String get featureInfoHomeStep3Title;
+
+  /// No description provided for @featureInfoHomeStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your streak alive and track season progress from cards on this screen.'**
+  String get featureInfoHomeStep3Body;
+
+  /// No description provided for @featureInfoPracticeHubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training modes'**
+  String get featureInfoPracticeHubTitle;
+
+  /// No description provided for @featureInfoPracticeHubSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a mode — unlimited sessions on free, with a short ad every two games.'**
+  String get featureInfoPracticeHubSubtitle;
+
+  /// No description provided for @featureInfoPracticeHubStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get featureInfoPracticeHubStep1Title;
+
+  /// No description provided for @featureInfoPracticeHubStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Search players for each club intersection — same rules as Daily.'**
+  String get featureInfoPracticeHubStep1Body;
+
+  /// No description provided for @featureInfoPracticeHubStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Grid'**
+  String get featureInfoPracticeHubStep2Title;
+
+  /// No description provided for @featureInfoPracticeHubStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose from 5 players per cell. 120-second timer, no typing.'**
+  String get featureInfoPracticeHubStep2Body;
+
+  /// No description provided for @featureInfoPracticeHubStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid'**
+  String get featureInfoPracticeHubStep3Title;
+
+  /// No description provided for @featureInfoPracticeHubStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the tray players onto the correct cells. Each player fits exactly one spot.'**
+  String get featureInfoPracticeHubStep3Body;
+
+  /// No description provided for @featureInfoDailyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily puzzle'**
+  String get featureInfoDailyTitle;
+
+  /// No description provided for @featureInfoDailySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill every cell with a player who played for both clubs.'**
+  String get featureInfoDailySubtitle;
+
+  /// No description provided for @featureInfoDailyStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a cell'**
+  String get featureInfoDailyStep1Title;
+
+  /// No description provided for @featureInfoDailyStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Select an empty intersection on the grid.'**
+  String get featureInfoDailyStep1Body;
+
+  /// No description provided for @featureInfoDailyStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Find the link'**
+  String get featureInfoDailyStep2Title;
+
+  /// No description provided for @featureInfoDailyStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a footballer who played for both the row and column clubs.'**
+  String get featureInfoDailyStep2Body;
+
+  /// No description provided for @featureInfoDailyStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Chase rarity'**
+  String get featureInfoDailyStep3Title;
+
+  /// No description provided for @featureInfoDailyStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Rarer answers score more — finish the full grid for a bonus.'**
+  String get featureInfoDailyStep3Body;
+
+  /// No description provided for @featureInfoClassicTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic training'**
+  String get featureInfoClassicTitle;
+
+  /// No description provided for @featureInfoClassicSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited practice with the same search-and-fill flow as Daily.'**
+  String get featureInfoClassicSubtitle;
+
+  /// No description provided for @featureInfoClassicStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Search & place'**
+  String get featureInfoClassicStep1Title;
+
+  /// No description provided for @featureInfoClassicStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a cell, then pick a player who matches both clubs.'**
+  String get featureInfoClassicStep1Body;
+
+  /// No description provided for @featureInfoClassicStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Play anytime'**
+  String get featureInfoClassicStep2Title;
+
+  /// No description provided for @featureInfoClassicStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'No daily limit — train as much as you want.'**
+  String get featureInfoClassicStep2Body;
+
+  /// No description provided for @featureInfoClassicStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads on free'**
+  String get featureInfoClassicStep3Title;
+
+  /// No description provided for @featureInfoClassicStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Free plan: a short rewarded ad every two training sessions.'**
+  String get featureInfoClassicStep3Body;
+
+  /// No description provided for @featureInfoQuickGridTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Grid'**
+  String get featureInfoQuickGridTitle;
+
+  /// No description provided for @featureInfoQuickGridSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Speed mode — pick from five options before the clock hits zero.'**
+  String get featureInfoQuickGridSubtitle;
+
+  /// No description provided for @featureInfoQuickGridStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Five choices'**
+  String get featureInfoQuickGridStep1Title;
+
+  /// No description provided for @featureInfoQuickGridStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Each cell shows 5 players — one is correct for that intersection.'**
+  String get featureInfoQuickGridStep1Body;
+
+  /// No description provided for @featureInfoQuickGridStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'120 seconds'**
+  String get featureInfoQuickGridStep2Title;
+
+  /// No description provided for @featureInfoQuickGridStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'The countdown starts when the board is ready. Finish early for a better score.'**
+  String get featureInfoQuickGridStep2Body;
+
+  /// No description provided for @featureInfoQuickGridStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'No typing'**
+  String get featureInfoQuickGridStep3Title;
+
+  /// No description provided for @featureInfoQuickGridStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Just tap the right name — wrong picks cost points.'**
+  String get featureInfoQuickGridStep3Body;
+
+  /// No description provided for @featureInfoMatchGridTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid'**
+  String get featureInfoMatchGridTitle;
+
+  /// No description provided for @featureInfoMatchGridSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag-and-drop the tray onto the clubs. One correct cell per player.'**
+  String get featureInfoMatchGridSubtitle;
+
+  /// No description provided for @featureInfoMatchGridStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press & drop'**
+  String get featureInfoMatchGridStep1Title;
+
+  /// No description provided for @featureInfoMatchGridStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Hold a player chip, then release on the matching intersection.'**
+  String get featureInfoMatchGridStep1Body;
+
+  /// No description provided for @featureInfoMatchGridStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'One cell each'**
+  String get featureInfoMatchGridStep2Title;
+
+  /// No description provided for @featureInfoMatchGridStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Every tray player belongs to exactly one cell — wrong drops bounce back.'**
+  String get featureInfoMatchGridStep2Body;
+
+  /// No description provided for @featureInfoMatchGridStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'120 seconds'**
+  String get featureInfoMatchGridStep3Title;
+
+  /// No description provided for @featureInfoMatchGridStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Place as many as you can before time runs out.'**
+  String get featureInfoMatchGridStep3Body;
+
+  /// No description provided for @featureInfoTimelineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Career Timeline'**
+  String get featureInfoTimelineTitle;
+
+  /// No description provided for @featureInfoTimelineSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Solve cells with career-era context in mind.'**
+  String get featureInfoTimelineSubtitle;
+
+  /// No description provided for @featureInfoTimelineStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Era matters'**
+  String get featureInfoTimelineStep1Title;
+
+  /// No description provided for @featureInfoTimelineStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Think about when a player was at each club, not only that they played there.'**
+  String get featureInfoTimelineStep1Body;
+
+  /// No description provided for @featureInfoTimelineStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Same grid craft'**
+  String get featureInfoTimelineStep2Title;
+
+  /// No description provided for @featureInfoTimelineStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap cells and search — timeline clues help narrow the right name.'**
+  String get featureInfoTimelineStep2Body;
+
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s new'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CrossBall {version}'**
+  String whatsNewSubtitle(String version);
+
+  /// No description provided for @whatsNewGotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Let\'s go'**
+  String get whatsNewGotIt;
+
+  /// No description provided for @whatsNewStep1Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid'**
+  String get whatsNewStep1Title;
+
+  /// No description provided for @whatsNewStep1Body.
+  ///
+  /// In en, this message translates to:
+  /// **'New Training mode — long-press players and drop them on the matching clubs. Each chip fits exactly one cell.'**
+  String get whatsNewStep1Body;
+
+  /// No description provided for @whatsNewStep2Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Fairer free ads'**
+  String get whatsNewStep2Title;
+
+  /// No description provided for @whatsNewStep2Body.
+  ///
+  /// In en, this message translates to:
+  /// **'On the free plan, a short rewarded ad appears every two training sessions — not every game.'**
+  String get whatsNewStep2Body;
+
+  /// No description provided for @whatsNewStep3Title.
+  ///
+  /// In en, this message translates to:
+  /// **'Help anytime'**
+  String get whatsNewStep3Title;
+
+  /// No description provided for @whatsNewStep3Body.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the ⓘ icon on Home, Training, and each mode for a quick how-to.'**
+  String get whatsNewStep3Body;
 }
 
 class _AppLocalizationsDelegate

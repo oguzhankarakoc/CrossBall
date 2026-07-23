@@ -212,7 +212,7 @@
       }
     }
   },
-  "practiceAdGateHint": "On the free plan, watch a short ad before each new training session.",
+  "practiceAdGateHint": "On the free plan, watch a short ad every two training sessions.",
   "adUnavailable": "Ad isn’t available right now. Try again in a moment.",
   "practicePremiumSkipAds": "Premium: unlimited training, no ads between sessions.",
   "cancel": "Cancel",
@@ -348,7 +348,7 @@
   "matchGridResultPerfectDesc": "Every intersection locked — clean tray work.",
   "matchGridResultPartialDesc": "Session ended with cells still open — placed players still count.",
   "matchGridPlacedStat": "Placed",
-  "practiceUnlimitedHint": "Unlimited training. Watch a short ad to start each new session.",
+  "practiceUnlimitedHint": "Unlimited training. Free plan: a short ad every two sessions.",
   "practiceSessionsPlayedToday": "{count} training sessions today",
   "@practiceSessionsPlayedToday": {
     "placeholders": {
@@ -547,5 +547,79 @@
         "type": "int"
       }
     }
-  }
+  },
+  "featureInfoTooltip": "How this works",
+  "featureInfoGotIt": "Got it",
+  "tipSheetEyebrow": "Tip",
+  "whatsNewEyebrow": "Update",
+  "featureInfoHomeTitle": "Welcome to CrossBall",
+  "featureInfoHomeSubtitle": "A quick tour of what you can do from Home.",
+  "featureInfoHomeStep1Title": "Daily Challenge",
+  "featureInfoHomeStep1Body": "One shared puzzle each day. Finish it for streak and weekly ranking.",
+  "featureInfoHomeStep2Title": "Training",
+  "featureInfoHomeStep2Body": "Practice Classic, Quick Grid, or Match Grid anytime from the Training tab.",
+  "featureInfoHomeStep3Title": "Streak & season",
+  "featureInfoHomeStep3Body": "Keep your streak alive and track season progress from cards on this screen.",
+  "featureInfoPracticeHubTitle": "Training modes",
+  "featureInfoPracticeHubSubtitle": "Pick a mode — unlimited sessions on free, with a short ad every two games.",
+  "featureInfoPracticeHubStep1Title": "Classic",
+  "featureInfoPracticeHubStep1Body": "Search players for each club intersection — same rules as Daily.",
+  "featureInfoPracticeHubStep2Title": "Quick Grid",
+  "featureInfoPracticeHubStep2Body": "Choose from 5 players per cell. 120-second timer, no typing.",
+  "featureInfoPracticeHubStep3Title": "Match Grid",
+  "featureInfoPracticeHubStep3Body": "Drag the tray players onto the correct cells. Each player fits exactly one spot.",
+  "featureInfoDailyTitle": "Daily puzzle",
+  "featureInfoDailySubtitle": "Fill every cell with a player who played for both clubs.",
+  "featureInfoDailyStep1Title": "Tap a cell",
+  "featureInfoDailyStep1Body": "Select an empty intersection on the grid.",
+  "featureInfoDailyStep2Title": "Find the link",
+  "featureInfoDailyStep2Body": "Search for a footballer who played for both the row and column clubs.",
+  "featureInfoDailyStep3Title": "Chase rarity",
+  "featureInfoDailyStep3Body": "Rarer answers score more — finish the full grid for a bonus.",
+  "featureInfoClassicTitle": "Classic training",
+  "featureInfoClassicSubtitle": "Unlimited practice with the same search-and-fill flow as Daily.",
+  "featureInfoClassicStep1Title": "Search & place",
+  "featureInfoClassicStep1Body": "Tap a cell, then pick a player who matches both clubs.",
+  "featureInfoClassicStep2Title": "Play anytime",
+  "featureInfoClassicStep2Body": "No daily limit — train as much as you want.",
+  "featureInfoClassicStep3Title": "Ads on free",
+  "featureInfoClassicStep3Body": "Free plan: a short rewarded ad every two training sessions.",
+  "featureInfoQuickGridTitle": "Quick Grid",
+  "featureInfoQuickGridSubtitle": "Speed mode — pick from five options before the clock hits zero.",
+  "featureInfoQuickGridStep1Title": "Five choices",
+  "featureInfoQuickGridStep1Body": "Each cell shows 5 players — one is correct for that intersection.",
+  "featureInfoQuickGridStep2Title": "120 seconds",
+  "featureInfoQuickGridStep2Body": "The countdown starts when the board is ready. Finish early for a better score.",
+  "featureInfoQuickGridStep3Title": "No typing",
+  "featureInfoQuickGridStep3Body": "Just tap the right name — wrong picks cost points.",
+  "featureInfoMatchGridTitle": "Match Grid",
+  "featureInfoMatchGridSubtitle": "Drag-and-drop the tray onto the clubs. One correct cell per player.",
+  "featureInfoMatchGridStep1Title": "Long-press & drop",
+  "featureInfoMatchGridStep1Body": "Hold a player chip, then release on the matching intersection.",
+  "featureInfoMatchGridStep2Title": "One cell each",
+  "featureInfoMatchGridStep2Body": "Every tray player belongs to exactly one cell — wrong drops bounce back.",
+  "featureInfoMatchGridStep3Title": "120 seconds",
+  "featureInfoMatchGridStep3Body": "Place as many as you can before time runs out.",
+  "featureInfoTimelineTitle": "Career Timeline",
+  "featureInfoTimelineSubtitle": "Solve cells with career-era context in mind.",
+  "featureInfoTimelineStep1Title": "Era matters",
+  "featureInfoTimelineStep1Body": "Think about when a player was at each club, not only that they played there.",
+  "featureInfoTimelineStep2Title": "Same grid craft",
+  "featureInfoTimelineStep2Body": "Tap cells and search — timeline clues help narrow the right name.",
+  "whatsNewTitle": "What's new",
+  "whatsNewSubtitle": "CrossBall {version}",
+  "@whatsNewSubtitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewGotIt": "Let's go",
+  "whatsNewStep1Title": "Match Grid",
+  "whatsNewStep1Body": "New Training mode — long-press players and drop them on the matching clubs. Each chip fits exactly one cell.",
+  "whatsNewStep2Title": "Fairer free ads",
+  "whatsNewStep2Body": "On the free plan, a short rewarded ad appears every two training sessions — not every game.",
+  "whatsNewStep3Title": "Help anytime",
+  "whatsNewStep3Body": "Tap the ⓘ icon on Home, Training, and each mode for a quick how-to."
 }

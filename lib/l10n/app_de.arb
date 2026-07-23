@@ -205,7 +205,7 @@
       }
     }
   },
-  "practiceAdGateHint": "Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.",
+  "practiceAdGateHint": "Im Gratis-Plan schaust du alle zwei Einheiten eine kurze Werbung.",
   "adUnavailable": "Werbung gerade nicht verfügbar. Bitte gleich nochmal versuchen.",
   "practicePremiumSkipAds": "Premium: unbegrenztes Training, keine Werbung zwischen Sessions.",
   "cancel": "Abbrechen",
@@ -341,7 +341,7 @@
   "matchGridResultPerfectDesc": "Jede Schnittstelle sitzt — saubere Ablage.",
   "matchGridResultPartialDesc": "Zeit vorbei oder früh beendet — platzierte Spieler zählen trotzdem.",
   "matchGridPlacedStat": "Platziert",
-  "practiceUnlimitedHint": "Unbegrenztes Training. Vor jeder neuen Runde eine kurze Werbung.",
+  "practiceUnlimitedHint": "Unbegrenztes Training. Gratis: alle zwei Runden eine kurze Werbung.",
   "practiceSessionsPlayedToday": "Heute {count} Trainingseinheiten",
   "@practiceSessionsPlayedToday": {
     "placeholders": {
@@ -540,5 +540,79 @@
         "type": "int"
       }
     }
-  }
+  },
+  "featureInfoTooltip": "So funktioniert’s",
+  "featureInfoGotIt": "Verstanden",
+  "tipSheetEyebrow": "Tipp",
+  "whatsNewEyebrow": "Update",
+  "featureInfoHomeTitle": "Willkommen bei CrossBall",
+  "featureInfoHomeSubtitle": "Kurz erklärt, was du auf dem Startbildschirm machen kannst.",
+  "featureInfoHomeStep1Title": "Tägliches Rätsel",
+  "featureInfoHomeStep1Body": "Jeden Tag ein gemeinsames Puzzle. Abschließen für Serie und Wochenranking.",
+  "featureInfoHomeStep2Title": "Training",
+  "featureInfoHomeStep2Body": "Classic, Quick Grid oder Match Grid jederzeit im Training-Tab spielen.",
+  "featureInfoHomeStep3Title": "Serie & Saison",
+  "featureInfoHomeStep3Body": "Halte deine Serie am Leben und verfolge den Saisonfortschritt auf dieser Seite.",
+  "featureInfoPracticeHubTitle": "Trainingsmodi",
+  "featureInfoPracticeHubSubtitle": "Wähle einen Modus — unbegrenzt im Gratis-Plan, alle zwei Spiele eine kurze Werbung.",
+  "featureInfoPracticeHubStep1Title": "Classic",
+  "featureInfoPracticeHubStep1Body": "Spieler für Club-Schnittpunkte suchen — gleiche Regeln wie Daily.",
+  "featureInfoPracticeHubStep2Title": "Quick Grid",
+  "featureInfoPracticeHubStep2Body": "Pro Zelle aus 5 Spielern wählen. 120 Sekunden, ohne Tippen.",
+  "featureInfoPracticeHubStep3Title": "Match Grid",
+  "featureInfoPracticeHubStep3Body": "Spieler aus dem Tray auf die richtigen Zellen ziehen. Jeder passt genau einmal.",
+  "featureInfoDailyTitle": "Tägliches Puzzle",
+  "featureInfoDailySubtitle": "Fülle jede Zelle mit einem Spieler, der bei beiden Clubs war.",
+  "featureInfoDailyStep1Title": "Zelle antippen",
+  "featureInfoDailyStep1Body": "Wähle einen leeren Schnittpunkt im Raster.",
+  "featureInfoDailyStep2Title": "Verbindung finden",
+  "featureInfoDailyStep2Body": "Suche einen Fußballer, der für Zeilen- und Spaltenclub gespielt hat.",
+  "featureInfoDailyStep3Title": "Seltenheit jagen",
+  "featureInfoDailyStep3Body": "Seltenere Antworten bringen mehr Punkte — volles Raster für Bonus.",
+  "featureInfoClassicTitle": "Classic-Training",
+  "featureInfoClassicSubtitle": "Unbegrenztes Üben mit dem gleichen Suchfluss wie Daily.",
+  "featureInfoClassicStep1Title": "Suchen & setzen",
+  "featureInfoClassicStep1Body": "Zelle tippen, dann einen passenden Spieler wählen.",
+  "featureInfoClassicStep2Title": "Jederzeit",
+  "featureInfoClassicStep2Body": "Kein Tageslimit — trainiere so oft du willst.",
+  "featureInfoClassicStep3Title": "Werbung im Gratis-Plan",
+  "featureInfoClassicStep3Body": "Gratis: alle zwei Trainingseinheiten eine kurze Belohnungswerbung.",
+  "featureInfoQuickGridTitle": "Quick Grid",
+  "featureInfoQuickGridSubtitle": "Tempo-Modus — vor Ablauf der Zeit aus fünf Optionen wählen.",
+  "featureInfoQuickGridStep1Title": "Fünf Optionen",
+  "featureInfoQuickGridStep1Body": "Jede Zelle zeigt 5 Spieler — einer ist für den Schnittpunkt richtig.",
+  "featureInfoQuickGridStep2Title": "120 Sekunden",
+  "featureInfoQuickGridStep2Body": "Der Countdown startet, wenn das Board bereit ist. Früher fertig = besserer Score.",
+  "featureInfoQuickGridStep3Title": "Ohne Tippen",
+  "featureInfoQuickGridStep3Body": "Einfach den richtigen Namen tippen — falsche Treffer kosten Punkte.",
+  "featureInfoMatchGridTitle": "Match Grid",
+  "featureInfoMatchGridSubtitle": "Drag-and-drop vom Tray. Pro Spieler genau eine richtige Zelle.",
+  "featureInfoMatchGridStep1Title": "Gedrückt halten & ablegen",
+  "featureInfoMatchGridStep1Body": "Spielerchip halten und auf dem passenden Schnittpunkt loslassen.",
+  "featureInfoMatchGridStep2Title": "Eine Zelle je Chip",
+  "featureInfoMatchGridStep2Body": "Jeder Tray-Spieler gehört genau einer Zelle — falsche Drops springen zurück.",
+  "featureInfoMatchGridStep3Title": "120 Sekunden",
+  "featureInfoMatchGridStep3Body": "Platziere so viele wie möglich, bevor die Zeit abläuft.",
+  "featureInfoTimelineTitle": "Karriere-Timeline",
+  "featureInfoTimelineSubtitle": "Löse Zellen mit Blick auf die Karrierephasen.",
+  "featureInfoTimelineStep1Title": "Ära zählt",
+  "featureInfoTimelineStep1Body": "Nicht nur ob, sondern wann ein Spieler bei einem Club war.",
+  "featureInfoTimelineStep2Title": "Gleiche Grid-Logik",
+  "featureInfoTimelineStep2Body": "Zellen tippen und suchen — Timeline-Hinweise grenzen den Namen ein.",
+  "whatsNewTitle": "Neuigkeiten",
+  "whatsNewSubtitle": "CrossBall {version}",
+  "@whatsNewSubtitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewGotIt": "Los geht’s",
+  "whatsNewStep1Title": "Match Grid",
+  "whatsNewStep1Body": "Neuer Trainingsmodus — Spieler gedrückt halten und auf die passenden Clubs legen. Jeder Chip hat genau eine Zelle.",
+  "whatsNewStep2Title": "Fairere Werbung",
+  "whatsNewStep2Body": "Im Gratis-Plan erscheint eine kurze Belohnungswerbung alle zwei Trainingseinheiten — nicht jedes Spiel.",
+  "whatsNewStep3Title": "Hilfe jederzeit",
+  "whatsNewStep3Body": "Tippe auf ⓘ auf Home, Training und in jedem Modus für eine kurze Erklärung."
 }

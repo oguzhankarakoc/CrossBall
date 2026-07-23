@@ -29,4 +29,9 @@ class MatchGridBank {
     }
     return null;
   }
+
+  /// cellKey (`row_col`) → canonical player id for that cell.
+  Map<String, String> get expectedIdsByCell => {
+        for (final p in placements) p.cellKey: p.player.id,
+      };
 }

@@ -6,6 +6,8 @@ import '../../core/network/network_providers.dart';
 import '../../features/challenge/data/challenge_repository_impl.dart';
 import '../../features/challenge/domain/challenge.dart';
 import '../../features/puzzle/data/first_puzzle_coach_store.dart';
+import '../../shared/feature_info/feature_info_store.dart';
+import '../../shared/feature_info/whats_new_store.dart';
 import '../../features/puzzle/data/puzzle_repository_impl.dart';
 import '../../features/puzzle/domain/puzzle_repository.dart';
 import '../../features/search/data/search_repository_impl.dart';
@@ -30,6 +32,14 @@ final offlineCacheProvider = Provider<OfflineCache>((ref) => OfflineCache());
 
 final firstPuzzleCoachStoreProvider = Provider<FirstPuzzleCoachStore>(
   (ref) => FirstPuzzleCoachStore(),
+);
+
+final featureInfoStoreProvider = Provider<FeatureInfoStore>(
+  (ref) => FeatureInfoStore(),
+);
+
+final whatsNewStoreProvider = Provider<WhatsNewStore>(
+  (ref) => WhatsNewStore(),
 );
 
 final activePuzzleCacheProvider = Provider<ActivePuzzleCache>(

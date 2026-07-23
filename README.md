@@ -4,7 +4,7 @@
 
 Production-grade football intersection puzzle app for iOS and Android. Name players who played for **both** clubs at each grid intersection.
 
-**Status (soft launch):** iOS marketing train **`1.0.2`** (build **25** — practice ad-gate reliability + quota UI cleanup). Prior soft-launch builds: `1.0.2` (+24 Match Grid/icon), `1.0.1` (+23 ads/coach), `1.0.0` (+22) closed. AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
+**Status (soft launch):** iOS marketing train **`1.0.2`** (build **26** — Match Grid UX, what's-new on update, ad every 2 sessions). Prior soft-launch builds: `1.0.2` (+25 practice ad-gate), `1.0.1` (+23 ads/coach), `1.0.0` (+22) closed. AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
 
 ## Stack
 

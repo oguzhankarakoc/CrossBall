@@ -30,6 +30,8 @@ import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/session_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
+import '../../../shared/feature_info/feature_info_sheet.dart';
+import '../../../shared/feature_info/feature_info_topic.dart';
 import '../../../features/search/domain/search.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
@@ -65,6 +67,8 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   bool _firstPuzzleCoachScheduled = false;
   List<Player> _matchTray = const [];
   final Map<String, Player> _matchLocked = {};
+  /// Canonical Match Grid answers: cellKey → playerId.
+  Map<String, String> _matchExpectedByCell = const {};
   String? _matchBankError;
   bool _matchBankLoading = false;
   String? _matchBankPuzzleId;
@@ -72,6 +76,15 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   bool get _isTrainingMode => widget.params.mode.isTraining;
   bool get _isMatchGrid => widget.params.mode == PuzzleMode.matchGrid;
   bool get _isTimedTraining => widget.params.mode.isTimedTraining;
+
+  FeatureInfoTopic? get _featureInfoTopic => switch (widget.params.mode) {
+        PuzzleMode.daily => FeatureInfoTopic.daily,
+        PuzzleMode.practice => FeatureInfoTopic.classicPractice,
+        PuzzleMode.quickGrid => FeatureInfoTopic.quickGrid,
+        PuzzleMode.matchGrid => FeatureInfoTopic.matchGrid,
+        PuzzleMode.timeline => FeatureInfoTopic.timeline,
+        PuzzleMode.challenge => null,
+      };
 
   @override
   void initState() {
@@ -96,17 +109,40 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     );
     ref.listenManual(
       puzzleGameProvider(widget.params).select(
-        (s) => (s.isLoading, s.puzzle?.id, s.error, s.isComplete),
+        (s) => (
+          s.isLoading,
+          s.puzzle?.id,
+          s.error,
+          s.isComplete,
+          s.matchGridTray,
+          s.matchGridExpectedIds,
+        ),
       ),
       (previous, next) {
-        final (isLoading, puzzleId, error, isComplete) = next;
+        final (isLoading, puzzleId, error, isComplete, matchTray, expected) = next;
         if (!isLoading &&
             puzzleId != null &&
             error == null &&
             !isComplete) {
           _maybeShowFirstPuzzleCoach();
           if (_isMatchGrid) {
-            unawaited(_ensureMatchGridBank(puzzleId));
+            if (matchTray != null &&
+                matchTray.isNotEmpty &&
+                expected != null &&
+                expected.isNotEmpty) {
+              if (_matchBankPuzzleId != puzzleId || _matchTray.isEmpty) {
+                setState(() {
+                  _matchTray = List<Player>.from(matchTray);
+                  _matchExpectedByCell = Map<String, String>.from(expected);
+                  _matchBankLoading = false;
+                  _matchBankError = null;
+                  _matchBankPuzzleId = puzzleId;
+                  _matchLocked.clear();
+                });
+              }
+            } else {
+              unawaited(_ensureMatchGridBank(puzzleId));
+            }
           }
         }
       },
@@ -127,6 +163,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       _matchBankError = null;
       _matchBankPuzzleId = puzzleId;
       _matchTray = const [];
+      _matchExpectedByCell = const {};
       _matchLocked.clear();
     });
 
@@ -136,6 +173,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       if (!mounted) return;
       setState(() {
         _matchTray = List<Player>.from(bank.tray);
+        _matchExpectedByCell = bank.expectedIdsByCell;
         _matchBankLoading = false;
       });
     } catch (e) {
@@ -151,11 +189,26 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     final key = '${row}_$col';
     if (_matchLocked.containsKey(key)) return false;
 
+    // Canonical Match Grid: each tray chip unlocks exactly one cell.
+    // Career intersection alone is NOT enough (multi-club stars fit several
+    // cells; accepting the wrong one leaves the board unsolvable).
+    final expectedId = _matchExpectedByCell[key];
+    if (expectedId == null || expectedId != player.id) {
+      cbDebug('MatchGrid', 'bounce non-canonical drop', {
+        'cell': key,
+        'playerId': player.id,
+        'playerName': player.name,
+        'expectedId': expectedId,
+      });
+      return false;
+    }
+
     final notifier = ref.read(puzzleGameProvider(widget.params).notifier);
     notifier.selectCell(row, col);
     try {
       final result = await notifier.submitAnswer(player);
       if (result == null || !result.correct) {
+        // Career data should match the bank pick; bounce if server disagrees.
         return false;
       }
       if (!mounted) return true;
@@ -264,6 +317,8 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       appBar: CrossBallAppBar(
         title: _title(l10n),
         actions: [
+          if (_featureInfoTopic != null)
+            FeatureInfoIconButton(topic: _featureInfoTopic!),
           // Solved progress only — training quota is unlimited, so no "3/9999" chip.
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.md),
@@ -291,6 +346,16 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       body: PitchBackground(
         child: Column(
           children: [
+            // Auto tip once per mode (Daily keeps its dedicated first-puzzle coach).
+            if (_featureInfoTopic != null &&
+                widget.params.mode != PuzzleMode.daily &&
+                !game.isLoading &&
+                game.error == null &&
+                game.puzzle != null)
+              FeatureInfoAutoPresenter(
+                key: ValueKey(_featureInfoTopic),
+                topic: _featureInfoTopic!,
+              ),
             Expanded(
               child: game.isLoading
             ? const AppPuzzleSkeleton()
@@ -343,6 +408,19 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                 ?.retryAfterSeconds ??
                             30,
                         onRetry: _retryDailyPuzzle,
+                      )
+                : game.error == 'match_grid_bank_failed'
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.lg),
+                          child: CrossBallErrorPanel(
+                            message: l10n.matchGridBankError,
+                            icon: Icons.wifi_off_rounded,
+                            onRetry: () => ref
+                                .read(puzzleGameProvider(widget.params).notifier)
+                                .loadPuzzle(forceRefresh: true),
+                          ),
+                        ),
                       )
                 : game.error == 'puzzle_load_failed' ||
                         game.error == 'practice_load_failed'
@@ -415,7 +493,9 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                       compact: true,
                                     ),
                                   ),
-                                if (_isTimedTraining)
+                                if (_isTimedTraining &&
+                                    !(_isMatchGrid &&
+                                        (_matchBankLoading || _matchTray.isEmpty)))
                                   PuzzleCountdownTimer(
                                     startedAt: game.startedAt ?? DateTime.now(),
                                     duration: Duration(
@@ -429,7 +509,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                           .onQuickGridTimeUp();
                                     },
                                   )
-                                else
+                                else if (!_isTimedTraining)
                                   PuzzleTimer(startedAt: game.startedAt ?? DateTime.now()),
                                 Expanded(
                                   child: _isMatchGrid
@@ -438,7 +518,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                             horizontal: AppSpacing.md,
                                             vertical: AppSpacing.sm,
                                           ),
-                                          child: _matchBankLoading
+                                          child: _matchBankLoading || _matchTray.isEmpty
                                               ? const AppPuzzleSkeleton()
                                               : _matchBankError != null
                                                   ? Center(
@@ -466,6 +546,8 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
                                                       cells: game.cells,
                                                       tray: _matchTray,
                                                       lockedByCell: _matchLocked,
+                                                      expectedIdsByCell:
+                                                          _matchExpectedByCell,
                                                       validatingCellKey:
                                                           game.validatingCellKey,
                                                       onDropPlayer: _onMatchGridDrop,

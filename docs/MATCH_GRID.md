@@ -17,10 +17,11 @@ Practice sub-mode: 3×3 club grid with a **shuffled tray of the 9 correct player
 | Pool | Exactly 9 correct players (no distractors), **shuffled** each session |
 | Wrong drop | Bounce back, no score penalty |
 | Hints | None |
-| Canonical answer | One player id per cell at bank generation |
+| Canonical answer | One player id per cell at bank generation; **drops must match that id** (not any intersection) |
+| Bank assignment | Scarcity-first exact cover: fill scarcest cell first; prefer players unique to fewer cells |
 | Timer | **120s** countdown (same for Quick Grid) |
-| Completion | Match Grid–specific score summary → replay requires **rewarded ad** (free) |
-| Quota | Practice **unlimited**; free users need rewarded ad for **each new session** (and hints in other modes) |
+| Completion | Match Grid–specific score summary → next free session may need **rewarded ad** (every 2 sessions) |
+| Quota | Practice **unlimited**; free users need rewarded ad every **2** sessions |
 | Offline | Online required |
 | Daily | Unchanged |
 
@@ -34,38 +35,35 @@ Practice sub-mode: 3×3 club grid with a **shuffled tray of the 9 correct player
 ```
 Practice tab → ?mode=matchGrid
   → practice-puzzle (existing grid)
-  → match-grid-bank (9 canonical players for cells)
-  → Match Grid UI (DragTarget cells + Draggable tray)
+  → match-grid-bank in parallel with start-session (9 tray players)
+  → Match Grid UI (named club headers + DragTarget + Draggable tray)
   → validate-answer on successful drop (anti-cheat)
   → complete-session
 ```
 
 ## Practice quota change (all training modes)
 
-- Remove 5/10 hard caps (SQL `practice_daily_limit` → high sentinel / unlimited) — migration `054_practice_unlimited_ad_gate.sql`.
-- Free: `needs_ad` before every new session (not only after first).
+- Soft-cap 9999 (migration `054`).
+- Free: `needs_ad` when `completed_today % 2 == 0` and no unlock (migration `055`) — ad on 1st, 3rd, 5th… session.
 - Premium: no ads between sessions.
 - Hints (Classic/Timeline): still rewarded ad for free (already).
 
-## Client polish (shipped)
+## Client polish
 
-- Result copy: `matchGridResultTitle` / perfect vs partial subtitles; **Placed X/Y** instead of hints.
+- Club headers always show **short name under crest** (crests are original art, not licensed logos).
+- Layout scales to available height/width (no RenderFlex overflow on compact phones).
+- Timer starts only when the Match Grid tray is ready.
+- Result copy: `matchGridResultTitle` / perfect vs partial; **Placed X/Y** instead of hints.
 - Haptics: selection on hover, medium on correct drop, heavy on bounce.
-- Empty / error: `CrossBallEmptyState` (tray cleared), `CrossBallErrorPanel` (bank load fail).
-
-## Related UX fixes on this branch
-
-- App icon: full-bleed leather icon (no white corner fringe / inset square artifact).
-- Search green badge: Daily/Practice/Timeline show cell-relevant highlight; `search-players` marks `is_cell_relevant` when the player validates (competitive only skips ranking boost).
-- Faster mode open: skip redundant puzzle-by-id hydrate when cells are valid; parallel daily gates; practice quota TTL + Practice tab prefetch; home warms daily puzzle cache.
 
 ## Deploy checklist
 
 ```bash
-./scripts/run_migrations.sh 054
+./scripts/run_migrations.sh 055
 supabase functions deploy match-grid-bank
-supabase functions deploy search-players   # if not already deployed this train
 ```
+
+> **Why scarcity-first:** Stars like Coutinho fit multiple cells (Inter×Liverpool *and* Barça×Liverpool). Naive per-cell random pick can lock him on the less obvious cell and confuse players. Unique / scarce chips are assigned first so multi-club stars go where they’re still needed.
 
 ## Key files
 
@@ -73,8 +71,8 @@ supabase functions deploy search-players   # if not already deployed this train
 |------|------|
 | Spec | `docs/MATCH_GRID.md` (this file) |
 | Mode | `PuzzleMode.matchGrid`, Practice tab card, l10n EN/TR/DE |
-| Constants | `GameConstants.matchGridDurationSec` (120) |
-| Migration | `supabase/migrations/054_practice_unlimited_ad_gate.sql` |
+| Constants | `GameConstants.matchGridDurationSec` (120), `practiceRewardedAdEveryNSessions` (2) |
+| Migration | `supabase/migrations/055_practice_ad_every_two_sessions.sql` |
 | Edge | `supabase/functions/match-grid-bank/` |
 | UI | `lib/features/puzzle/presentation/widgets/match_grid_playfield.dart` |
 | API | `lib/features/puzzle/data/match_grid_bank_api.dart` |

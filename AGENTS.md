@@ -114,6 +114,7 @@ Consume tokens — never hardcode:
 
 - Prefer structured sources + reconcile — never scrape Google SERPs.
 - Soft-launch / transfer-window fix: `python3 -m pipeline career-truth-pass` (+ `--load`).
+- Player duplicates / false `identity_key` clusters: `python3 -m pipeline identity-heal` (dry-run), then `--apply`.
 - See `docs/CAREER_TRUTH_PASS.md` and `data_pipeline/README.md`.
 
 ## Premium
@@ -177,10 +178,11 @@ Match Grid / practice quota (when shipping that train):
 
 ```bash
 ./scripts/run_migrations.sh 054
+./scripts/run_migrations.sh 055
 supabase functions deploy match-grid-bank
 ```
 
-See `docs/MATCH_GRID.md` for mode rules (drag tray, 120s, bounce on wrong, unlimited practice + ad gate).
+See `docs/MATCH_GRID.md` for mode rules (drag tray, 120s, bounce on wrong, unlimited practice + ad every 2 free sessions).
 
 ## Environment Variables
 

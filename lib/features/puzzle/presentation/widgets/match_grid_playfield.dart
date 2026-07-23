@@ -17,6 +17,7 @@ class MatchGridPlayfield extends StatelessWidget {
     required this.cells,
     required this.tray,
     required this.lockedByCell,
+    required this.expectedIdsByCell,
     required this.onDropPlayer,
     this.validatingCellKey,
   });
@@ -25,6 +26,8 @@ class MatchGridPlayfield extends StatelessWidget {
   final Map<String, PuzzleCell> cells;
   final List<Player> tray;
   final Map<String, Player> lockedByCell;
+  /// Canonical bank map: `row_col` → player id. Wrong chips bounce immediately.
+  final Map<String, String> expectedIdsByCell;
   final Future<bool> Function(int row, int col, Player player) onDropPlayer;
   final String? validatingCellKey;
 
@@ -32,8 +35,6 @@ class MatchGridPlayfield extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
-    final screenWidth = MediaQuery.sizeOf(context).width;
-    final maxWidth = (screenWidth - AppSpacing.md * 2).clamp(300.0, 420.0);
 
     return Column(
       children: [
@@ -47,15 +48,21 @@ class MatchGridPlayfield extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         Expanded(
           flex: 5,
-          child: Center(
-            child: _MatchGridTable(
-              puzzle: puzzle,
-              cells: cells,
-              lockedByCell: lockedByCell,
-              validatingCellKey: validatingCellKey,
-              maxWidth: maxWidth,
-              onDropPlayer: onDropPlayer,
-            ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Center(
+                child: _MatchGridTable(
+                  puzzle: puzzle,
+                  cells: cells,
+                  lockedByCell: lockedByCell,
+                  expectedIdsByCell: expectedIdsByCell,
+                  validatingCellKey: validatingCellKey,
+                  maxWidth: constraints.maxWidth,
+                  maxHeight: constraints.maxHeight,
+                  onDropPlayer: onDropPlayer,
+                ),
+              );
+            },
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -123,15 +130,29 @@ class _PlayerChipBody extends StatelessWidget {
   final Player player;
   final bool compact;
 
+  /// Tray-friendly label: keep short names; prefer surname for long legal names.
+  static String compactLabel(String name) {
+    final parts =
+        name.trim().split(RegExp(r'\s+')).where((p) => p.isNotEmpty).toList();
+    if (parts.isEmpty) return name;
+    if (parts.length <= 2) return parts.join(' ');
+    // "José Diogo Dalot Teixeira" → "Dalot Teixeira" (last two tokens).
+    return '${parts[parts.length - 2]} ${parts.last}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.cb;
     final theme = Theme.of(context);
+    final label = compactLabel(player.name);
+    final avatarSize = compact ? 22.0 : 32.0;
+    final fontSize = compact ? 9.0 : 10.5;
+
     return Container(
-      width: compact ? null : 108,
+      width: compact ? null : 92,
       padding: EdgeInsets.symmetric(
-        horizontal: compact ? AppSpacing.sm : AppSpacing.sm,
-        vertical: compact ? 4 : AppSpacing.sm,
+        horizontal: compact ? 4 : 6,
+        vertical: compact ? 2 : 6,
       ),
       decoration: BoxDecoration(
         color: colors.surface,
@@ -143,18 +164,20 @@ class _PlayerChipBody extends StatelessWidget {
         children: [
           PlayerAvatar(
             seed: player.id,
-            size: compact ? 28 : 40,
+            size: avatarSize,
             nationalityCode: player.nationalityCode,
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: compact ? 2 : 3),
           Text(
-            player.name,
-            maxLines: 2,
+            label,
+            maxLines: compact ? 1 : 2,
             overflow: TextOverflow.ellipsis,
             textAlign: TextAlign.center,
             style: theme.textTheme.labelSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              height: 1.15,
+              fontSize: fontSize,
+              fontWeight: FontWeight.w600,
+              height: 1.1,
+              color: colors.textSecondary,
             ),
           ),
         ],
@@ -168,16 +191,20 @@ class _MatchGridTable extends StatelessWidget {
     required this.puzzle,
     required this.cells,
     required this.lockedByCell,
+    required this.expectedIdsByCell,
     required this.onDropPlayer,
     required this.maxWidth,
+    required this.maxHeight,
     this.validatingCellKey,
   });
 
   final Puzzle puzzle;
   final Map<String, PuzzleCell> cells;
   final Map<String, Player> lockedByCell;
+  final Map<String, String> expectedIdsByCell;
   final Future<bool> Function(int row, int col, Player player) onDropPlayer;
   final double maxWidth;
+  final double maxHeight;
   final String? validatingCellKey;
 
   @override
@@ -185,74 +212,115 @@ class _MatchGridTable extends StatelessWidget {
     final gridSize = puzzle.gridSize;
     final colors = context.cb;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    const headerFraction = 0.28;
     const gridPadding = AppSpacing.sm;
-    final innerWidth = maxWidth - gridPadding * 2;
-    final headerWidth = (innerWidth * headerFraction).clamp(72.0, 100.0);
-    final cellSize =
-        ((innerWidth - headerWidth) / gridSize).floorToDouble().clamp(52.0, 96.0);
+    const cellGap = 4.0; // matches _DropCell margin * 2
+    const headerFraction = 0.30;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.lgBorder,
-        color: isDark
-            ? colors.surfaceElevated.withValues(alpha: 0.9)
-            : colors.surface,
-        border: Border.all(color: colors.glassBorder),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(gridPadding),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Row(
+    final usableW = (maxWidth - gridPadding * 2).clamp(200.0, 440.0);
+    var headerWidth = (usableW * headerFraction).clamp(78.0, 108.0);
+    var cellSize =
+        ((usableW - headerWidth - cellGap * gridSize) / gridSize).floorToDouble();
+
+    // Badge + 2-line short label (original crests are not recognizable alone).
+    var badgeSize = (cellSize * 0.42).clamp(26.0, 38.0);
+    var colHeaderHeight = badgeSize + 28.0;
+    var tableHeight =
+        gridPadding * 2 + colHeaderHeight + (cellSize + cellGap) * gridSize;
+
+    if (tableHeight > maxHeight && maxHeight > 120) {
+      final scale = maxHeight / tableHeight;
+      cellSize = (cellSize * scale).floorToDouble().clamp(44.0, cellSize);
+      headerWidth = (headerWidth * scale).clamp(64.0, headerWidth);
+      badgeSize = (cellSize * 0.42).clamp(24.0, 36.0);
+      colHeaderHeight = badgeSize + 26.0;
+      tableHeight =
+          gridPadding * 2 + colHeaderHeight + (cellSize + cellGap) * gridSize;
+    }
+
+    cellSize = cellSize.clamp(44.0, 92.0);
+    // Keep a few px of slack so badge+label never trip RenderFlex overflow.
+    final tableWidth = headerWidth + (cellSize + cellGap) * gridSize + gridPadding * 2;
+    tableHeight =
+        gridPadding * 2 + colHeaderHeight + (cellSize + cellGap) * gridSize;
+
+    return FittedBox(
+      fit: BoxFit.contain,
+      child: SizedBox(
+        width: tableWidth,
+        height: tableHeight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.lgBorder,
+            color: isDark
+                ? colors.surfaceElevated.withValues(alpha: 0.9)
+                : colors.surface,
+            border: Border.all(color: colors.glassBorder),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(gridPadding),
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(width: headerWidth, height: cellSize * 0.7),
-                for (var col = 0; col < gridSize; col++)
+                SizedBox(
+                  height: colHeaderHeight,
+                  child: Row(
+                    children: [
+                      SizedBox(width: headerWidth),
+                      for (var col = 0; col < gridSize; col++)
+                        SizedBox(
+                          width: cellSize + cellGap,
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: PuzzleClubTile(
+                                club: puzzle.colClubAt(col),
+                                badgeSize: badgeSize,
+                                maxLabelWidth: cellSize - 2,
+                                labelAbove: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                for (var row = 0; row < gridSize; row++)
                   SizedBox(
-                    width: cellSize,
-                    height: cellSize * 0.7,
-                    child: Center(
-                      child: ClubBadge(
-                        club: puzzle.colClubAt(col),
-                        size: (cellSize * 0.42).clamp(28.0, 40.0),
-                        showLabel: false,
-                        compact: true,
-                      ),
+                    height: cellSize + cellGap,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: headerWidth,
+                          child: Center(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: PuzzleClubTile(
+                                club: puzzle.rowClubAt(row),
+                                badgeSize: badgeSize,
+                                maxLabelWidth: headerWidth - 4,
+                                axis: Axis.horizontal,
+                              ),
+                            ),
+                          ),
+                        ),
+                        for (var col = 0; col < gridSize; col++)
+                          _DropCell(
+                            size: cellSize,
+                            row: row,
+                            col: col,
+                            locked: lockedByCell['${row}_$col'],
+                            expectedPlayerId:
+                                expectedIdsByCell['${row}_$col'],
+                            isValidating: validatingCellKey == '${row}_$col',
+                            solved: cells['${row}_$col']?.isSolved == true,
+                            onDropPlayer: onDropPlayer,
+                          ),
+                      ],
                     ),
                   ),
               ],
             ),
-            for (var row = 0; row < gridSize; row++)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizedBox(
-                    width: headerWidth,
-                    height: cellSize,
-                    child: Center(
-                      child: ClubBadge(
-                        club: puzzle.rowClubAt(row),
-                        size: (cellSize * 0.42).clamp(28.0, 40.0),
-                        showLabel: false,
-                        compact: true,
-                      ),
-                    ),
-                  ),
-                  for (var col = 0; col < gridSize; col++)
-                    _DropCell(
-                      size: cellSize,
-                      row: row,
-                      col: col,
-                      locked: lockedByCell['${row}_$col'],
-                      isValidating: validatingCellKey == '${row}_$col',
-                      solved: cells['${row}_$col']?.isSolved == true,
-                      onDropPlayer: onDropPlayer,
-                    ),
-                ],
-              ),
-          ],
+          ),
         ),
       ),
     );
@@ -266,6 +334,7 @@ class _DropCell extends StatefulWidget {
     required this.col,
     required this.onDropPlayer,
     this.locked,
+    this.expectedPlayerId,
     this.isValidating = false,
     this.solved = false,
   });
@@ -274,6 +343,7 @@ class _DropCell extends StatefulWidget {
   final int row;
   final int col;
   final Player? locked;
+  final String? expectedPlayerId;
   final bool isValidating;
   final bool solved;
   final Future<bool> Function(int row, int col, Player player) onDropPlayer;
@@ -285,6 +355,11 @@ class _DropCell extends StatefulWidget {
 class _DropCellState extends State<_DropCell> {
   bool _hover = false;
 
+  bool _isCanonical(Player player) {
+    final expected = widget.expectedPlayerId;
+    return expected != null && expected == player.id;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colors = context.cb;
@@ -293,6 +368,8 @@ class _DropCellState extends State<_DropCell> {
     return DragTarget<Player>(
       onWillAcceptWithDetails: (details) {
         if (locked != null || widget.solved) return false;
+        // Reject non-canonical chips early — career intersection is NOT enough.
+        if (!_isCanonical(details.data)) return false;
         if (!_hover) {
           HapticFeedback.selectionClick();
         }
@@ -302,6 +379,10 @@ class _DropCellState extends State<_DropCell> {
       onLeave: (_) => setState(() => _hover = false),
       onAcceptWithDetails: (details) async {
         setState(() => _hover = false);
+        if (!_isCanonical(details.data)) {
+          HapticFeedback.heavyImpact();
+          return;
+        }
         final ok = await widget.onDropPlayer(widget.row, widget.col, details.data);
         if (!ok) {
           HapticFeedback.heavyImpact();
@@ -343,8 +424,14 @@ class _DropCellState extends State<_DropCell> {
                   ),
                 )
               : locked != null
-                  ? Center(
-                      child: _PlayerChipBody(player: locked, compact: true),
+                  ? Padding(
+                      padding: const EdgeInsets.all(2),
+                      child: Center(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: _PlayerChipBody(player: locked, compact: true),
+                        ),
+                      ),
                     )
                   : Icon(
                       Icons.add_rounded,

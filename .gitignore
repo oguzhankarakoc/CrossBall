@@ -59,6 +59,8 @@ data_pipeline/data/raw/kaggle/
 data_pipeline/data/cache/
 reports/career_gaps.csv
 reports/career_truth_pass.csv
+reports/identity_false_clusters.csv
+reports/identity_merge_candidates.csv
 
 # Symbolication related
 app.*.symbols

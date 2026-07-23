@@ -23,6 +23,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../../shared/components/app_snackbar.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/widgets/crossball_ui.dart';
+import '../../../shared/feature_info/feature_info_sheet.dart';
+import '../../../shared/feature_info/feature_info_topic.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -100,6 +102,7 @@ class HomeScreen extends ConsumerWidget {
       appBar: CrossBallAppBar(
         title: l10n.homeTitle,
         actions: [
+          const FeatureInfoIconButton(topic: FeatureInfoTopic.home),
           IconButton(
             icon: Icon(Icons.insights_rounded, color: colors.accent),
             tooltip: l10n.stats,
@@ -117,6 +120,7 @@ class HomeScreen extends ConsumerWidget {
           bottom: false,
           child: Column(
             children: [
+              const FeatureInfoAutoPresenter(topic: FeatureInfoTopic.home),
               Expanded(
                 child: ResponsiveContent(
                   padding: EdgeInsets.zero,

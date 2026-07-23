@@ -218,6 +218,7 @@ SELECT public.refresh_player_club_intersections();
 | `sync-api-football` | Fetch transfers from API-Football → patch CSV (+ optional `--load`) |
 | `career-gap-report` | Detect stale/missing career stints → `reports/career_gaps.csv` |
 | `career-truth-pass` | One-shot: curated+API patches → reconcile → `enriched_careers.csv` + truth report (no scrape; optional `--load`). Soft-launch runbook: [CAREER_TRUTH_PASS.md](../docs/CAREER_TRUTH_PASS.md) |
+| `identity-heal` | Audit player duplicates / false `identity_key` clusters → `reports/identity_*.csv` (optional `--apply` to split+unify+hard-dedupe) |
 | `career-enrich` | API sync (all teams) + reconcile + write `enriched_careers.csv` (+ optional `--load`) |
 | `ensure-daily` | Ensure today's global daily puzzle exists in PostgreSQL |
 | `apply-patches --light` | Daily sync: manual + API-Football, refresh club graph, skip dedupe/enriched |
@@ -234,12 +235,21 @@ The ETL maps legacy/alternate club names to canonical slugs via `LEGACY_CLUB_SLU
 - `data/raw/clubs.csv` — clubs with badge metadata
 - Deterministic content hash logged at end
 
-## Tests
+## Player identity hygiene
+
+Duplicate display names (short vs legal) and colliding Iberian surnames (`perez|a`)
+break search previews and can leak careers across unrelated players via
+`player_identity_group_ids`.
 
 ```bash
-cd data_pipeline
-pytest tests/ -q
+# Dry-run audit → reports/identity_false_clusters.csv + identity_merge_candidates.csv
+cd data_pipeline && python3 -m pipeline identity-heal
+
+# Apply: split false clusters → unify legal-name variants → hard-merge → refresh views
+cd data_pipeline && python3 -m pipeline identity-heal --apply
 ```
+
+Safe to re-run; prefer dry-run after large ETL loads.
 
 CI runs these tests on every push (see `.github/workflows/ci.yml`).
 

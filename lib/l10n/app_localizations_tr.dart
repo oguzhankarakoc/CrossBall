@@ -511,7 +511,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceAdGateHint =>
-      'Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.';
+      'Ücretsiz planda her iki antrenmanda bir kısa reklam izlemen gerekir.';
 
   @override
   String get adUnavailable =>
@@ -853,7 +853,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceUnlimitedHint =>
-      'Sınırsız antrenman. Her yeni tur için kısa bir reklam izle.';
+      'Sınırsız antrenman. Ücretsiz planda her iki turda bir kısa reklam.';
 
   @override
   String practiceSessionsPlayedToday(int count) {
@@ -1085,4 +1085,236 @@ class AppLocalizationsTr extends AppLocalizations {
   String timeDaysAgo(int count) {
     return '$count gün önce';
   }
+
+  @override
+  String get featureInfoTooltip => 'Nasıl çalışır';
+
+  @override
+  String get featureInfoGotIt => 'Anladım';
+
+  @override
+  String get tipSheetEyebrow => 'İpucu';
+
+  @override
+  String get whatsNewEyebrow => 'Güncelleme';
+
+  @override
+  String get featureInfoHomeTitle => 'CrossBall’a hoş geldin';
+
+  @override
+  String get featureInfoHomeSubtitle =>
+      'Ana sayfada neler yapabileceğine kısa bir bakış.';
+
+  @override
+  String get featureInfoHomeStep1Title => 'Günün bulmacası';
+
+  @override
+  String get featureInfoHomeStep1Body =>
+      'Her gün tek ortak bulmaca. Seri ve haftalık sıralama için tamamla.';
+
+  @override
+  String get featureInfoHomeStep2Title => 'Antrenman';
+
+  @override
+  String get featureInfoHomeStep2Body =>
+      'Klasik, Hızlı Grid veya Match Grid’i Antrenman sekmesinden istediğin zaman oyna.';
+
+  @override
+  String get featureInfoHomeStep3Title => 'Seri ve sezon';
+
+  @override
+  String get featureInfoHomeStep3Body =>
+      'Serini canlı tut; sezon ilerlemeni bu ekrandaki kartlardan takip et.';
+
+  @override
+  String get featureInfoPracticeHubTitle => 'Antrenman modları';
+
+  @override
+  String get featureInfoPracticeHubSubtitle =>
+      'Bir mod seç — ücretsiz planda sınırsız oyun; her iki turda bir kısa reklam.';
+
+  @override
+  String get featureInfoPracticeHubStep1Title => 'Klasik';
+
+  @override
+  String get featureInfoPracticeHubStep1Body =>
+      'Kulüp kesişimleri için oyuncu ara — Günlük ile aynı kurallar.';
+
+  @override
+  String get featureInfoPracticeHubStep2Title => 'Hızlı Grid';
+
+  @override
+  String get featureInfoPracticeHubStep2Body =>
+      'Her hücrede 5 oyuncudan seç. 120 saniye, yazısız.';
+
+  @override
+  String get featureInfoPracticeHubStep3Title => 'Match Grid';
+
+  @override
+  String get featureInfoPracticeHubStep3Body =>
+      'Tepsiden oyuncuları doğru hücrelere sürükle. Her oyuncunun tek doğru yeri var.';
+
+  @override
+  String get featureInfoDailyTitle => 'Günün bulmacası';
+
+  @override
+  String get featureInfoDailySubtitle =>
+      'Her hücreyi her iki kulüpte de oynamış bir oyuncuyla doldur.';
+
+  @override
+  String get featureInfoDailyStep1Title => 'Hücreye dokun';
+
+  @override
+  String get featureInfoDailyStep1Body => 'Tabloda boş bir kesişim seç.';
+
+  @override
+  String get featureInfoDailyStep2Title => 'Bağlantıyı bul';
+
+  @override
+  String get featureInfoDailyStep2Body =>
+      'Hem satır hem sütun kulübünde forma giymiş oyuncuyu ara.';
+
+  @override
+  String get featureInfoDailyStep3Title => 'Nadiri yakala';
+
+  @override
+  String get featureInfoDailyStep3Body =>
+      'Daha nadir cevaplar daha çok puan getirir — tüm grid’i bitirerek bonus al.';
+
+  @override
+  String get featureInfoClassicTitle => 'Klasik antrenman';
+
+  @override
+  String get featureInfoClassicSubtitle =>
+      'Günlük ile aynı arama akışı — sınırsız pratik.';
+
+  @override
+  String get featureInfoClassicStep1Title => 'Ara ve yerleştir';
+
+  @override
+  String get featureInfoClassicStep1Body =>
+      'Hücreye dokun, her iki kulübe uyan oyuncuyu seç.';
+
+  @override
+  String get featureInfoClassicStep2Title => 'İstediğin zaman';
+
+  @override
+  String get featureInfoClassicStep2Body =>
+      'Günlük limit yok — dilediğin kadar antrenman yap.';
+
+  @override
+  String get featureInfoClassicStep3Title => 'Ücretsiz reklam';
+
+  @override
+  String get featureInfoClassicStep3Body =>
+      'Ücretsiz plan: her iki antrenmanda bir kısa ödüllü reklam.';
+
+  @override
+  String get featureInfoQuickGridTitle => 'Hızlı Grid';
+
+  @override
+  String get featureInfoQuickGridSubtitle =>
+      'Hız modu — süre bitmeden beş seçenekten doğru olanı seç.';
+
+  @override
+  String get featureInfoQuickGridStep1Title => 'Beş seçenek';
+
+  @override
+  String get featureInfoQuickGridStep1Body =>
+      'Her hücrede 5 oyuncu çıkar; biri o kesişim için doğru.';
+
+  @override
+  String get featureInfoQuickGridStep2Title => '120 saniye';
+
+  @override
+  String get featureInfoQuickGridStep2Body =>
+      'Sayaç tahta hazır olunca başlar. Erken bitirmek skoru yükseltir.';
+
+  @override
+  String get featureInfoQuickGridStep3Title => 'Yazısız';
+
+  @override
+  String get featureInfoQuickGridStep3Body =>
+      'Doğru isme dokun — yanlış seçimler puan düşürür.';
+
+  @override
+  String get featureInfoMatchGridTitle => 'Match Grid';
+
+  @override
+  String get featureInfoMatchGridSubtitle =>
+      'Tepsiden sürükle-bırak. Her oyuncunun tek doğru hücresi var.';
+
+  @override
+  String get featureInfoMatchGridStep1Title => 'Basılı tut ve bırak';
+
+  @override
+  String get featureInfoMatchGridStep1Body =>
+      'Oyuncu kartına basılı tut, eşleşen kesişime bırak.';
+
+  @override
+  String get featureInfoMatchGridStep2Title => 'Her birine bir hücre';
+
+  @override
+  String get featureInfoMatchGridStep2Body =>
+      'Her tepsi oyuncusu yalnızca bir hücreye aittir — yanlış bırakınca geri döner.';
+
+  @override
+  String get featureInfoMatchGridStep3Title => '120 saniye';
+
+  @override
+  String get featureInfoMatchGridStep3Body =>
+      'Süre dolmadan mümkün olduğunca çok yerleştir.';
+
+  @override
+  String get featureInfoTimelineTitle => 'Kariyer Zaman Çizelgesi';
+
+  @override
+  String get featureInfoTimelineSubtitle =>
+      'Hücreleri kariyer dönemi bağlamıyla çöz.';
+
+  @override
+  String get featureInfoTimelineStep1Title => 'Dönem önemli';
+
+  @override
+  String get featureInfoTimelineStep1Body =>
+      'Sadece oynamış olmak değil, hangi dönemde hangi kulüpte olduğu da önemli.';
+
+  @override
+  String get featureInfoTimelineStep2Title => 'Aynı grid mantığı';
+
+  @override
+  String get featureInfoTimelineStep2Body =>
+      'Hücreye dokun ve ara — zaman çizelgesi ipuçları doğru ismi daraltır.';
+
+  @override
+  String get whatsNewTitle => 'Yenilikler';
+
+  @override
+  String whatsNewSubtitle(String version) {
+    return 'CrossBall $version';
+  }
+
+  @override
+  String get whatsNewGotIt => 'Başlayalım';
+
+  @override
+  String get whatsNewStep1Title => 'Match Grid';
+
+  @override
+  String get whatsNewStep1Body =>
+      'Yeni Antrenman modu — oyuncuya basılı tut, eşleşen kulüp hücresine bırak. Her chip’in tek doğru yeri var.';
+
+  @override
+  String get whatsNewStep2Title => 'Daha adil reklam';
+
+  @override
+  String get whatsNewStep2Body =>
+      'Ücretsiz planda kısa ödüllü reklam her iki antrenmanda bir gelir — her oyunda değil.';
+
+  @override
+  String get whatsNewStep3Title => 'Her zaman yardım';
+
+  @override
+  String get whatsNewStep3Body =>
+      'Ana sayfa, Antrenman ve her modda ⓘ ikonuna dokunarak kısa anlatımı tekrar açabilirsin.';
 }

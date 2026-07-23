@@ -510,7 +510,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceAdGateHint =>
-      'On the free plan, watch a short ad before each new training session.';
+      'On the free plan, watch a short ad every two training sessions.';
 
   @override
   String get adUnavailable =>
@@ -853,7 +853,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceUnlimitedHint =>
-      'Unlimited training. Watch a short ad to start each new session.';
+      'Unlimited training. Free plan: a short ad every two sessions.';
 
   @override
   String practiceSessionsPlayedToday(int count) {
@@ -1085,4 +1085,237 @@ class AppLocalizationsEn extends AppLocalizations {
   String timeDaysAgo(int count) {
     return '${count}d ago';
   }
+
+  @override
+  String get featureInfoTooltip => 'How this works';
+
+  @override
+  String get featureInfoGotIt => 'Got it';
+
+  @override
+  String get tipSheetEyebrow => 'Tip';
+
+  @override
+  String get whatsNewEyebrow => 'Update';
+
+  @override
+  String get featureInfoHomeTitle => 'Welcome to CrossBall';
+
+  @override
+  String get featureInfoHomeSubtitle =>
+      'A quick tour of what you can do from Home.';
+
+  @override
+  String get featureInfoHomeStep1Title => 'Daily Challenge';
+
+  @override
+  String get featureInfoHomeStep1Body =>
+      'One shared puzzle each day. Finish it for streak and weekly ranking.';
+
+  @override
+  String get featureInfoHomeStep2Title => 'Training';
+
+  @override
+  String get featureInfoHomeStep2Body =>
+      'Practice Classic, Quick Grid, or Match Grid anytime from the Training tab.';
+
+  @override
+  String get featureInfoHomeStep3Title => 'Streak & season';
+
+  @override
+  String get featureInfoHomeStep3Body =>
+      'Keep your streak alive and track season progress from cards on this screen.';
+
+  @override
+  String get featureInfoPracticeHubTitle => 'Training modes';
+
+  @override
+  String get featureInfoPracticeHubSubtitle =>
+      'Pick a mode — unlimited sessions on free, with a short ad every two games.';
+
+  @override
+  String get featureInfoPracticeHubStep1Title => 'Classic';
+
+  @override
+  String get featureInfoPracticeHubStep1Body =>
+      'Search players for each club intersection — same rules as Daily.';
+
+  @override
+  String get featureInfoPracticeHubStep2Title => 'Quick Grid';
+
+  @override
+  String get featureInfoPracticeHubStep2Body =>
+      'Choose from 5 players per cell. 120-second timer, no typing.';
+
+  @override
+  String get featureInfoPracticeHubStep3Title => 'Match Grid';
+
+  @override
+  String get featureInfoPracticeHubStep3Body =>
+      'Drag the tray players onto the correct cells. Each player fits exactly one spot.';
+
+  @override
+  String get featureInfoDailyTitle => 'Daily puzzle';
+
+  @override
+  String get featureInfoDailySubtitle =>
+      'Fill every cell with a player who played for both clubs.';
+
+  @override
+  String get featureInfoDailyStep1Title => 'Tap a cell';
+
+  @override
+  String get featureInfoDailyStep1Body =>
+      'Select an empty intersection on the grid.';
+
+  @override
+  String get featureInfoDailyStep2Title => 'Find the link';
+
+  @override
+  String get featureInfoDailyStep2Body =>
+      'Search for a footballer who played for both the row and column clubs.';
+
+  @override
+  String get featureInfoDailyStep3Title => 'Chase rarity';
+
+  @override
+  String get featureInfoDailyStep3Body =>
+      'Rarer answers score more — finish the full grid for a bonus.';
+
+  @override
+  String get featureInfoClassicTitle => 'Classic training';
+
+  @override
+  String get featureInfoClassicSubtitle =>
+      'Unlimited practice with the same search-and-fill flow as Daily.';
+
+  @override
+  String get featureInfoClassicStep1Title => 'Search & place';
+
+  @override
+  String get featureInfoClassicStep1Body =>
+      'Tap a cell, then pick a player who matches both clubs.';
+
+  @override
+  String get featureInfoClassicStep2Title => 'Play anytime';
+
+  @override
+  String get featureInfoClassicStep2Body =>
+      'No daily limit — train as much as you want.';
+
+  @override
+  String get featureInfoClassicStep3Title => 'Ads on free';
+
+  @override
+  String get featureInfoClassicStep3Body =>
+      'Free plan: a short rewarded ad every two training sessions.';
+
+  @override
+  String get featureInfoQuickGridTitle => 'Quick Grid';
+
+  @override
+  String get featureInfoQuickGridSubtitle =>
+      'Speed mode — pick from five options before the clock hits zero.';
+
+  @override
+  String get featureInfoQuickGridStep1Title => 'Five choices';
+
+  @override
+  String get featureInfoQuickGridStep1Body =>
+      'Each cell shows 5 players — one is correct for that intersection.';
+
+  @override
+  String get featureInfoQuickGridStep2Title => '120 seconds';
+
+  @override
+  String get featureInfoQuickGridStep2Body =>
+      'The countdown starts when the board is ready. Finish early for a better score.';
+
+  @override
+  String get featureInfoQuickGridStep3Title => 'No typing';
+
+  @override
+  String get featureInfoQuickGridStep3Body =>
+      'Just tap the right name — wrong picks cost points.';
+
+  @override
+  String get featureInfoMatchGridTitle => 'Match Grid';
+
+  @override
+  String get featureInfoMatchGridSubtitle =>
+      'Drag-and-drop the tray onto the clubs. One correct cell per player.';
+
+  @override
+  String get featureInfoMatchGridStep1Title => 'Long-press & drop';
+
+  @override
+  String get featureInfoMatchGridStep1Body =>
+      'Hold a player chip, then release on the matching intersection.';
+
+  @override
+  String get featureInfoMatchGridStep2Title => 'One cell each';
+
+  @override
+  String get featureInfoMatchGridStep2Body =>
+      'Every tray player belongs to exactly one cell — wrong drops bounce back.';
+
+  @override
+  String get featureInfoMatchGridStep3Title => '120 seconds';
+
+  @override
+  String get featureInfoMatchGridStep3Body =>
+      'Place as many as you can before time runs out.';
+
+  @override
+  String get featureInfoTimelineTitle => 'Career Timeline';
+
+  @override
+  String get featureInfoTimelineSubtitle =>
+      'Solve cells with career-era context in mind.';
+
+  @override
+  String get featureInfoTimelineStep1Title => 'Era matters';
+
+  @override
+  String get featureInfoTimelineStep1Body =>
+      'Think about when a player was at each club, not only that they played there.';
+
+  @override
+  String get featureInfoTimelineStep2Title => 'Same grid craft';
+
+  @override
+  String get featureInfoTimelineStep2Body =>
+      'Tap cells and search — timeline clues help narrow the right name.';
+
+  @override
+  String get whatsNewTitle => 'What\'s new';
+
+  @override
+  String whatsNewSubtitle(String version) {
+    return 'CrossBall $version';
+  }
+
+  @override
+  String get whatsNewGotIt => 'Let\'s go';
+
+  @override
+  String get whatsNewStep1Title => 'Match Grid';
+
+  @override
+  String get whatsNewStep1Body =>
+      'New Training mode — long-press players and drop them on the matching clubs. Each chip fits exactly one cell.';
+
+  @override
+  String get whatsNewStep2Title => 'Fairer free ads';
+
+  @override
+  String get whatsNewStep2Body =>
+      'On the free plan, a short rewarded ad appears every two training sessions — not every game.';
+
+  @override
+  String get whatsNewStep3Title => 'Help anytime';
+
+  @override
+  String get whatsNewStep3Body =>
+      'Tap the ⓘ icon on Home, Training, and each mode for a quick how-to.';
 }

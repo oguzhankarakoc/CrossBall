@@ -16,8 +16,8 @@ abstract final class ClubBadgeTokens {
   static const selectedGlowBoost = 0.55;
   static const solvedGlowBoost = 0.4;
 
-  static const labelMinFontSize = 11.0;
-  static const labelMaxFontSize = 13.0;
+  static const labelMinFontSize = 12.0;
+  static const labelMaxFontSize = 14.0;
   static const labelLetterSpacing = 0.25;
   static const labelMaxWidthFactor = 1.55;
 

@@ -24,6 +24,7 @@ from .career_patches import (
 )
 from .career_truth_pass import run_career_truth_pass
 from .fetch_kaggle import fetch_kaggle_dataset
+from .identity_heal import run_identity_heal
 from .kaggle_transform import transform_kaggle_files, write_pipeline_csv
 from .load import (
     compute_content_hash,
@@ -499,6 +500,34 @@ def cmd_dedupe_players() -> None:
         conn.close()
 
 
+def cmd_identity_heal(apply: bool) -> None:
+    """Audit (and optionally heal) player identity duplicates / false clusters."""
+    conn = get_connection()
+    try:
+        result = run_identity_heal(conn, apply=apply)
+        print(
+            f"  Players={result['players']} | "
+            f"false_clusters={result['false_clusters']} | "
+            f"merge_candidates={result['merge_candidates']}"
+        )
+        print(f"  Report: {result['false_path']}")
+        print(f"  Report: {result['merge_path']}")
+        if apply:
+            print(
+                f"  Applied: split_updates={result['split_updates']} "
+                f"unify_updates={result['unify_updates']} "
+                f"hard_merged={result['hard_merged']}"
+            )
+            print(
+                f"  After: false_clusters={result.get('false_clusters_after')} "
+                f"merge_candidates={result.get('merge_candidates_after')}"
+            )
+        else:
+            print('  Dry-run only. Re-run with --apply to write changes.')
+    finally:
+        conn.close()
+
+
 def main():
     parser = argparse.ArgumentParser(description='CrossBall data pipeline')
     sub = parser.add_subparsers(dest='command')
@@ -536,6 +565,16 @@ def main():
 
     sub.add_parser('refresh-intersections', help='Refresh player_club_intersections view')
     sub.add_parser('dedupe-players', help='Merge duplicate players by identity_key')
+
+    identity_parser = sub.add_parser(
+        'identity-heal',
+        help='Audit/heal player identity duplicates and false surname clusters',
+    )
+    identity_parser.add_argument(
+        '--apply',
+        action='store_true',
+        help='Write DB changes (split false clusters, unify variants, hard-dedupe)',
+    )
 
     patch_parser = sub.add_parser(
         'apply-patches',
@@ -682,6 +721,8 @@ def main():
         cmd_refresh_intersections()
     elif args.command == 'dedupe-players':
         cmd_dedupe_players()
+    elif args.command == 'identity-heal':
+        cmd_identity_heal(apply=bool(args.apply))
     elif args.command == 'apply-patches':
         cmd_apply_patches(
             args.patches,

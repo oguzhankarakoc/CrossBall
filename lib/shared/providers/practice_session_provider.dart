@@ -31,8 +31,13 @@ class PracticeSessionState {
 
   bool get hasReachedLimit => completedToday >= dailyLimit;
 
-  /// Free users need a rewarded ad before every new training session.
-  bool get needsRewardedAdForNextSession => !isPremium && !adUnlockGranted;
+  /// Free users need a rewarded ad every [GameConstants.practiceRewardedAdEveryNSessions]
+  /// sessions (1st, 3rd, 5th…). An active unlock always allows the next start.
+  bool get needsRewardedAdForNextSession {
+    if (isPremium || adUnlockGranted) return false;
+    final every = GameConstants.practiceRewardedAdEveryNSessions;
+    return every <= 1 || completedToday % every == 0;
+  }
 
   bool get canStartSession =>
       !hasReachedLimit && (!needsRewardedAdForNextSession || adUnlockGranted);

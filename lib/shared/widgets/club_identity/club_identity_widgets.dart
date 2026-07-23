@@ -170,6 +170,7 @@ class PuzzleClubTile extends StatelessWidget {
     required this.badgeSize,
     required this.maxLabelWidth,
     this.axis = Axis.vertical,
+    this.labelAbove = false,
     this.visualState = ClubBadgeVisualState.normal,
   });
 
@@ -177,6 +178,7 @@ class PuzzleClubTile extends StatelessWidget {
   final double badgeSize;
   final double maxLabelWidth;
   final Axis axis;
+  final bool labelAbove;
   final ClubBadgeVisualState visualState;
 
   @override
@@ -186,6 +188,7 @@ class PuzzleClubTile extends StatelessWidget {
       badgeSize: badgeSize,
       maxLabelWidth: maxLabelWidth,
       axis: axis,
+      labelAbove: labelAbove,
       visualState: visualState,
     );
   }

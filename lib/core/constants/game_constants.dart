@@ -12,6 +12,10 @@ abstract final class GameConstants {
   /// @Deprecated — use [practiceDailySoftCap].
   static const int premiumPracticeDailyLimit = practiceDailySoftCap;
 
+  /// Free training: rewarded ad every N sessions (0, 2, 4… completed → ad).
+  /// 120s Quick/Match Grid sessions feel harsh with an ad every round.
+  static const int practiceRewardedAdEveryNSessions = 2;
+
   static const int suspiciousDurationMs3x3 = 40 * 60 * 1000;
   static const int suspiciousDurationMs4x4 = 60 * 60 * 1000;
   static const int inactivityThresholdMs = 2 * 60 * 1000;

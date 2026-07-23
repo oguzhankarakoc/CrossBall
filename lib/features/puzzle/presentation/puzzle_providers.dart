@@ -16,15 +16,18 @@ import '../../../features/ads/ads_service.dart';
 import '../../../features/auth/domain/user_profile.dart';
 import '../../../features/auth/presentation/auth_providers.dart';
 import '../../../features/challenge/domain/challenge.dart';
-import '../../search/domain/search.dart';
+import '../../../features/search/domain/search.dart';
+import '../domain/match_grid_bank.dart';
 import '../domain/puzzle.dart';
 import '../domain/puzzle_fetch_exception.dart';
 import '../domain/puzzle_repository.dart';
+import '../data/match_grid_bank_api.dart';
 import 'daily_puzzle_rollout_provider.dart';
 import '../../../features/premium/premium_service.dart';
 import '../../../shared/providers/app_providers.dart';
 import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/providers/session_providers.dart';
+import '../../../core/network/network_providers.dart';
 import '../../../features/economy/presentation/achievement_providers.dart';
 import '../../../features/stats/domain/stats.dart';
 
@@ -60,6 +63,8 @@ class PuzzleGameState extends Equatable {
     this.challengeResult,
     this.startedAt,
     this.validatingCellKey,
+    this.matchGridTray,
+    this.matchGridExpectedIds,
   });
 
   final Puzzle? puzzle;
@@ -81,6 +86,10 @@ class PuzzleGameState extends Equatable {
   final ChallengeResult? challengeResult;
   final DateTime? startedAt;
   final String? validatingCellKey;
+  /// Preloaded Match Grid tray (null until bank fetch finishes / non–Match Grid).
+  final List<Player>? matchGridTray;
+  /// Match Grid canonical map: `row_col` → player id (one correct chip per cell).
+  final Map<String, String>? matchGridExpectedIds;
 
   int get solvedCount => cells.values.where((c) => c.isSolved).length;
   int get totalCells => puzzle?.totalCells ?? 0;
@@ -110,8 +119,11 @@ class PuzzleGameState extends Equatable {
     ChallengeResult? challengeResult,
     DateTime? startedAt,
     String? validatingCellKey,
+    List<Player>? matchGridTray,
+    Map<String, String>? matchGridExpectedIds,
     bool clearValidatingCell = false,
     bool clearSelection = false,
+    bool clearMatchGridTray = false,
   }) =>
       PuzzleGameState(
         puzzle: puzzle ?? this.puzzle,
@@ -134,6 +146,11 @@ class PuzzleGameState extends Equatable {
         startedAt: startedAt ?? this.startedAt,
         validatingCellKey:
             clearValidatingCell ? null : (validatingCellKey ?? this.validatingCellKey),
+        matchGridTray:
+            clearMatchGridTray ? null : (matchGridTray ?? this.matchGridTray),
+        matchGridExpectedIds: clearMatchGridTray
+            ? null
+            : (matchGridExpectedIds ?? this.matchGridExpectedIds),
       );
 
   @override
@@ -153,6 +170,8 @@ class PuzzleGameState extends Equatable {
         hintsRevealed,
         challengeResult,
         validatingCellKey,
+        matchGridTray,
+        matchGridExpectedIds,
       ];
 }
 
@@ -903,13 +922,38 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'userUuid': profile?.userUuid,
         'forceNew': forceNewSession,
       });
-      final session = await _repo.createSession(
+
+      // Match Grid: fetch tray in parallel with start-session so the timer
+      // never starts on an empty board.
+      final bankFuture = params.mode == PuzzleMode.matchGrid
+          ? MatchGridBankApi(httpClient: _ref.read(apiHttpClientProvider))
+              .fetchBank(puzzle)
+          : null;
+
+      final sessionFuture = _repo.createSession(
         puzzleId: puzzle.id,
         mode: params.mode,
         gridSize: puzzle.gridSize,
         userUuid: profile?.userUuid,
         forceNew: forceNewSession,
       );
+
+      final session = await sessionFuture;
+      MatchGridBank? matchBank;
+      if (bankFuture != null) {
+        try {
+          matchBank = await bankFuture;
+        } catch (e, st) {
+          practiceDebugError('match-grid-bank during load failed', e, st);
+          if (!mounted) return;
+          state = state.copyWith(
+            isLoading: false,
+            error: 'match_grid_bank_failed',
+            clearMatchGridTray: true,
+          );
+          return;
+        }
+      }
 
       cells = _syncCellIdsFromPuzzle(
         _mergeProgressIntoCells(
@@ -932,7 +976,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         applyCompletionBonus: true,
       );
 
-      final startedAt = session.startedAt;
+      final startedAt = params.mode == PuzzleMode.matchGrid
+          // Countdown must start when the tray is playable, not when the
+          // session row was created a few hundred ms earlier.
+          ? DateTime.now()
+          : session.startedAt;
       // Full grid → complete for all modes (incl. practice/timeline/quick grid).
       // Previously training forced isComplete=false so 9/9 stayed live until
       // manual "Finish" — bad UX and felt like a stuck session.
@@ -964,6 +1012,9 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         mistakes: mistakes,
         totalScore: totalScore,
         isComplete: isComplete,
+        matchGridTray: matchBank?.tray,
+        matchGridExpectedIds: matchBank?.expectedIdsByCell,
+        clearMatchGridTray: matchBank == null && params.mode != PuzzleMode.matchGrid,
       );
       if (isComplete) {
         await _completeSession();
@@ -1117,6 +1168,25 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
 
     _antiCheat?.recordInteraction();
     final key = '${row}_$col';
+
+    // Match Grid defense-in-depth: never score a non-canonical chip even if
+    // validate-answer would accept the career intersection.
+    if (params.mode == PuzzleMode.matchGrid) {
+      final expectedId = state.matchGridExpectedIds?[key];
+      if (expectedId == null || expectedId != player.id) {
+        cbDebug('MatchGrid', 'submitAnswer blocked non-canonical', {
+          'cell': key,
+          'playerId': player.id,
+          'expectedId': expectedId,
+        });
+        return AnswerResult(
+          correct: false,
+          playerName: player.name,
+          message: 'match_grid_canonical_mismatch',
+        );
+      }
+    }
+
     final cell = await _ensureCellReady(key: key, row: row, col: col);
     if (cell == null) return null;
 
@@ -1468,6 +1538,7 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
         'challenge_id': params.challengeId,
         'you_won': challengeResult.youWon,
       });
+      if (!mounted) return;
       state = state.copyWith(challengeResult: challengeResult);
     }
 
@@ -1509,6 +1580,8 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
     }
 
     _sessionFinalized = true;
+
+    if (!mounted) return;
 
     if (flushResult.finalScore != null) {
       state = state.copyWith(totalScore: flushResult.finalScore!);

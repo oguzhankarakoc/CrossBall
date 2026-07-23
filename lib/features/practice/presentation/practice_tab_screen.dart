@@ -10,6 +10,8 @@ import '../../../features/liveops/presentation/liveops_providers.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/widgets/crossball_ui.dart';
+import '../../../shared/feature_info/feature_info_sheet.dart';
+import '../../../shared/feature_info/feature_info_topic.dart';
 
 /// Practice tab — launches training sessions (shell branch 1).
 class PracticeTabScreen extends ConsumerStatefulWidget {
@@ -37,10 +39,18 @@ class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
     final showTimeline = ref.watch(featureFlagProvider('timeline_mode'));
 
     return Scaffold(
-      appBar: CrossBallAppBar(title: l10n.practice),
+      appBar: CrossBallAppBar(
+        title: l10n.practice,
+        actions: const [
+          FeatureInfoIconButton(topic: FeatureInfoTopic.practiceHub),
+        ],
+      ),
       body: PitchBackground(
         child: SafeArea(
-          child: ListView(
+          child: Stack(
+            children: [
+              const FeatureInfoAutoPresenter(topic: FeatureInfoTopic.practiceHub),
+              ListView(
             padding: const EdgeInsets.all(AppSpacing.lg),
             children: [
               CrossBallHeroCard(
@@ -94,6 +104,8 @@ class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
                   onTap: () => context.push(AppRoutes.premium),
                 ),
               ],
+            ],
+              ),
             ],
           ),
         ),

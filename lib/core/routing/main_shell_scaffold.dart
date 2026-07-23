@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/ads/presentation/banner_ad_widget.dart';
 import '../../features/ads/ads_service.dart';
 import '../../l10n/app_localizations.dart';
+import '../../shared/feature_info/whats_new_sheet.dart';
 import '../../shared/widgets/crossball_ui.dart';
 
 /// Persistent bottom navigation shell (Phase 2 — StatefulShellRoute host).
@@ -30,7 +31,13 @@ class MainShellScaffold extends ConsumerWidget {
     return Scaffold(
       body: SafeArea(
         bottom: false,
-        child: navigationShell,
+        child: Stack(
+          children: [
+            navigationShell,
+            // First install + every update: one what's-new sheet after shell is ready.
+            const WhatsNewAutoPresenter(),
+          ],
+        ),
       ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,

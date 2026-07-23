@@ -16,6 +16,7 @@ class ClubHeaderCell extends StatelessWidget {
     required this.badgeSize,
     required this.maxLabelWidth,
     this.axis = Axis.vertical,
+    this.labelAbove = false,
     this.visualState = ClubBadgeVisualState.normal,
     this.showCountry = false,
   });
@@ -24,6 +25,8 @@ class ClubHeaderCell extends StatelessWidget {
   final double badgeSize;
   final double maxLabelWidth;
   final Axis axis;
+  /// When [axis] is vertical, put the short name above the crest.
+  final bool labelAbove;
   final ClubBadgeVisualState visualState;
   final bool showCountry;
 
@@ -142,11 +145,17 @@ class ClubHeaderCell extends StatelessWidget {
     final content = axis == Axis.vertical
         ? Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
-              badge,
-              SizedBox(height: AppSpacing.xs),
-              label,
-            ],
+            children: labelAbove
+                ? [
+                    label,
+                    SizedBox(height: AppSpacing.xs),
+                    badge,
+                  ]
+                : [
+                    badge,
+                    SizedBox(height: AppSpacing.xs),
+                    label,
+                  ],
           )
         : Row(
             mainAxisSize: MainAxisSize.min,

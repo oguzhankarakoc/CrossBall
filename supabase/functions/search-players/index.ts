@@ -377,11 +377,12 @@ async function enrichPlayers(
   const [{ data: careers }, { data: popularity }, intersectionIds] = await Promise.all([
     supabase
       .from('player_career_history')
-      .select('player_id, appearances, clubs (short_name, name, is_top_club)')
+      .select('player_id, appearances, start_date, clubs (short_name, name, is_top_club)')
       .in('player_id', expandedIds)
       .eq('is_senior', true)
       .eq('is_youth', false)
-      .eq('is_reserve', false),
+      .eq('is_reserve', false)
+      .order('start_date', { ascending: true, nullsFirst: false }),
     supabase
       .from('player_popularity')
       .select('player_id, global_selection_count')
@@ -433,7 +434,7 @@ async function enrichPlayers(
     return {
       ...player,
       id: validatingSibling,
-      clubs_preview: prioritizeCellClubs(mergedClubs, cellClubLabels).slice(0, 4),
+      clubs_preview: prioritizeCellClubs(mergedClubs, cellClubLabels).slice(0, 6),
       popularity_score: popularityScore,
       obscurity_score: obscurityScore,
       is_cell_relevant: isCellRelevant,
@@ -583,7 +584,7 @@ Deno.serve(async (req) => {
         ...player,
         clubs_preview: prioritizeCellClubs(player.clubs_preview ?? [], cellClubLabels).slice(
           0,
-          4,
+          6,
         ),
       }))
 
