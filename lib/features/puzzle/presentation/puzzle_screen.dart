@@ -519,8 +519,15 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   }
 
   Future<void> _watchAdAndStartPractice() async {
+    final l10n = AppLocalizations.of(context)!;
     final rewarded = await ref.read(adsServiceProvider).showRewarded();
-    if (!rewarded || !mounted) return;
+    if (!mounted) return;
+    if (!rewarded) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.adUnavailable)),
+      );
+      return;
+    }
 
     ref.read(analyticsProvider).track('ad_impression', properties: {
       'placement': 'rewarded_practice_unlock',

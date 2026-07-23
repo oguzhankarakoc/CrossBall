@@ -479,6 +479,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'On the free plan, watch a short ad before each new training session.';
 
   @override
+  String get adUnavailable =>
+      'Ad isn’t available right now. Try again in a moment.';
+
+  @override
   String get practicePremiumSkipAds =>
       'Premium: up to 10 training sessions per day, no ads between rounds.';
 

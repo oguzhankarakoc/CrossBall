@@ -482,6 +482,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.';
 
   @override
+  String get adUnavailable =>
+      'Werbung gerade nicht verfügbar. Bitte gleich nochmal versuchen.';
+
+  @override
   String get practicePremiumSkipAds =>
       'Premium: bis zu 10 Einheiten pro Tag, keine Werbung zwischen Runden.';
 

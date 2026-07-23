@@ -958,6 +958,12 @@ abstract class AppLocalizations {
   /// **'On the free plan, watch a short ad before each new training session.'**
   String get practiceAdGateHint;
 
+  /// No description provided for @adUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad isn’t available right now. Try again in a moment.'**
+  String get adUnavailable;
+
   /// No description provided for @practicePremiumSkipAds.
   ///
   /// In en, this message translates to:

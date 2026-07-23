@@ -99,23 +99,55 @@ Future<void> main() async {
     debugPrint('OfflineSync start failed: $e\n$st');
   }
 
-  container.dispose();
-
-  runApp(const ProviderScope(child: PremiumAdsSync(child: CrossBallApp())));
+  // Keep the same container for the running app — disposing it would drop the
+  // already-initialized AdsService / PremiumService instances and ads would
+  // never load again in the new ProviderScope.
+  runApp(
+    UncontrolledProviderScope(
+      container: container,
+      child: const PremiumAdsSync(child: CrossBallApp()),
+    ),
+  );
 }
 
 /// Keeps ads + analytics traits in sync with profile/IAP state.
-class PremiumAdsSync extends ConsumerWidget {
+class PremiumAdsSync extends ConsumerStatefulWidget {
   const PremiumAdsSync({super.key, required this.child});
 
   final Widget child;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PremiumAdsSync> createState() => _PremiumAdsSyncState();
+}
+
+class _PremiumAdsSyncState extends ConsumerState<PremiumAdsSync> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_syncAdsForCurrentTier());
+    });
+  }
+
+  Future<void> _syncAdsForCurrentTier() async {
+    if (!AppConfig.isAdMobEnabled) return;
+    final ads = ref.read(adsServiceProvider);
+    final isPremium = ref.read(isPremiumProvider);
+    ads.isPremium = isPremium;
+    if (!isPremium) {
+      await ads.initialize();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref.listen<bool>(isPremiumProvider, (previous, isPremium) {
       ref.read(adsServiceProvider).isPremium = isPremium;
       if (previous != isPremium) {
         _syncAnalyticsIdentity(ref, isPremium: isPremium);
+        if (!isPremium) {
+          unawaited(ref.read(adsServiceProvider).initialize());
+        }
       }
     });
     ref.listen(userProfileProvider, (previous, next) {
@@ -131,7 +163,7 @@ class PremiumAdsSync extends ConsumerWidget {
         );
       }
     });
-    return child;
+    return widget.child;
   }
 
   void _syncAnalyticsIdentity(

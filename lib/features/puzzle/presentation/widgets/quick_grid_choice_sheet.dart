@@ -108,7 +108,13 @@ class _QuickGridChoiceSheetState extends ConsumerState<_QuickGridChoiceSheet> {
       if (!widget.isPremium) {
         final watched = await ref.read(adsServiceProvider).showRewarded();
         if (!watched) {
-          if (mounted) setState(() => _eliminating = false);
+          if (mounted) {
+            final l10n = AppLocalizations.of(context)!;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(l10n.adUnavailable)),
+            );
+            setState(() => _eliminating = false);
+          }
           return;
         }
       }

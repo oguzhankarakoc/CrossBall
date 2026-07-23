@@ -197,6 +197,7 @@
     }
   },
   "practiceAdGateHint": "Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.",
+  "adUnavailable": "Reklam şu an yüklenemedi. Biraz sonra tekrar dene.",
   "practicePremiumSkipAds": "Premium ile reklam beklemeden günde 10 antrenman.",
   "cancel": "Vazgeç",
   "practiceSessionsRemaining": "Bugün {count} antrenman hakkın kaldı",

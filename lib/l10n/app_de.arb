@@ -197,6 +197,7 @@
     }
   },
   "practiceAdGateHint": "Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.",
+  "adUnavailable": "Werbung gerade nicht verfügbar. Bitte gleich nochmal versuchen.",
   "practicePremiumSkipAds": "Premium: bis zu 10 Einheiten pro Tag, keine Werbung zwischen Runden.",
   "cancel": "Abbrechen",
   "practiceSessionsRemaining": "Noch {count} Trainingseinheiten heute",

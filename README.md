@@ -4,7 +4,7 @@
 
 Production-grade football intersection puzzle app for iOS and Android. Name players who played for **both** clubs at each grid intersection.
 
-**Status (soft launch):** iOS `1.0.0` (build **21**) is live on the App Store. AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
+**Status (soft launch):** iOS `1.0.0` (build **22** pending upload — ads init + SKAdNetwork fix; **21** is live). AdMob production units are wired; `app-ads.txt` is published at the developer domain root for verification.
 
 ## Stack
 
@@ -65,7 +65,7 @@ supabase functions deploy activity-feed player-fact tournament career-timeline
 
 See [Supabase Setup](supabase/README.md), [Security model](supabase/SECURITY.md), and [Data Pipeline](data_pipeline/README.md) for details.
 
-**iOS App Store:** [IOS_LAUNCH_GUIDE.md](docs/IOS_LAUNCH_GUIDE.md) · [App Store resubmit / IAP](docs/APP_STORE_RESUBMIT_FIX.md) · [IAP setup](docs/IAP_SETUP.md)  
+**iOS App Store:** [IOS_LAUNCH_GUIDE.md](docs/IOS_LAUNCH_GUIDE.md) · [App Store resubmit / IAP](docs/APP_STORE_RESUBMIT_FIX.md) · [IAP setup](docs/IAP_SETUP.md) · [AdMob live checklist](docs/ADMOB_LIVE_CHECKLIST.md)  
 **Careers:** [Career truth pass](docs/CAREER_TRUTH_PASS.md) — one-shot reconcile (no scrape) + puzzle loading skeleton.
 
 ## Project structure

@@ -204,6 +204,7 @@
     }
   },
   "practiceAdGateHint": "On the free plan, watch a short ad before each new training session.",
+  "adUnavailable": "Ad isn’t available right now. Try again in a moment.",
   "practicePremiumSkipAds": "Premium: up to 10 training sessions per day, no ads between rounds.",
   "cancel": "Cancel",
   "practiceSessionsRemaining": "{count} training sessions left today",

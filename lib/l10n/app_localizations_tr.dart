@@ -481,6 +481,10 @@ class AppLocalizationsTr extends AppLocalizations {
       'Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.';
 
   @override
+  String get adUnavailable =>
+      'Reklam şu an yüklenemedi. Biraz sonra tekrar dene.';
+
+  @override
   String get practicePremiumSkipAds =>
       'Premium ile reklam beklemeden günde 10 antrenman.';
 

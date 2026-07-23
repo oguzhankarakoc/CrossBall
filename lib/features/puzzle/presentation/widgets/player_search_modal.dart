@@ -168,7 +168,13 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
     try {
       await ref.read(puzzleGameProvider(widget.params).notifier).requestHint(nextType);
     } on HintRequestException catch (e) {
-      if (mounted) {
+      if (!mounted) return;
+      if (e.errorCode == 'ad_unavailable') {
+        final l10n = AppLocalizations.of(context)!;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.adUnavailable)),
+        );
+      } else {
         setState(() => _hintErrorKey = e.errorCode ?? 'hint_request_failed');
       }
     } finally {

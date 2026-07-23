@@ -700,6 +700,7 @@ CrossBall ATT’yi zaten istiyor (`lib/core/ads/tracking_permission_service.dart
 
 - `NSUserTrackingUsageDescription` Info.plist’te var
 - AdMob init öncesi `requestTrackingPermissionIfNeeded()` çağrılıyor (`main.dart`)
+- `SKAdNetworkItems` Info.plist’te (Google + buyer list) — production fill için gerekli
 
 **App Store Connect Privacy:** Tracking için AdMob + ATT açıklaması tutarlı olmalı.
 
