@@ -368,17 +368,22 @@ class _DropCellState extends State<_DropCell> {
     return DragTarget<Player>(
       onWillAcceptWithDetails: (details) {
         if (locked != null || widget.solved) return false;
-        // Reject non-canonical chips early — career intersection is NOT enough.
-        if (!_isCanonical(details.data)) return false;
-        if (!_hover) {
-          HapticFeedback.selectionClick();
+        // Accept any chip on an empty cell so a wrong release can fire one
+        // reject haptic. Only the canonical chip gets the "ready" highlight.
+        if (_isCanonical(details.data)) {
+          if (!_hover) {
+            HapticFeedback.selectionClick();
+          }
+          setState(() => _hover = true);
         }
-        setState(() => _hover = true);
         return true;
       },
-      onLeave: (_) => setState(() => _hover = false),
+      onLeave: (_) {
+        if (_hover) setState(() => _hover = false);
+      },
       onAcceptWithDetails: (details) async {
         setState(() => _hover = false);
+        // Career intersection is NOT enough — bounce non-canonical chips.
         if (!_isCanonical(details.data)) {
           HapticFeedback.heavyImpact();
           return;
@@ -391,7 +396,10 @@ class _DropCellState extends State<_DropCell> {
         }
       },
       builder: (context, candidate, rejected) {
-        final highlight = _hover || candidate.isNotEmpty;
+        final hasCanonicalCandidate = candidate.any(
+          (player) => player != null && _isCanonical(player),
+        );
+        final highlight = _hover || hasCanonicalCandidate;
         return Container(
           width: widget.size,
           height: widget.size,

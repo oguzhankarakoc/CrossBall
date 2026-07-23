@@ -54,7 +54,7 @@ Practice tab → ?mode=matchGrid
 - Layout scales to available height/width (no RenderFlex overflow on compact phones).
 - Timer starts only when the Match Grid tray is ready.
 - Result copy: `matchGridResultTitle` / perfect vs partial; **Placed X/Y** instead of hints.
-- Haptics: selection on hover, medium on correct drop, heavy on bounce.
+- Haptics: selection on correct hover, medium on correct drop, heavy once on wrong/rejected release (no hover spam).
 
 ## Deploy checklist
 
