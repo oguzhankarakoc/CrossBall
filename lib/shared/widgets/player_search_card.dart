@@ -199,6 +199,24 @@ bool _clubMatchesCell(String club, Set<String> highlightClubs) {
   return false;
 }
 
+/// Green badge when server flagged the cell, or both axis clubs appear in preview.
+///
+/// Preview fallback covers daily (pre-deploy) and rare intersection-cache misses
+/// without ranking spoilers — chips still require this same gate.
+bool playerShowsCellRelevance(
+  Player player, {
+  required Set<String> rowClubLabels,
+  required Set<String> colClubLabels,
+}) {
+  if (player.isCellRelevant) return true;
+  if (player.clubsPreview.isEmpty) return false;
+  final hasRow =
+      player.clubsPreview.any((club) => _clubMatchesCell(club, rowClubLabels));
+  final hasCol =
+      player.clubsPreview.any((club) => _clubMatchesCell(club, colClubLabels));
+  return hasRow && hasCol;
+}
+
 /// Puzzle axis clubs first, then the rest of the career preview.
 List<String> prioritizeClubsForCell(List<String> clubs, Set<String> highlightClubs) {
   if (clubs.isEmpty || highlightClubs.isEmpty) return clubs;

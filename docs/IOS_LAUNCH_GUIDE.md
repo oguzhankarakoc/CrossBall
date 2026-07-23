@@ -6,7 +6,7 @@ Bu doküman, CrossBall’ı App Store’a göndermek için gereken tüm adımlar
 
 **Hedef kitle:** Geliştirici (Oğuzhan Karakoç)  
 **Son güncelleme:** Temmuz 2026  
-**CrossBall sürüm:** `1.0.0+21` (App Store — Ready for Distribution / soft launch)
+**CrossBall sürüm:** `1.0.2+24` (App Store train — Match Grid + icon; soft launch)
 
 **Semboller**
 

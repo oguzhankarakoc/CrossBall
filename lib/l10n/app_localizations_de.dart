@@ -812,7 +812,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickGridModeDesc =>
-      'Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 90 Sekunden. Kein Tippen.';
+      'Gleiches CrossBall-Gitter — wähle aus 5 Spielern. 120 Sekunden. Kein Tippen.';
 
   @override
   String get quickGridPickTitle => 'Spieler wählen';
@@ -826,6 +826,51 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get quickGridEliminateFree => '1 falsche Antwort entfernen';
+
+  @override
+  String get matchGridMode => 'Match Grid';
+
+  @override
+  String get matchGridModeDesc =>
+      'Ziehe die richtigen Spieler auf die Vereins-Schnittpunkte. 120 Sekunden.';
+
+  @override
+  String get matchGridTrayHint =>
+      'Spieler lange drücken und auf die passende Zelle legen.';
+
+  @override
+  String get matchGridTrayEmpty => 'Alle Spieler platziert — stark!';
+
+  @override
+  String get matchGridTrayEmptySubtitle =>
+      'Dein Score ist auf dem Ergebnisbildschirm gesichert.';
+
+  @override
+  String get matchGridBankError =>
+      'Match-Grid-Spieler konnten nicht geladen werden. Verbindung prüfen und erneut versuchen.';
+
+  @override
+  String get matchGridResultTitle => 'Match Grid abgeschlossen';
+
+  @override
+  String get matchGridResultPerfectDesc =>
+      'Jede Schnittstelle sitzt — saubere Ablage.';
+
+  @override
+  String get matchGridResultPartialDesc =>
+      'Zeit vorbei oder früh beendet — platzierte Spieler zählen trotzdem.';
+
+  @override
+  String get matchGridPlacedStat => 'Platziert';
+
+  @override
+  String get practiceUnlimitedHint =>
+      'Unbegrenztes Training. Vor jeder neuen Runde eine kurze Werbung.';
+
+  @override
+  String practiceSessionsPlayedToday(int count) {
+    return 'Heute $count Trainingseinheiten';
+  }
 
   @override
   String timelineSheetTitle(String name) {

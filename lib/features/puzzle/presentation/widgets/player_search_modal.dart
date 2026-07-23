@@ -56,14 +56,25 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
         colClubLabel: widget.colClub.shortLabel,
       );
 
-  Set<String> get _highlightClubs => {
+  Set<String> get _rowClubLabels => {
         widget.rowClub.shortLabel,
-        widget.colClub.shortLabel,
-        if (widget.rowClub.shortName != null) widget.rowClub.shortName!,
-        if (widget.colClub.shortName != null) widget.colClub.shortName!,
         widget.rowClub.name,
-        widget.colClub.name,
+        if (widget.rowClub.shortName != null) widget.rowClub.shortName!,
       };
+
+  Set<String> get _colClubLabels => {
+        widget.colClub.shortLabel,
+        widget.colClub.name,
+        if (widget.colClub.shortName != null) widget.colClub.shortName!,
+      };
+
+  Set<String> get _highlightClubs => {..._rowClubLabels, ..._colClubLabels};
+
+  bool _showsRelevance(Player player) => playerShowsCellRelevance(
+        player,
+        rowClubLabels: _rowClubLabels,
+        colClubLabels: _colClubLabels,
+      );
 
   @override
   void initState() {
@@ -104,8 +115,8 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
       final response = await ref.read(searchRepositoryProvider).search(
             query,
             context: _searchContext,
-            // Daily/challenge: no cell-relevance spoilers.
-            // Training modes: allow relevance so ticks match validate-answer.
+            // Daily/challenge: competitive ranking (no relevance boost).
+            // Badge still comes from is_cell_relevant when the player validates.
             competitive: widget.params.mode == PuzzleMode.daily ||
                 widget.params.mode == PuzzleMode.challenge,
           );
@@ -441,7 +452,7 @@ class _PlayerSearchModalState extends ConsumerState<PlayerSearchModal> {
                                 (entry) => PlayerSearchCard(
                                   player: entry.value,
                                   highlightClubs: _highlightClubs,
-                                  showRelevanceBadge: entry.value.isCellRelevant,
+                                  showRelevanceBadge: _showsRelevance(entry.value),
                                   animationDelay: entry.key * 40,
                                   onTap: () => Navigator.pop(context, entry.value),
                                 ),

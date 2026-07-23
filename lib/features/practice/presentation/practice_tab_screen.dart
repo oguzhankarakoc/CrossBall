@@ -12,11 +12,26 @@ import '../../../shared/providers/practice_session_provider.dart';
 import '../../../shared/widgets/crossball_ui.dart';
 
 /// Practice tab — launches training sessions (shell branch 1).
-class PracticeTabScreen extends ConsumerWidget {
+class PracticeTabScreen extends ConsumerStatefulWidget {
   const PracticeTabScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PracticeTabScreen> createState() => _PracticeTabScreenState();
+}
+
+class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Prefetch quota while the Practice tab is visible so mode opens skip a round-trip.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref.read(practiceSessionProvider.notifier).syncForCurrentUser();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = context.cb;
     final session = ref.watch(practiceSessionProvider);
@@ -34,7 +49,7 @@ class PracticeTabScreen extends ConsumerWidget {
                 title: l10n.practiceNewSession,
                 subtitle: l10n.practiceCompleteDesc,
                 actionLabel: l10n.continueButton,
-                badge: l10n.practiceDailyProgress(session.completedToday, session.dailyLimit),
+                badge: l10n.practiceSessionsPlayedToday(session.completedToday),
                 badgeIcon: Icons.fitness_center_rounded,
                 onTap: () => context.push('${AppRoutes.puzzle}?mode=practice'),
               ),
@@ -54,6 +69,13 @@ class PracticeTabScreen extends ConsumerWidget {
                 subtitle: l10n.quickGridModeDesc,
                 onTap: () => context.push('${AppRoutes.puzzle}?mode=quickGrid'),
               ),
+              const SizedBox(height: AppSpacing.md),
+              CrossBallCard(
+                icon: Icons.swipe_rounded,
+                title: l10n.matchGridMode,
+                subtitle: l10n.matchGridModeDesc,
+                onTap: () => context.push('${AppRoutes.puzzle}?mode=matchGrid'),
+              ),
               const SizedBox(height: AppSpacing.lg),
               CrossBallGlassPanel(
                 padding: const EdgeInsets.all(AppSpacing.lg),
@@ -61,14 +83,16 @@ class PracticeTabScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.practiceSessionsRemaining(session.remaining),
+                      l10n.practiceSessionsPlayedToday(session.completedToday),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      isPremium ? l10n.practicePremiumSkipAds : l10n.practiceAdGateHint,
+                      isPremium
+                          ? l10n.practicePremiumSkipAds
+                          : l10n.practiceUnlimitedHint,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: colors.textSecondary,
                           ),

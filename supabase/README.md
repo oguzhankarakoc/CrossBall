@@ -33,6 +33,7 @@ supabase functions deploy challenge-complete
 supabase functions deploy sync-user
 supabase functions deploy practice-puzzle
 supabase functions deploy practice-quota
+supabase functions deploy match-grid-bank
 supabase functions deploy register-push-token
 supabase functions deploy start-session verify-premium
 supabase functions deploy stats grant-hint-ad send-streak-reminder
@@ -139,11 +140,12 @@ Uses `DATABASE_URL` from `data_pipeline/.env`. Migrations are **idempotent** —
 | `daily-puzzle` | GET | Today's puzzle (auto-generates via engine if missing) |
 | `practice-puzzle` | GET | Weighted practice puzzle (quota + ad gate enforced server-side) |
 | `practice-quota` | GET/POST | Daily practice quota; POST `grant_ad_unlock` after rewarded ad |
+| `match-grid-bank` | POST | Canonical 9 players + shuffled tray for Match Grid |
 | `register-push-token` | POST | Register FCM/APNs device token (push integration hook) |
 | `generate-puzzle` | POST | Manual/cron puzzle generation |
 | `puzzle-by-id` | GET | Fetch puzzle by UUID |
 | `validate-answer` | POST | Server-side answer validation + rarity |
-| `search-players` | GET | Fuzzy player search with club preview |
+| `search-players` | GET | Fuzzy player search with club preview + cell relevance badge |
 | `request-hint` | POST | Return hint for cell |
 | `complete-session` | POST | Finalize puzzle session + GEE rewards |
 | `economy-profile` | GET | Player progression profile (XP, level, rating, league) |

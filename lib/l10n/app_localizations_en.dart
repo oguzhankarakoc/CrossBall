@@ -801,7 +801,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickGridModeDesc =>
-      'Same CrossBall grid — pick from 5 players. 90 seconds. No typing.';
+      'Same CrossBall grid — pick from 5 players. 120 seconds. No typing.';
 
   @override
   String get quickGridPickTitle => 'Pick the player';
@@ -814,6 +814,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickGridEliminateFree => 'Remove 1 wrong answer';
+
+  @override
+  String get matchGridMode => 'Match Grid';
+
+  @override
+  String get matchGridModeDesc =>
+      'Drag the correct players onto the club intersections. 120 seconds.';
+
+  @override
+  String get matchGridTrayHint =>
+      'Long-press a player, then drop them on the matching cell.';
+
+  @override
+  String get matchGridTrayEmpty => 'All players placed — nice work!';
+
+  @override
+  String get matchGridTrayEmptySubtitle =>
+      'Your score is locked in on the result screen.';
+
+  @override
+  String get matchGridBankError =>
+      'Couldn\'t load Match Grid players. Check your connection and retry.';
+
+  @override
+  String get matchGridResultTitle => 'Match Grid complete';
+
+  @override
+  String get matchGridResultPerfectDesc =>
+      'Every intersection locked — clean tray work.';
+
+  @override
+  String get matchGridResultPartialDesc =>
+      'Session ended with cells still open — placed players still count.';
+
+  @override
+  String get matchGridPlacedStat => 'Placed';
+
+  @override
+  String get practiceUnlimitedHint =>
+      'Unlimited training. Watch a short ad to start each new session.';
+
+  @override
+  String practiceSessionsPlayedToday(int count) {
+    return '$count training sessions today';
+  }
 
   @override
   String timelineSheetTitle(String name) {

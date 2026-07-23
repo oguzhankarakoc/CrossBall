@@ -1531,7 +1531,7 @@ abstract class AppLocalizations {
   /// No description provided for @quickGridModeDesc.
   ///
   /// In en, this message translates to:
-  /// **'Same CrossBall grid — pick from 5 players. 90 seconds. No typing.'**
+  /// **'Same CrossBall grid — pick from 5 players. 120 seconds. No typing.'**
   String get quickGridModeDesc;
 
   /// No description provided for @quickGridPickTitle.
@@ -1557,6 +1557,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove 1 wrong answer'**
   String get quickGridEliminateFree;
+
+  /// No description provided for @matchGridMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid'**
+  String get matchGridMode;
+
+  /// No description provided for @matchGridModeDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Drag the correct players onto the club intersections. 120 seconds.'**
+  String get matchGridModeDesc;
+
+  /// No description provided for @matchGridTrayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-press a player, then drop them on the matching cell.'**
+  String get matchGridTrayHint;
+
+  /// No description provided for @matchGridTrayEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'All players placed — nice work!'**
+  String get matchGridTrayEmpty;
+
+  /// No description provided for @matchGridTrayEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your score is locked in on the result screen.'**
+  String get matchGridTrayEmptySubtitle;
+
+  /// No description provided for @matchGridBankError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load Match Grid players. Check your connection and retry.'**
+  String get matchGridBankError;
+
+  /// No description provided for @matchGridResultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Match Grid complete'**
+  String get matchGridResultTitle;
+
+  /// No description provided for @matchGridResultPerfectDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Every intersection locked — clean tray work.'**
+  String get matchGridResultPerfectDesc;
+
+  /// No description provided for @matchGridResultPartialDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Session ended with cells still open — placed players still count.'**
+  String get matchGridResultPartialDesc;
+
+  /// No description provided for @matchGridPlacedStat.
+  ///
+  /// In en, this message translates to:
+  /// **'Placed'**
+  String get matchGridPlacedStat;
+
+  /// No description provided for @practiceUnlimitedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited training. Watch a short ad to start each new session.'**
+  String get practiceUnlimitedHint;
+
+  /// No description provided for @practiceSessionsPlayedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} training sessions today'**
+  String practiceSessionsPlayedToday(int count);
 
   /// No description provided for @timelineSheetTitle.
   ///

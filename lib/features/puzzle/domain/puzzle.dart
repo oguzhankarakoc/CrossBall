@@ -2,18 +2,23 @@ import 'package:equatable/equatable.dart';
 
 import '../../../core/club_identity/club_display_resolver.dart';
 
-enum PuzzleMode { daily, practice, challenge, timeline, quickGrid }
+enum PuzzleMode { daily, practice, challenge, timeline, quickGrid, matchGrid }
 
 extension PuzzleModeX on PuzzleMode {
   /// Practice quota + early-finish UX (non-competitive training family).
   bool get isTraining =>
       this == PuzzleMode.practice ||
       this == PuzzleMode.timeline ||
-      this == PuzzleMode.quickGrid;
+      this == PuzzleMode.quickGrid ||
+      this == PuzzleMode.matchGrid;
 
-  /// DB `puzzle_mode` enum value — Quick Grid sessions persist as practice.
+  /// Timed countdown training modes (Quick Grid + Match Grid).
+  bool get isTimedTraining =>
+      this == PuzzleMode.quickGrid || this == PuzzleMode.matchGrid;
+
+  /// DB `puzzle_mode` enum value — timed grids persist as practice.
   String get serverName => switch (this) {
-        PuzzleMode.quickGrid => 'practice',
+        PuzzleMode.quickGrid || PuzzleMode.matchGrid => 'practice',
         _ => name,
       };
 }

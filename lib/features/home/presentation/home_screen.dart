@@ -58,6 +58,8 @@ class HomeScreen extends ConsumerWidget {
     final isNewPlayer = (stats?.gamesPlayed ?? progression?.gamesPlayed ?? 0) < 7;
     final streak = stats?.currentStreak ?? 0;
     final weeklySnapshot = ref.watch(weeklyDailyLeaderboardProvider).valueOrNull;
+    // Warm daily puzzle cache while home is visible so Daily opens faster.
+    ref.watch(dailyPuzzleProvider);
     final myWeekly = weeklySnapshot?.myEntry;
     final weeklyScoreLabel = myWeekly == null
         ? '—'

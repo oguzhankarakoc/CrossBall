@@ -326,11 +326,30 @@
   "timelineMode": "Zaman Çizelgesi Antrenmanı",
   "timelineModeDesc": "Her doğru cevaptan sonra kariyer yıllarını gör.",
   "quickGridMode": "Hızlı Grid",
-  "quickGridModeDesc": "Aynı CrossBall ızgarası — 5 oyuncudan seç. 90 saniye. Yazma yok.",
+  "quickGridModeDesc": "Aynı CrossBall ızgarası — 5 oyuncudan seç. 120 saniye. Yazma yok.",
   "quickGridPickTitle": "Oyuncuyu seç",
   "quickGridChoicesError": "Şıklar yüklenemedi. Tekrar dene.",
   "quickGridEliminateAd": "Reklam izle — 1 yanlışı kaldır",
   "quickGridEliminateFree": "1 yanlış cevabı kaldır",
+  "matchGridMode": "Match Grid",
+  "matchGridModeDesc": "Doğru oyuncuları kulüp kesişimlerine sürükle. 120 saniye.",
+  "matchGridTrayHint": "Oyuncuya basılı tut, eşleşen hücreye bırak.",
+  "matchGridTrayEmpty": "Tüm oyuncular yerleştirildi — harika!",
+  "matchGridTrayEmptySubtitle": "Skorun sonuç ekranında kilitlendi.",
+  "matchGridBankError": "Match Grid oyuncuları yüklenemedi. Bağlantını kontrol edip tekrar dene.",
+  "matchGridResultTitle": "Match Grid tamamlandı",
+  "matchGridResultPerfectDesc": "Tüm kesişimler kilitlendi — temiz iş.",
+  "matchGridResultPartialDesc": "Süre bitti veya erken çıktın — yerleştirdiğin oyuncular yine sayılır.",
+  "matchGridPlacedStat": "Yerleştirilen",
+  "practiceUnlimitedHint": "Sınırsız antrenman. Her yeni tur için kısa bir reklam izle.",
+  "practiceSessionsPlayedToday": "Bugün {count} antrenman",
+  "@practiceSessionsPlayedToday": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "timelineSheetTitle": "{name} — kariyer zaman çizelgesi",
   "@timelineSheetTitle": {
     "placeholders": {
