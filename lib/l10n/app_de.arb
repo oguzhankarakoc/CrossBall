@@ -180,7 +180,7 @@
   "practiceCompleteDesc": "Bei jeder Einheit neue Vereins-Kombinationen.",
   "practiceFinishTraining": "Training beenden",
   "practiceFinishConfirmTitle": "Training beenden?",
-  "practiceFinishConfirmBody": "Diese Einheit endet und verbraucht 1 deiner täglichen Trainingseinheiten.",
+  "practiceFinishConfirmBody": "Diese Einheit endet und dein Score wird gespeichert.",
   "practiceResultTitle": "Training abgeschlossen",
   "practiceResultEarlyDesc": "Früh beendet — Punkte und Fortschritt wurden gespeichert.",
   "practiceSessionProgress": "Training {current}/{limit}",
@@ -207,7 +207,7 @@
   },
   "practiceAdGateHint": "Im Gratis-Plan schaust du vor jeder neuen Einheit eine kurze Werbung.",
   "adUnavailable": "Werbung gerade nicht verfügbar. Bitte gleich nochmal versuchen.",
-  "practicePremiumSkipAds": "Premium: bis zu 10 Einheiten pro Tag, keine Werbung zwischen Runden.",
+  "practicePremiumSkipAds": "Premium: unbegrenztes Training, keine Werbung zwischen Sessions.",
   "cancel": "Abbrechen",
   "practiceSessionsRemaining": "Noch {count} Trainingseinheiten heute",
   "@practiceSessionsRemaining": {

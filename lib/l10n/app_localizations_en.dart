@@ -489,7 +489,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practiceFinishConfirmBody =>
-      'This session ends and uses 1 of your daily training credits.';
+      'This session ends and your score is saved.';
 
   @override
   String get practiceResultTitle => 'Training complete';
@@ -518,7 +518,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get practicePremiumSkipAds =>
-      'Premium: up to 10 training sessions per day, no ads between rounds.';
+      'Premium: unlimited training, no ads between sessions.';
 
   @override
   String get cancel => 'Cancel';

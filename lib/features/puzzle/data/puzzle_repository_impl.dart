@@ -479,6 +479,11 @@ class PuzzleApiService {
               ? 'Practice puzzle unavailable: $detail'
               : 'Practice puzzle unavailable (${response.statusCode})',
           statusCode: response.statusCode,
+          errorCode: detail.contains('practice_ad_required')
+              ? 'practice_ad_required'
+              : detail.contains('practice_daily_limit')
+                  ? 'practice_daily_limit_reached'
+                  : null,
         );
       } on PuzzleFetchException catch (e, st) {
         practiceDebugError('PuzzleFetchException', e, st);

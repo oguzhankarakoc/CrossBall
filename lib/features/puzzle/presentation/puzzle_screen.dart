@@ -243,7 +243,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       );
     }
 
-    final practiceSession = _isTrainingMode ? ref.watch(practiceSessionProvider) : null;
     final showAiFacts = ref.watch(featureFlagProvider('ai_features'));
     final factContext = widget.params.mode == PuzzleMode.timeline ? 'timeline' : 'intersection';
     final footballFactText = showAiFacts
@@ -265,31 +264,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
       appBar: CrossBallAppBar(
         title: _title(l10n),
         actions: [
-          if (practiceSession != null)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.sm),
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: colors.surfaceElevated.withValues(alpha: 0.8),
-                    borderRadius: AppRadius.pillBorder,
-                    border: Border.all(color: colors.glassBorder),
-                  ),
-                  child: Text(
-                    l10n.practiceSessionProgress(
-                      practiceSession.completedToday + 1,
-                      practiceSession.dailyLimit,
-                    ),
-                    style: TextStyle(
-                      color: colors.lime,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+          // Solved progress only — training quota is unlimited, so no "3/9999" chip.
           Padding(
             padding: const EdgeInsets.only(right: AppSpacing.md),
             child: Center(
@@ -556,9 +531,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
     AppLocalizations l10n,
     CrossBallColors colors,
   ) {
-    final session = ref.watch(practiceSessionProvider);
-    final limit = session.dailyLimit;
-
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -571,12 +543,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
               Text(
                 l10n.practiceAdRequiredTitle,
                 style: Theme.of(context).textTheme.titleLarge,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                l10n.practiceDailyProgress(session.completedToday, limit),
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(color: colors.lime),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.sm),
@@ -612,9 +578,7 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
   Widget _buildPracticeResult(BuildContext context, PuzzleGameState game) {
     final l10n = AppLocalizations.of(context)!;
     final session = ref.watch(practiceSessionProvider);
-    final remaining = session.remaining;
-    final limit = session.dailyLimit;
-    final canPlayMore = remaining > 0;
+    final canPlayMore = session.remaining > 0;
     final needsAd = session.needsRewardedAdForNextSession && canPlayMore;
     final isMatchGrid = widget.params.mode == PuzzleMode.matchGrid;
     final perfected = game.totalCells > 0 && game.solvedCount >= game.totalCells;
@@ -631,9 +595,6 @@ class _PuzzleScreenState extends ConsumerState<PuzzleScreen> {
           : (game.finishedEarly
               ? l10n.practiceResultEarlyDesc
               : l10n.practiceCompleteDesc),
-      remainingSessions: remaining,
-      sessionsUsed: session.completedToday,
-      sessionsLimit: limit,
       newSessionLabel: needsAd ? l10n.practiceWatchAdForNewSession : l10n.practiceNewSession,
       newSessionRequiresAd: needsAd,
       onNewSession: canPlayMore ? () => _startNextPracticeSession(needsAd: needsAd) : null,

@@ -33,8 +33,6 @@ class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = context.cb;
-    final session = ref.watch(practiceSessionProvider);
     final isPremium = ref.watch(isPremiumProvider);
     final showTimeline = ref.watch(featureFlagProvider('timeline_mode'));
 
@@ -47,10 +45,10 @@ class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
             children: [
               CrossBallHeroCard(
                 title: l10n.practiceNewSession,
-                subtitle: l10n.practiceCompleteDesc,
+                subtitle: isPremium
+                    ? l10n.practicePremiumSkipAds
+                    : l10n.practiceUnlimitedHint,
                 actionLabel: l10n.continueButton,
-                badge: l10n.practiceSessionsPlayedToday(session.completedToday),
-                badgeIcon: Icons.fitness_center_rounded,
                 onTap: () => context.push('${AppRoutes.puzzle}?mode=practice'),
               ),
               if (showTimeline) ...[
@@ -75,30 +73,6 @@ class _PracticeTabScreenState extends ConsumerState<PracticeTabScreen> {
                 title: l10n.matchGridMode,
                 subtitle: l10n.matchGridModeDesc,
                 onTap: () => context.push('${AppRoutes.puzzle}?mode=matchGrid'),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              CrossBallGlassPanel(
-                padding: const EdgeInsets.all(AppSpacing.lg),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.practiceSessionsPlayedToday(session.completedToday),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Text(
-                      isPremium
-                          ? l10n.practicePremiumSkipAds
-                          : l10n.practiceUnlimitedHint,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: colors.textSecondary,
-                          ),
-                    ),
-                  ],
-                ),
               ),
               if (isPremium) ...[
                 const SizedBox(height: AppSpacing.md),

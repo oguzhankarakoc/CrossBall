@@ -180,7 +180,7 @@
   "practiceCompleteDesc": "Her antrenmanda farklı takım kombinasyonları.",
   "practiceFinishTraining": "Antrenmanı bitir",
   "practiceFinishConfirmTitle": "Antrenmanı bitir?",
-  "practiceFinishConfirmBody": "Bu oturum sona erer ve günlük antrenman hakkından 1 düşer.",
+  "practiceFinishConfirmBody": "Bu oturum sona erer ve skorun kaydedilir.",
   "practiceResultTitle": "Antrenman tamamlandı",
   "practiceResultEarlyDesc": "Erken bitirdin — skorun ve ilerlemen kaydedildi.",
   "practiceSessionProgress": "Antrenman {current}/{limit}",
@@ -207,7 +207,7 @@
   },
   "practiceAdGateHint": "Ücretsiz planda sonraki antrenmanlar için kısa bir reklam izlemen gerekir.",
   "adUnavailable": "Reklam şu an yüklenemedi. Biraz sonra tekrar dene.",
-  "practicePremiumSkipAds": "Premium ile reklam beklemeden günde 10 antrenman.",
+  "practicePremiumSkipAds": "Premium: sınırsız antrenman, oturumlar arası reklam yok.",
   "cancel": "Vazgeç",
   "practiceSessionsRemaining": "Bugün {count} antrenman hakkın kaldı",
   "@practiceSessionsRemaining": {

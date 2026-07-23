@@ -490,7 +490,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practiceFinishConfirmBody =>
-      'Bu oturum sona erer ve günlük antrenman hakkından 1 düşer.';
+      'Bu oturum sona erer ve skorun kaydedilir.';
 
   @override
   String get practiceResultTitle => 'Antrenman tamamlandı';
@@ -519,7 +519,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get practicePremiumSkipAds =>
-      'Premium ile reklam beklemeden günde 10 antrenman.';
+      'Premium: sınırsız antrenman, oturumlar arası reklam yok.';
 
   @override
   String get cancel => 'Vazgeç';

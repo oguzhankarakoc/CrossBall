@@ -21,6 +21,14 @@ class PuzzleFetchException implements Exception {
   bool get isDailyAlreadyCompleted =>
       (errorCode ?? message).contains('daily_already_completed');
 
+  bool get isPracticeAdRequired =>
+      errorCode == 'practice_ad_required' ||
+      message.contains('practice_ad_required');
+
+  bool get isPracticeLimitReached =>
+      errorCode == 'practice_daily_limit_reached' ||
+      message.contains('practice_daily_limit');
+
   @override
   String toString() => message;
 }

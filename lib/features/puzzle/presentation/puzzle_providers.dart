@@ -705,7 +705,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
           state = state.copyWith(isLoading: false, error: 'practice_load_failed');
           return;
         }
-        await _ref.read(practiceSessionProvider.notifier).syncFromServer(profile.userUuid);
+        // Always refresh quota before the gate — TTL skip caused stale
+        // ad_unlock_granted after the server had already consumed it.
+        await _ref
+            .read(practiceSessionProvider.notifier)
+            .syncFromServer(profile.userUuid, force: true);
         final session = _ref.read(practiceSessionProvider);
         if (session.syncError != null) {
           practiceDebug('blocked: quota sync failed', {'error': session.syncError});
@@ -785,6 +789,12 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
             userUuid: profile!.userUuid,
             excludePuzzleId: excludeId,
           );
+          // Server consumes ad unlock during practice-puzzle — mirror that locally
+          // so a later retry does not skip the ad gate with a stale client flag.
+          final unlocked = _ref.read(practiceSessionProvider);
+          if (unlocked.adUnlockGranted) {
+            _ref.read(practiceSessionProvider.notifier).markAdUnlockConsumed();
+          }
           practiceDebug('practice puzzle loaded', {
             'puzzleId': puzzle.id,
             'gridSize': puzzle.gridSize,
@@ -1009,7 +1019,11 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
       }
       final message = e is PuzzleFetchException
           ? (_isTrainingMode
-              ? 'practice_load_failed'
+              ? (e.isPracticeAdRequired
+                  ? 'practice_ad_required'
+                  : e.isPracticeLimitReached
+                      ? 'practice_limit_reached'
+                      : 'practice_load_failed')
               : e.isDailyAlreadyCompleted
                   ? 'daily_already_completed'
                   : e.isGenerationInProgress
@@ -1019,6 +1033,15 @@ class PuzzleGameNotifier extends StateNotifier<PuzzleGameState> {
                           : 'puzzle_load_failed')
           : e.toString();
       cbDebug(logTag, 'loadPuzzle UI error key', {'errorKey': message});
+      // If the server rejected for missing ad unlock, refresh quota so the gate UI matches.
+      if (_isTrainingMode && message == 'practice_ad_required') {
+        final uuid = _ref.read(userProfileProvider).valueOrNull?.userUuid;
+        if (uuid != null) {
+          unawaited(
+            _ref.read(practiceSessionProvider.notifier).syncFromServer(uuid, force: true),
+          );
+        }
+      }
       state = state.copyWith(isLoading: false, error: message);
     }
   }

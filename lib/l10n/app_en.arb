@@ -187,7 +187,7 @@
   "practiceCompleteDesc": "Fresh club combinations every session.",
   "practiceFinishTraining": "Finish training",
   "practiceFinishConfirmTitle": "Finish training?",
-  "practiceFinishConfirmBody": "This session ends and uses 1 of your daily training credits.",
+  "practiceFinishConfirmBody": "This session ends and your score is saved.",
   "practiceResultTitle": "Training complete",
   "practiceResultEarlyDesc": "You finished early — your score and progress were saved.",
   "practiceSessionProgress": "Training {current}/{limit}",
@@ -214,7 +214,7 @@
   },
   "practiceAdGateHint": "On the free plan, watch a short ad before each new training session.",
   "adUnavailable": "Ad isn’t available right now. Try again in a moment.",
-  "practicePremiumSkipAds": "Premium: up to 10 training sessions per day, no ads between rounds.",
+  "practicePremiumSkipAds": "Premium: unlimited training, no ads between sessions.",
   "cancel": "Cancel",
   "practiceSessionsRemaining": "{count} training sessions left today",
   "@practiceSessionsRemaining": {

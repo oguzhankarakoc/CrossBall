@@ -138,6 +138,12 @@ class PracticeSessionNotifier extends StateNotifier<PracticeSessionState> {
     _lastSyncUserUuid = userUuid;
   }
 
+  /// Server consumes the unlock when issuing a practice puzzle — keep client in sync.
+  void markAdUnlockConsumed() {
+    if (!state.adUnlockGranted) return;
+    state = state.copyWith(adUnlockGranted: false);
+  }
+
   /// Optimistic bump until [complete-session] flushes; reconciled on next sync.
   Future<void> onPracticeSessionCompleted(String userUuid) async {
     state = state.copyWith(

@@ -491,7 +491,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get practiceFinishConfirmBody =>
-      'Diese Einheit endet und verbraucht 1 deiner täglichen Trainingseinheiten.';
+      'Diese Einheit endet und dein Score wird gespeichert.';
 
   @override
   String get practiceResultTitle => 'Training abgeschlossen';
@@ -520,7 +520,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get practicePremiumSkipAds =>
-      'Premium: bis zu 10 Einheiten pro Tag, keine Werbung zwischen Runden.';
+      'Premium: unbegrenztes Training, keine Werbung zwischen Sessions.';
 
   @override
   String get cancel => 'Abbrechen';

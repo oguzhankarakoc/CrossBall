@@ -979,7 +979,7 @@ abstract class AppLocalizations {
   /// No description provided for @practiceFinishConfirmBody.
   ///
   /// In en, this message translates to:
-  /// **'This session ends and uses 1 of your daily training credits.'**
+  /// **'This session ends and your score is saved.'**
   String get practiceFinishConfirmBody;
 
   /// No description provided for @practiceResultTitle.
@@ -1021,7 +1021,7 @@ abstract class AppLocalizations {
   /// No description provided for @practicePremiumSkipAds.
   ///
   /// In en, this message translates to:
-  /// **'Premium: up to 10 training sessions per day, no ads between rounds.'**
+  /// **'Premium: unlimited training, no ads between sessions.'**
   String get practicePremiumSkipAds;
 
   /// No description provided for @cancel.
