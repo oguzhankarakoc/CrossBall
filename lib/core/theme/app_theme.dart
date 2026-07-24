@@ -99,10 +99,11 @@ abstract final class AppTheme {
         height: 16 / 12,
         color: colors.textSecondary,
       ),
+      // Surface labels — never onLime (that belongs only on filled lime CTAs).
       labelLarge: baseInter.labelLarge?.copyWith(
         fontWeight: FontWeight.w700,
         letterSpacing: 0.6,
-        color: AppColors.onLime,
+        color: colors.textPrimary,
       ),
     );
 

@@ -251,9 +251,10 @@ class _TipStepRow extends StatelessWidget {
               children: [
                 Text(
                   '$index. $title',
-                  style: theme.textTheme.labelLarge?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.textPrimary,
                     fontWeight: FontWeight.w800,
-                    height: 1.2,
+                    height: 1.25,
                   ),
                 ),
                 const SizedBox(height: 2),
@@ -261,7 +262,7 @@ class _TipStepRow extends StatelessWidget {
                   body,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.textSecondary,
-                    height: 1.3,
+                    height: 1.35,
                     fontSize: 12.5,
                   ),
                 ),
